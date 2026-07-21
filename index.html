@@ -226,21 +226,18 @@
     const editImg = document.getElementById("editImg");
     const editNickname = document.getElementById("editNickname");
 
-    function isInactive(item){ return item[3] === true; }
+    function isInactive(item){ return item.inactive === true; }
 
     function getCardId(href){
       try { return new URL(href).searchParams.get("id") || ""; }
       catch { return ""; }
     }
 
-    function getNickname(item){
-      if(item[3] === true) return item[4] || "";
-      return item[3] || "";
-    }
+    function getNickname(item){ return item.nickname || ""; }
 
     function getCardSubtitle(item){
       const nickname = getNickname(item).trim();
-      return nickname ? nickname : `#${getCardId(item[1])}`;
+      return nickname ? nickname : `#${getCardId(item.href)}`;
     }
 
     // -------- Сохранение в Firestore (автосохранение) --------
@@ -379,7 +376,7 @@
     function createCard(sectionId, index, item, inactive){
       const card = document.createElement("a");
       card.className = "card" + (state.editing ? " editing" : "") + (inactive ? " inactive-card" : "");
-      card.href = item[1];
+      card.href = item.href;
       card.target = "_blank";
       card.rel = "noopener";
       card.draggable = state.editing;
@@ -388,11 +385,11 @@
 
       card.innerHTML = `
         <button class="delete-x" type="button" title="Удалить" aria-label="Удалить карточку">×</button>
-        ${item[2] ? `<img src="${item[2]}" alt="" onerror="this.style.visibility='hidden'">` : `<span class="noicon">↗</span>`}
+        ${item.img ? `<img src="${item.img}" alt="" onerror="this.style.visibility='hidden'">` : `<span class="noicon">↗</span>`}
         <span class="name"></span>
         <small></small>
       `;
-      card.querySelector(".name").textContent = item[0];
+      card.querySelector(".name").textContent = item.name;
       card.querySelector("small").textContent = getCardSubtitle(item);
 
       if(state.editing){
@@ -444,15 +441,9 @@
 
     function moveItem(fromSection, fromIndex, toSection, makeInactive){
       pushHistory();
-      const item = data[fromSection].items.splice(fromIndex, 1)[0];
-      const nickname = getNickname(item);
-      item.length = 3;
-      if(makeInactive){
-        item.push(true);
-        if(nickname) item.push(nickname);
-      } else if(nickname){
-        item.push(nickname);
-      }
+	  const item = data[fromSection].items.splice(fromIndex, 1)[0];
+	  if(makeInactive) item.inactive = true;
+	  else delete item.inactive;
       data[toSection].items.push(item);
       commit();
     }
@@ -520,9 +511,9 @@
       state.modalOpen = true;
       modalTitle.textContent = index >= 0 ? "Редактировать карточку" : "Новая карточка";
       editSection.value = sectionId;
-      editName.value = item ? item[0] : "";
-      editHref.value = item ? item[1] : "";
-      editImg.value = item ? (item[2] || "") : "";
+      editName.value = item ? item.name : "";
+      editHref.value = item ? item.href : "";
+      editImg.value = item ? (item.img || "") : "";
       editNickname.value = item ? getNickname(item) : "";
       modalBackdrop.style.display = "flex";
     }
@@ -548,12 +539,12 @@
 
       pushHistory();
 
-      const item = [name, href, img];
+      const item = { name, href, img };
+	  if(nickname) item.nickname = nickname;
+		
       if(index >= 0){
         const previous = data[section].items[index];
-        const wasInactive = previous[3] === true;
-        if(wasInactive) item.push(true);
-        if(nickname) item.push(nickname);
+		if(previous.inactive) item.inactive = true;
 
         if(newSection === section){
           data[section].items[index] = item;
@@ -562,7 +553,6 @@
           data[newSection].items.push(item);
         }
       } else {
-        if(nickname) item.push(nickname);
         data[newSection].items.push(item);
       }
 
