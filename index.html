@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 <html lang="ru"><head>
   <meta charset="utf-8">
@@ -87,8 +86,6 @@
 
     <div class="toolbar">
       <button id="loginBtn" type="button">Войти</button>
-      <button id="importBtn" type="button" style="display:none;" title="Загрузить карточки из файла">📂 Импорт</button>
-      <input type="file" id="importFileInput" accept=".json" style="display:none;">
       <button id="modeBtn" type="button" style="display:none;">Редактировать</button>
       <button id="undoBtn" type="button" title="Отменить" style="display:none;">↶</button>
       <button id="redoBtn" type="button" title="Повторить" style="display:none;">↷</button>
@@ -209,8 +206,6 @@
     };
 
     const main = document.getElementById("main");
-    const importBtn = document.getElementById("importBtn");
-    const importFileInput = document.getElementById("importFileInput");
     const modeBtn = document.getElementById("modeBtn");
     const undoBtn = document.getElementById("undoBtn");
     const redoBtn = document.getElementById("redoBtn");
@@ -286,7 +281,6 @@
       loginBtn.textContent = state.isAdmin ? "Выйти" : "Войти";
       loginBtn.classList.toggle("logged-in", state.isAdmin);
       modeBtn.style.display = state.isAdmin ? "" : "none";
-      importBtn.style.display = state.isAdmin ? "" : "none";
       undoBtn.style.display = state.isAdmin ? "" : "none";
       redoBtn.style.display = state.isAdmin ? "" : "none";
       if(user) console.log("Ваш UID (вставьте его в ADMIN_UID):", user.uid);
@@ -574,37 +568,6 @@
       if(!state.modalOpen) return;
       if(event.key === "Escape") closeModal();
     });
-  
-    // ===== IMPORT CARDS FROM FILE =====
-    importBtn.addEventListener('click', () => {
-      importFileInput.value = '';
-      importFileInput.click();
-    });
-
-    importFileInput.addEventListener('change', async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      try {
-        const text = await file.text();
-        const parsed = JSON.parse(text);
-        const newData = parsed.data || parsed;
-        if (typeof newData !== 'object' || Array.isArray(newData)) {
-          alert('Неверный формат файла. Ожидается JSON с секциями карточек.');
-          return;
-        }
-        const sectionCount = Object.keys(newData).length;
-        const cardCount = Object.values(newData).reduce((s, sec) => s + (sec.items?.length || 0), 0);
-        if (!confirm(\`Импортировать \${cardCount} карточек в \${sectionCount} секциях?\nЭто ЗАМЕНИТ все текущие данные на сайте.\`)) return;
-        const ref = doc(db, 'cards', 'board');
-        await setDoc(ref, { data: newData });
-        alert('✅ Карточки успешно импортированы!');
-      } catch (err) {
-        console.error(err);
-        alert('Ошибка при импорте: ' + err.message);
-      }
-    });
-    // ===== END IMPORT =====
-
   </script>
 </body>
 </html>
