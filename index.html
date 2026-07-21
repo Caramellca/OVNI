@@ -27,28 +27,22 @@
     section{margin-bottom:28px;scroll-margin-top:108px;}
     h2{display:flex;align-items:center;gap:10px;margin:0 0 12px;font-size:20px;}
     em{color:var(--muted);font-size:13px;font-style:normal;font-weight:500;}
-    /* section hidden from users */
     section.section-hidden-user{display:none;}
-    /* admin sees hidden sections with a visual hint */
     body.editing-mode section.section-hidden-user{display:block;opacity:0.55;}
-    body.editing-mode section.section-hidden-user h2::after{content:" 🚫";font-size:14px;}
 
     .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(188px,1fr));gap:10px;}
     .grid.inactive{margin-top:8px;}
-    /* spacer block */
-    .spacer-block{grid-column:1/-1;height:18px;position:relative;}
+    .spacer-block{grid-column:1/-1;height:20px;position:relative;}
     .spacer-block-inner{width:100%;height:100%;border-radius:6px;background:transparent;transition:background .15s;}
-    body.editing-mode .spacer-block-inner{background:rgba(125,182,255,.08);border:1px dashed var(--line);cursor:grab;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--muted);}
-    body.editing-mode .spacer-block-inner::before{content:"≡ отступ";}
-    .spacer-delete{position:absolute;top:-8px;right:-8px;z-index:5;display:none;align-items:center;justify-content:center;width:22px;height:22px;padding:0;color:var(--danger);background:var(--bg);border:0;border-radius:50%;cursor:pointer;font-size:18px;font-weight:700;line-height:1;}
-    body.editing-mode .spacer-delete{display:flex;}
+    body.editing-mode .spacer-block-inner{background:rgba(125,182,255,.08);border:1px dashed var(--line);cursor:grab;display:flex;align-items:center;justify-content:center;}
+    .spacer-controls{position:absolute;top:-9px;right:2px;z-index:5;display:none;gap:4px;align-items:center;}
+    body.editing-mode .spacer-controls{display:flex;}
 
     .grid.inactive:empty:not(.is-collapsed){display:flex;align-items:center;justify-content:center;min-height:78px;padding:10px;border:1px dashed var(--line);border-radius:11px;color:var(--muted);font-size:13px;transition:border-color .15s ease,color .15s ease,background .15s ease;}
     .grid.inactive:empty:not(.is-collapsed)::before{content:"Перетащите карточку сюда";pointer-events:none;}
     .grid.inactive:empty:not(.is-collapsed).dragover{border-color:var(--edit);background:rgba(255,204,102,.06);color:var(--edit);box-shadow:0 0 0 2px rgba(255,204,102,.18) inset;}
     .grid.inactive.is-collapsed{display:none;}
 
-    /* inactive section hidden from users */
     .subhead.admin-only{display:none;}
     body.editing-mode .subhead.admin-only{display:flex;}
 
@@ -64,8 +58,15 @@
     .name{font-weight:650;line-height:1.16;}
     small{padding-top:3px;color:var(--muted);font-size:11px;}
     .inactive-card{opacity:.45;}
-    .delete-x{position:absolute;top:-10px;right:-10px;z-index:5;display:none;align-items:center;justify-content:center;width:28px;height:28px;padding:0;color:var(--danger);background:var(--bg);border:0;border-radius:50%;cursor:pointer;font-size:24px;font-weight:700;line-height:1;}
-    .delete-x:hover{color:#ff6c6c;transform:scale(1.08);}
+
+    /* ── minimal icon buttons (shared style, like "Неактивные" label) ── */
+    .icon-btn{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;padding:0;background:transparent;border:0;border-radius:6px;color:var(--muted);cursor:pointer;transition:color .18s ease,background .18s ease;}
+    .icon-btn:hover{color:var(--accent);background:rgba(125,182,255,.1);}
+    .icon-btn svg{width:16px;height:16px;stroke-width:1.6;}
+    .icon-btn.danger:hover{color:var(--danger);background:rgba(217,72,72,.1);}
+    .icon-btn.active-eye{color:var(--accent);}
+
+    .delete-x{position:absolute;top:-9px;right:-9px;z-index:5;display:none;background:var(--bg);border-radius:50%;}
     .editing-mode .delete-x{display:flex;}
     .editing-mode .card{cursor:grab;}
     .editing-mode .card:active{cursor:grabbing;}
@@ -73,7 +74,8 @@
     .add-card .plus{color:#dfe8ff;font-size:28px;font-weight:700;line-height:1;}
     .add-card.single{grid-template-columns:1fr;grid-template-rows:1fr;min-height:65px;}
     .add-card.single .plus{grid-row:1/3;}
-    .add-spacer-btn{opacity:.55;cursor:pointer;align-items:center;justify-content:center;min-height:40px;font-size:20px;}
+    .add-spacer-btn{opacity:.55;cursor:pointer;align-items:center;justify-content:center;min-height:40px;}
+    .add-spacer-btn svg{width:20px;height:20px;stroke-width:1.5;color:var(--muted);}
 
     .subhead.toggleable{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:42px;margin-top:16px;padding:0 2px 9px;background:transparent;border:0;border-bottom:1px solid var(--line);border-radius:0;cursor:pointer;user-select:none;}
     .subhead .subtitle{color:var(--muted);font-size:14px;font-weight:400;transition:color .18s ease;}
@@ -81,29 +83,26 @@
     .subhead.toggleable:hover .subtitle{color:var(--accent);}
     .subhead.toggleable.is-collapsed .arrow{transform:rotate(-90deg);}
 
-    /* section title edit in editing mode */
     .section-title-text{cursor:default;}
     body.editing-mode .section-title-text{cursor:text;border-bottom:1px dashed var(--line);padding-bottom:1px;}
     body.editing-mode .section-title-text:focus{outline:none;border-bottom-color:var(--accent);}
-    .section-controls{display:none;gap:6px;align-items:center;margin-left:8px;}
+    .section-controls{display:none;gap:4px;align-items:center;margin-left:6px;}
     body.editing-mode .section-controls{display:flex;}
-    .section-btn{padding:4px 8px;font-size:12px;border-radius:7px;}
-    .section-btn.hide-btn{background:transparent;border-color:var(--muted);color:var(--muted);}
-    .section-btn.hide-btn.is-hidden{border-color:var(--edit);color:var(--edit);}
-    .section-btn.delete-section-btn{background:transparent;border-color:var(--danger);color:var(--danger);}
+    .section-type-select{display:none;margin-left:6px;padding:3px 6px;font-size:11px;color:var(--muted);background:#0e1727;border:1px solid var(--line);border-radius:7px;}
+    body.editing-mode .section-type-select{display:inline-block;}
 
     .modal-backdrop{position:fixed;inset:0;z-index:2000;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(6,10,18,.72);}
-    .modal{width:min(560px,100%);padding:16px;background:#111b2d;border:1px solid var(--line);border-radius:16px;box-shadow:0 20px 80px rgba(0,0,0,.45);}
-    .modal h3{margin:0 0 12px;font-size:18px;}
+    .modal{width:min(560px,100%);padding:16px;background:#111b2d;border:1px solid var(--line);border-radius:16px;box-shadow:0 20px 80px rgba(0,0,0,.45);position:relative;}
+    .modal h3{margin:0 0 12px;font-size:18px;padding-right:50px;}
     .form-row{display:grid;gap:6px;margin-bottom:12px;}
     .form-row select{width:100%;padding:10px 12px;color:var(--txt);background:#0e1727;border:1px solid var(--line);border-radius:10px;font:inherit;cursor:pointer;}
     .form-row select:focus{outline:none;border-color:var(--accent);}
     label{color:var(--muted);font-size:13px;}
     input{width:100%;padding:10px 12px;color:var(--txt);background:#0e1727;border:1px solid var(--line);border-radius:10px;font:inherit;}
     input:disabled{color:var(--muted);background:#0b1321;border-color:#233149;opacity:.62;cursor:default;}
-    .input-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;}
-    .link-toggle{padding:0;color:var(--muted);background:transparent;border:0;border-radius:0;cursor:pointer;font:inherit;font-size:13px;font-weight:400;line-height:1;text-decoration:none;transition:color .18s ease;}
-    .link-toggle:hover,.link-toggle:focus-visible{color:var(--accent);background:transparent;outline:none;}
+    .split-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+    .input-with-icon{display:flex;gap:6px;align-items:center;}
+    .input-with-icon input{flex:1;}
     .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px;}
     .helper{margin-top:8px;color:var(--muted);font-size:13px;line-height:1.4;}
     .undo-redo{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-left:auto;}
@@ -112,22 +111,20 @@
     #loginBtn.logged-in{background:#1f5c34;border-color:#2c7a45;}
     #syncStatus{font-size:12px;color:var(--muted);margin-left:6px;}
 
-    /* toggle switch */
-    .toggle-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
-    .toggle-row label{color:var(--muted);font-size:13px;margin:0;}
+    /* toggle switch - blue, top-right of modal, no label */
+    .modal-toggle-corner{position:absolute;top:16px;right:16px;}
     .toggle{position:relative;display:inline-block;width:42px;height:24px;flex-shrink:0;}
     .toggle input{opacity:0;width:0;height:0;}
     .toggle-slider{position:absolute;inset:0;background:#2d3e5a;border-radius:24px;cursor:pointer;transition:.2s;}
     .toggle-slider:before{position:absolute;content:"";height:18px;width:18px;left:3px;bottom:3px;background:var(--muted);border-radius:50%;transition:.2s;}
-    .toggle input:checked + .toggle-slider{background:#2a6e42;}
-    .toggle input:checked + .toggle-slider:before{transform:translateX(18px);background:#4ade80;}
+    .toggle input:checked + .toggle-slider{background:#2c5a8a;}
+    .toggle input:checked + .toggle-slider:before{transform:translateX(18px);background:var(--accent);}
 
-    /* add section button */
     #addSectionBtn{display:none;margin-top:8px;}
     body.editing-mode #addSectionBtn{display:inline-flex;}
 
     @media(max-width:620px){.toolbar{align-items:stretch;}.undo-redo{width:100%;margin-left:0;}}
-    @media(max-width:460px){.grid{grid-template-columns:1fr;}.input-row{grid-template-columns:1fr;}}
+    @media(max-width:460px){.grid{grid-template-columns:1fr;}.split-row{grid-template-columns:1fr;}}
   </style>
 </head>
 
@@ -146,7 +143,6 @@
   <main id="main"></main>
   <button id="addSectionBtn" type="button">+ Добавить категорию</button>
 
-  <!-- Login modal -->
   <div class="modal-backdrop" id="loginModal">
     <div class="modal">
       <h3>Вход администратора</h3>
@@ -159,24 +155,27 @@
     </div>
   </div>
 
-  <!-- Card edit modal -->
   <div class="modal-backdrop" id="modalBackdrop">
     <div class="modal">
+      <label class="toggle modal-toggle-corner">
+        <input type="checkbox" id="editEnabled" checked>
+        <span class="toggle-slider"></span>
+      </label>
       <h3 id="modalTitle">Новая карточка</h3>
       <div class="form-row"><label>Раздел</label><select id="editSection"></select></div>
       <div class="form-row"><label>Название</label><input id="editName" type="text"></div>
-      <div class="form-row">
-        <div class="input-row"><label style="grid-column:1/3;">Ссылка</label></div>
-        <input id="editHref" type="text">
-      </div>
       <div class="form-row"><label>Картинка (URL)</label><input id="editImg" type="text"></div>
-      <div class="form-row"><label>Никнейм (необязательно)</label><input id="editNickname" type="text"></div>
-      <div class="toggle-row">
-        <label class="toggle">
-          <input type="checkbox" id="editEnabled" checked>
-          <span class="toggle-slider"></span>
-        </label>
-        <label for="editEnabled" style="cursor:pointer;color:var(--txt);">Карточка активна</label>
+      <div class="split-row">
+        <div class="form-row"><label>Никнейм (необязательно)</label><input id="editNickname" type="text"></div>
+        <div class="form-row">
+          <label>Ссылка</label>
+          <div class="input-with-icon">
+            <input id="editHref" type="text">
+            <button class="icon-btn" id="editHrefUnlock" type="button" title="Разрешить редактирование ссылки">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"/></svg>
+            </button>
+          </div>
+        </div>
       </div>
       <div class="modal-actions">
         <button id="cancelEdit" type="button">Отмена</button>
@@ -186,7 +185,6 @@
     </div>
   </div>
 
-  <!-- Firebase SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-analytics.js";
@@ -218,7 +216,14 @@
     const boardRef = doc(db, DOC_PATH[0], DOC_PATH[1]);
 
     const seedData = {
-      "predmety-chr": { title: "Предметы ЧР", items: [], hidden: false }
+      "predmety-chr": { title: "Предметы ЧР", items: [], hidden: false, specialType: "" }
+    };
+
+    /* ── special category auto-fill rules (keyed by specialType id, NOT by title) ── */
+    const SPECIAL_TYPES = {
+      seeds:     { label: "Семена пропуска", name: "Семена пропуска", img: "https://www.lowadi.com/media/equideo/image//produits/60/graines-pass.png" },
+      growth:    { label: "Очки роста",       name: "Очки роста",       img: "https://www.lowadi.com/media/equideo/image//produits/60/vieillissement.png" },
+      checklist: { label: "Чек-лист",         name: "Рандом",           img: "" }
     };
 
     let data = {};
@@ -232,7 +237,8 @@
       collapsedInactive: {},
       pending: null,
       modalOpen: false,
-      drag: null          // { section, index, zone }
+      drag: null,
+      hrefUnlocked: false
     };
 
     const main       = document.getElementById("main");
@@ -254,9 +260,16 @@
     const editSection   = document.getElementById("editSection");
     const editName      = document.getElementById("editName");
     const editHref      = document.getElementById("editHref");
+    const editHrefUnlock= document.getElementById("editHrefUnlock");
     const editImg       = document.getElementById("editImg");
     const editNickname  = document.getElementById("editNickname");
     const editEnabled   = document.getElementById("editEnabled");
+
+    /* ── icon svg templates (shared style: thin stroke, muted -> accent on hover) ── */
+    const ICON_EYE_OPEN = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>`;
+    const ICON_EYE_CLOSED = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88"/></svg>`;
+    const ICON_X = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>`;
+    const ICON_DUPLICATE = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376A8.965 8.965 0 0 0 12 12.75c-.129 0-.256.003-.383.008l-.384-.384a4.501 4.501 0 0 0-6.364 0l-1.5 1.5a4.5 4.5 0 0 0 0 6.364l1.5 1.5a4.5 4.5 0 0 0 6.364 0l1.114-1.114m5.249-11.249v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V3.375c0-.621.504-1.125 1.125-1.125h9.75c.621 0 1.125.504 1.125 1.125v3.375Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 8.25h-3.375a1.125 1.125 0 0 0-1.125 1.125V12.75c0 .621.504 1.125 1.125 1.125h3.375A1.125 1.125 0 0 0 17.625 12.75V9.375c0-.621-.504-1.125-1.125-1.125Z"/></svg>`;
 
     /* ── helpers ── */
     function isInactive(item){ return item.inactive === true; }
@@ -270,6 +283,17 @@
     function getCardSubtitle(item){
       const nick = getNickname(item).trim();
       return nick ? nick : "#" + getCardId(item.href);
+    }
+
+    function applySpecialType(sectionId, item){
+      const sec = data[sectionId];
+      const type = sec && sec.specialType;
+      if(type && SPECIAL_TYPES[type]){
+        item.name = SPECIAL_TYPES[type].name;
+        if(SPECIAL_TYPES[type].img) item.img = SPECIAL_TYPES[type].img;
+        else item.img = "";
+      }
+      return item;
     }
 
     /* ── save ── */
@@ -288,7 +312,6 @@
       }, 400);
     }
 
-    /* ── realtime sync ── */
     let applyingRemote = false;
     onSnapshot(boardRef, snap => {
       if(!snap.exists()){
@@ -307,7 +330,6 @@
       syncStatus.textContent = "Нет соединения";
     });
 
-    /* ── auth ── */
     onAuthStateChanged(auth, user => {
       state.isAdmin = !!user && user.uid === ADMIN_UID;
       loginBtn.textContent = state.isAdmin ? "Выйти" : "Войти";
@@ -332,24 +354,19 @@
       } catch(e){ alert("Ошибка входа: " + e.message); }
     });
 
-    /* ═══════════════════════════════════════════
-       RENDER
-    ═══════════════════════════════════════════ */
+    /* ═══════════════ RENDER ═══════════════ */
     function render(){
       main.innerHTML = "";
 
       order.forEach(id => {
         if(!data[id]) return;
         const sec = data[id];
-
-        // hide from non-admins if section is hidden
         if(sec.hidden && !state.isAdmin) return;
 
         const section = document.createElement("section");
         section.id = id;
         if(sec.hidden) section.classList.add("section-hidden-user");
 
-        /* ── section header ── */
         const h2 = document.createElement("h2");
 
         const titleSpan = document.createElement("span");
@@ -378,22 +395,22 @@
         sectionControls.className = "section-controls";
 
         if(state.editing){
-          const hideBtn = document.createElement("button");
-          hideBtn.className = "section-btn hide-btn" + (sec.hidden ? " is-hidden" : "");
-          hideBtn.type = "button";
-          hideBtn.title = sec.hidden ? "Показать категорию пользователям" : "Скрыть от пользователей";
-          hideBtn.textContent = sec.hidden ? "🚫 Скрытая" : "👁 Видимая";
-          hideBtn.addEventListener("click", () => {
+          const eyeBtn = document.createElement("button");
+          eyeBtn.className = "icon-btn" + (!sec.hidden ? " active-eye" : "");
+          eyeBtn.type = "button";
+          eyeBtn.title = sec.hidden ? "Показать категорию пользователям" : "Скрыть от пользователей";
+          eyeBtn.innerHTML = sec.hidden ? ICON_EYE_CLOSED : ICON_EYE_OPEN;
+          eyeBtn.addEventListener("click", () => {
             pushHistory();
             data[id].hidden = !data[id].hidden;
             commit();
           });
 
           const delBtn = document.createElement("button");
-          delBtn.className = "section-btn delete-section-btn";
+          delBtn.className = "icon-btn danger";
           delBtn.type = "button";
-          delBtn.textContent = "✕";
           delBtn.title = "Удалить категорию";
+          delBtn.innerHTML = ICON_X;
           delBtn.addEventListener("click", () => {
             if(!confirm(`Удалить категорию "${sec.title}" со всеми карточками?`)) return;
             pushHistory();
@@ -402,19 +419,36 @@
             commit();
           });
 
-          sectionControls.append(hideBtn, delBtn);
+          const typeSelect = document.createElement("select");
+          typeSelect.className = "section-type-select";
+          typeSelect.title = "Спецтип категории (авто-название/картинка карточек)";
+          const noneOpt = document.createElement("option");
+          noneOpt.value = ""; noneOpt.textContent = "— обычная —";
+          typeSelect.appendChild(noneOpt);
+          Object.keys(SPECIAL_TYPES).forEach(key => {
+            const opt = document.createElement("option");
+            opt.value = key;
+            opt.textContent = SPECIAL_TYPES[key].label;
+            typeSelect.appendChild(opt);
+          });
+          typeSelect.value = sec.specialType || "";
+          typeSelect.addEventListener("change", () => {
+            pushHistory();
+            data[id].specialType = typeSelect.value;
+            commit();
+          });
+
+          sectionControls.append(eyeBtn, delBtn, typeSelect);
         }
 
         h2.append(titleSpan, countEm, sectionControls);
         section.appendChild(h2);
 
-        /* ── active grid ── */
         const activeGrid = document.createElement("div");
         activeGrid.className = "grid";
         activeGrid.dataset.section = id;
         activeGrid.dataset.zone = "active";
 
-        /* ── inactive section (admin-only toggle) ── */
         const inactiveWrap = document.createElement("button");
         inactiveWrap.className = "subhead toggleable admin-only";
         inactiveWrap.type = "button";
@@ -444,13 +478,9 @@
           inactiveGrid.classList.toggle("is-collapsed", nowCollapsed);
         });
 
-        /* ── populate cards ── */
         sec.items.forEach((item, index) => {
           if(isSpacer(item)){
-            if(!isInactive(item)){
-              activeGrid.appendChild(createSpacerEl(id, index));
-            }
-            // spacers in inactive zone are skipped (no need)
+            if(!isInactive(item)) activeGrid.appendChild(createSpacerEl(id, index));
             return;
           }
           const card = createCard(id, index, item, isInactive(item));
@@ -460,22 +490,18 @@
 
         if(state.editing){
           activeGrid.appendChild(createAddCard(id));
-          // add spacer button
           const addSpacerBtn = document.createElement("button");
           addSpacerBtn.type = "button";
           addSpacerBtn.className = "add-card single add-spacer-btn";
           addSpacerBtn.title = "Добавить пустой отступ";
-          addSpacerBtn.innerHTML = "<span>⟷</span>";
+          addSpacerBtn.innerHTML = ICON_DUPLICATE.replace("<svg ", '<svg style="width:20px;height:20px;" ');
           addSpacerBtn.addEventListener("click", () => {
             pushHistory();
-            // insert spacer before add-card (i.e. at end of active items)
             const insertIdx = sec.items.filter(it => !isInactive(it)).length;
-            // find real index: count non-inactive items
-            let realIdx = 0, count = 0;
+            let realIdx = sec.items.length, count = 0;
             for(let i = 0; i < sec.items.length; i++){
               if(!isInactive(sec.items[i])) count++;
               if(count === insertIdx){ realIdx = i + 1; break; }
-              realIdx = sec.items.length;
             }
             data[id].items.splice(realIdx, 0, { __type: "spacer" });
             commit();
@@ -492,11 +518,9 @@
         main.appendChild(section);
       });
 
-      // Add section button position (after main)
       populateSectionSelect();
     }
 
-    /* ── spacer element ── */
     function createSpacerEl(sectionId, index){
       const wrap = document.createElement("div");
       wrap.className = "spacer-block";
@@ -508,20 +532,36 @@
       wrap.appendChild(inner);
 
       if(state.editing){
+        const controls = document.createElement("div");
+        controls.className = "spacer-controls";
+
+        const dupBtn = document.createElement("button");
+        dupBtn.className = "icon-btn";
+        dupBtn.type = "button";
+        dupBtn.title = "Дублировать отступ";
+        dupBtn.innerHTML = ICON_DUPLICATE;
+        dupBtn.addEventListener("click", e => {
+          e.stopPropagation();
+          pushHistory();
+          data[sectionId].items.splice(index, 0, { __type: "spacer" });
+          commit();
+        });
+
         const delBtn = document.createElement("button");
-        delBtn.className = "spacer-delete";
+        delBtn.className = "icon-btn danger";
         delBtn.type = "button";
-        delBtn.textContent = "×";
         delBtn.title = "Удалить отступ";
+        delBtn.innerHTML = ICON_X;
         delBtn.addEventListener("click", e => {
           e.stopPropagation();
           pushHistory();
           data[sectionId].items.splice(index, 1);
           commit();
         });
-        wrap.appendChild(delBtn);
 
-        // drag spacer
+        controls.append(dupBtn, delBtn);
+        wrap.appendChild(controls);
+
         wrap.draggable = true;
         wrap.addEventListener("dragstart", e => {
           state.drag = { section: sectionId, index, zone: "active", isSpacer: true };
@@ -534,7 +574,6 @@
       return wrap;
     }
 
-    /* ── card element ── */
     function createCard(sectionId, index, item, inactive){
       const card = document.createElement("a");
       card.className = "card" + (state.editing ? " editing" : "") + (inactive ? " inactive-card" : "");
@@ -546,7 +585,7 @@
       card.dataset.index   = index;
 
       card.innerHTML = `
-        <button class="delete-x" type="button" title="Удалить" aria-label="Удалить карточку">×</button>
+        <button class="delete-x icon-btn danger" type="button" title="Удалить" aria-label="Удалить карточку">${ICON_X}</button>
         ${item.img ? `<img src="${item.img}" alt="" onerror="this.style.visibility='hidden'">` : `<span class="noicon">↗</span>`}
         <span class="name"></span>
         <small></small>
@@ -565,7 +604,6 @@
           deleteItem(sectionId, index);
         });
 
-        /* ─── drag & drop (precise positioning) ─── */
         card.addEventListener("dragstart", e => {
           state.drag = { section: sectionId, index, zone: inactive ? "inactive" : "active" };
           card.classList.add("drag-source");
@@ -600,10 +638,7 @@
           card.classList.remove("drag-over-before");
           card.classList.remove("drag-over-after");
 
-          const toSection  = sectionId;
-          const toIndex    = index;
-          const toInactive = inactive;
-          moveItemPrecise(state.drag.section, state.drag.index, toSection, toIndex, before, toInactive);
+          moveItemPrecise(state.drag.section, state.drag.index, sectionId, index, before, inactive);
           state.drag = null;
         });
       }
@@ -620,7 +655,6 @@
       return button;
     }
 
-    /* ── grid drop zone (for dropping into empty or onto zone background) ── */
     function bindGridDropZone(grid){
       grid.addEventListener("dragover", event => {
         if(!state.editing || !state.drag) return;
@@ -632,27 +666,24 @@
       });
       grid.addEventListener("drop", event => {
         if(!state.editing || !state.drag) return;
-        // only handle if dropped directly on grid background (not on a card)
         if(event.target !== grid) return;
         event.preventDefault();
         grid.classList.remove("dragover");
         const toSection  = grid.dataset.section;
         const toInactive = grid.dataset.zone === "inactive";
-        // append to end
         moveItemAppend(state.drag.section, state.drag.index, toSection, toInactive);
         state.drag = null;
       });
     }
 
-    /* ── move: precise insert before/after a target card ── */
     function moveItemPrecise(fromSection, fromIndex, toSection, toIndex, before, makeInactive){
       if(fromSection === toSection && fromIndex === toIndex) return;
       pushHistory();
       const item = data[fromSection].items.splice(fromIndex, 1)[0];
       if(makeInactive) item.inactive = true;
       else delete item.inactive;
+      if(fromSection !== toSection) applySpecialType(toSection, item);
 
-      // recalculate toIndex after splice (only if same section and fromIndex < toIndex)
       let adjustedTo = toIndex;
       if(fromSection === toSection && fromIndex < toIndex) adjustedTo--;
 
@@ -661,12 +692,12 @@
       commit();
     }
 
-    /* ── move: append to end of zone ── */
     function moveItemAppend(fromSection, fromIndex, toSection, makeInactive){
       pushHistory();
       const item = data[fromSection].items.splice(fromIndex, 1)[0];
       if(makeInactive) item.inactive = true;
       else delete item.inactive;
+      if(fromSection !== toSection) applySpecialType(toSection, item);
       data[toSection].items.push(item);
       commit();
     }
@@ -678,7 +709,6 @@
       commit();
     }
 
-    /* ── history ── */
     function pushHistory(){
       state.history.push(JSON.stringify({ data, order }));
       if(state.history.length > 50) state.history.shift();
@@ -703,7 +733,6 @@
 
     function commit(){ render(); saveToCloud(); }
 
-    /* ── editing mode ── */
     function setEditing(enabled){
       state.editing = enabled && state.isAdmin;
       document.body.classList.toggle("editing-mode", state.editing);
@@ -713,18 +742,16 @@
     }
     modeBtn.addEventListener("click", () => setEditing(!state.editing));
 
-    /* ── add section ── */
     addSectionBtn.addEventListener("click", () => {
       const title = prompt("Название новой категории:");
       if(!title || !title.trim()) return;
       const id = "sec-" + Date.now();
       pushHistory();
-      data[id] = { title: title.trim(), items: [], hidden: false };
+      data[id] = { title: title.trim(), items: [], hidden: false, specialType: "" };
       order.push(id);
       commit();
     });
 
-    /* ── section select for modal ── */
     function populateSectionSelect(){
       editSection.innerHTML = "";
       order.forEach(id => {
@@ -736,20 +763,30 @@
       });
     }
 
-    /* ── open card editor ── */
     function openEditor(sectionId, index, item){
       state.pending = { section: sectionId, index };
       state.modalOpen = true;
+      state.hrefUnlocked = index < 0;
       modalTitle.textContent = index >= 0 ? "Редактировать карточку" : "Новая карточка";
       editSection.value    = sectionId;
       editName.value       = item ? item.name     : "";
       editHref.value       = item ? item.href     : "";
       editImg.value        = item ? (item.img||"") : "";
       editNickname.value   = item ? getNickname(item) : "";
-      // toggle: active = NOT inactive
       editEnabled.checked  = item ? !isInactive(item) : true;
+
+      editHref.disabled = !state.hrefUnlocked;
+      editHrefUnlock.style.display = state.hrefUnlocked ? "none" : "flex";
+
       modalBackdrop.style.display = "flex";
     }
+
+    editHrefUnlock.addEventListener("click", () => {
+      state.hrefUnlocked = true;
+      editHref.disabled = false;
+      editHrefUnlock.style.display = "none";
+      editHref.focus();
+    });
 
     function closeModal(){
       state.modalOpen = false;
@@ -770,7 +807,7 @@
 
       pushHistory();
 
-      const item = { name, href, img };
+      let item = { name, href, img };
       if(nickname) item.nickname = nickname;
       if(!enabled) item.inactive = true;
 
@@ -779,9 +816,11 @@
           data[section].items[index] = item;
         } else {
           data[section].items.splice(index, 1);
+          item = applySpecialType(newSection, item);
           data[newSection].items.push(item);
         }
       } else {
+        item = applySpecialType(newSection, item);
         data[newSection].items.push(item);
       }
 
