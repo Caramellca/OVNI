@@ -16,9 +16,9 @@ body{margin:0;background:var(--bg);color:var(--txt);font:16px system-ui,-apple-s
 header{position:sticky;top:0;z-index:1000;isolation:isolate;padding:16px max(18px,calc(50% - 610px));background:#0d1526f7;backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
 h1{margin:0 0 11px;font-size:22px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
 #syncStatus{font-size:12px;color:var(--muted);font-weight:400}
-.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
-.toolbar-left{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.toolbar-right{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-left:auto}
+.toolbar{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin-bottom:12px}
+.toolbar-left{display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+.toolbar-right{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin-left:auto}
 button{padding:8px 12px 10px;color:var(--txt);background:#1b3355;border:1px solid var(--line);border-radius:10px;cursor:pointer;font:inherit;display:inline-flex;align-items:center;justify-content:center;line-height:1}
 main{position:relative;z-index:1;max-width:1220px;margin:0 auto;padding:22px 18px 48px}
 section{margin-bottom:28px;scroll-margin-top:108px}
@@ -96,9 +96,10 @@ input:-webkit-autofill:active{
   caret-color:var(--txt);
   transition:background-color 5000s ease-in-out 0s;
 }
-.modal-switch{width:64px;height:26px;border-radius:13px;padding:0 7px;display:flex;align-items:center;justify-content:space-between;gap:5px;cursor:pointer;border:0;font-size:11px;font-weight:600;letter-spacing:.02em;flex-shrink:0;transition:background .18s ease}
+.modal-switch{width:64px;height:26px;border-radius:13px;padding:0 7px;display:flex;align-items:center;justify-content:space-between;gap:5px;cursor:pointer;border:0;font-size:11px;font-weight:500;letter-spacing:.02em;flex-shrink:0;transition:background .18s ease}
 .modal-switch.on{background:var(--accent);color:#0d1526;flex-direction:row}
 .modal-switch.off{background:var(--line);color:var(--muted);flex-direction:row-reverse}
+.switch-label{display:inline-flex;align-items:center;line-height:1;padding:2px 0 0}
 .switch-dot{width:14px;height:14px;border-radius:50%;background:#fff;flex-shrink:0}
 .modal-switch.off .switch-dot{background:var(--muted)}
 .split-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -108,13 +109,13 @@ input:-webkit-autofill:active{
 .modal-actions button{padding:10px 16px;border-radius:10px;font-size:14px}
 #saveEdit{background:var(--accent);color:#0d1526;border-color:var(--accent)}
 #saveEdit:hover{background:#8fc2ff}
-.undo-redo{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-#undoBtn,#redoBtn{font-size:14px;padding:8px 14px 10px}
+.undo-redo{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-left:6px}
 #modeBtn.save-mode{color:#111;background:var(--edit);border-color:var(--edit)}
 #loginBtn.logged-in{background:#1f5c34;border-color:#2c7a45}
 #addSectionBtn{display:none}
 body.editing-mode #addSectionBtn{display:inline-flex}
-#addSpacerToolbarBtn{display:none}
+#addSpacerToolbarBtn{display:none;width:40px;height:40px;padding:0;cursor:grab}
+#addSpacerToolbarBtn:active{cursor:grabbing}
 body.editing-mode #addSpacerToolbarBtn{display:inline-flex}
 @media (max-width:620px){.toolbar{align-items:stretch}.toolbar-right{margin-left:0;width:100%;justify-content:flex-start}}
 @media (max-width:460px){.grid{grid-template-columns:1fr}.split-row{grid-template-columns:1fr}}
@@ -134,7 +135,7 @@ body.editing-mode #addSpacerToolbarBtn{display:inline-flex}
     </div>
     <div class="toolbar-right">
       <button id="addSectionBtn" type="button">+ Новая категория</button>
-      <button id="addSpacerToolbarBtn" type="button">+ Разделитель</button>
+      <button id="addSpacerToolbarBtn" type="button" title="Перетащите в нужное место категории" draggable="true"></button>
     </div>
   </div>
 </header>
@@ -143,7 +144,7 @@ body.editing-mode #addSpacerToolbarBtn{display:inline-flex}
 
 <div class="modal-backdrop" id="loginModal">
   <div class="modal">
-    <h3>Вход администратора</h3>
+    <h3>Вход только для администратора</h3>
     <div class="form-row"><label>Email</label><input id="loginEmail" type="email" autocomplete="username"></div>
     <div class="form-row"><label>Пароль</label><input id="loginPassword" type="password" autocomplete="current-password"></div>
     <div class="modal-actions">
@@ -212,7 +213,7 @@ const firebaseConfig = {
     appId: "1:916848124747:web:7fa20edb5701619498fece",
     measurementId: "G-ZCKKVMYFVN"
 }
-
+  
 const ADMIN_UID = "xOqvdkpV57U8BSfnjePCRJRiaOi2";
 const DOC_PATH = ["cards","board"];
 
@@ -281,6 +282,8 @@ const ICON_EYE_OPEN = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewB
 const ICON_EYE_CLOSED = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88"/></svg>`;
 const ICON_X = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>`;
 const ICON_DUPLICATE = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><rect x="3" y="3" width="13" height="13" rx="2.5"/><rect x="8" y="8" width="13" height="13" rx="2.5" fill="var(--panel)"/></svg>`;
+const ICON_SPACER_DRAG = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 2.5v4.5m0 0-2-2m2 2 2-2M12 21.5V17m0 0-2 2m2-2 2 2M4.5 12h15"/></svg>`;
+addSpacerToolbarBtn.innerHTML = ICON_SPACER_DRAG;
 
 /* helpers */
 function isInactive(item){ return item.inactive === true; }
@@ -364,13 +367,11 @@ loginSubmit.addEventListener("click", async ()=>{
   }catch(e){ alert(e.message); }
 });
 
-addSpacerToolbarBtn.addEventListener("click", ()=>{
-  const firstId = order.find(id=>data[id]);
-  if(!firstId) return;
-  pushHistory();
-  data[firstId].items.push({ type:"spacer" });
-  commit();
+addSpacerToolbarBtn.addEventListener("dragstart", e=>{
+  state.drag = { fromToolbar: true };
+  e.dataTransfer.effectAllowed = "copy";
 });
+addSpacerToolbarBtn.addEventListener("dragend", ()=>{ state.drag = null; });
 
 /* RENDER */
 function render(){
@@ -564,7 +565,14 @@ function createCard(sectionId, index, item, inactive){
       const rect = card.getBoundingClientRect();
       const before = e.clientX < rect.left + rect.width/2;
       card.classList.remove("drag-over-before","drag-over-after");
-      moveItemPrecise(state.drag.section, state.drag.index, sectionId, index, before);
+      if(state.drag.fromToolbar){
+        pushHistory();
+        const insertAt = before ? index : index + 1;
+        data[sectionId].items.splice(insertAt, 0, { type:"spacer" });
+        commit();
+      }else{
+        moveItemPrecise(state.drag.section, state.drag.index, sectionId, index, before);
+      }
       state.drag = null;
     });
   }
@@ -595,7 +603,13 @@ function bindGridDropZone(grid){
     event.preventDefault();
     grid.classList.remove("dragover");
     const toSection = grid.dataset.section;
-    moveItemAppend(state.drag.section, state.drag.index, toSection);
+    if(state.drag.fromToolbar){
+      pushHistory();
+      data[toSection].items.push({ type:"spacer" });
+      commit();
+    }else{
+      moveItemAppend(state.drag.section, state.drag.index, toSection);
+    }
     state.drag = null;
   });
 }
