@@ -27,15 +27,37 @@
     section{margin-bottom:28px;scroll-margin-top:108px;}
     h2{display:flex;align-items:center;gap:10px;margin:0 0 12px;font-size:20px;}
     em{color:var(--muted);font-size:13px;font-style:normal;font-weight:500;}
+    /* section hidden from users */
+    section.section-hidden-user{display:none;}
+    /* admin sees hidden sections with a visual hint */
+    body.editing-mode section.section-hidden-user{display:block;opacity:0.55;}
+    body.editing-mode section.section-hidden-user h2::after{content:" 🚫";font-size:14px;}
+
     .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(188px,1fr));gap:10px;}
     .grid.inactive{margin-top:8px;}
+    /* spacer block */
+    .spacer-block{grid-column:1/-1;height:18px;position:relative;}
+    .spacer-block-inner{width:100%;height:100%;border-radius:6px;background:transparent;transition:background .15s;}
+    body.editing-mode .spacer-block-inner{background:rgba(125,182,255,.08);border:1px dashed var(--line);cursor:grab;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--muted);}
+    body.editing-mode .spacer-block-inner::before{content:"≡ отступ";}
+    .spacer-delete{position:absolute;top:-8px;right:-8px;z-index:5;display:none;align-items:center;justify-content:center;width:22px;height:22px;padding:0;color:var(--danger);background:var(--bg);border:0;border-radius:50%;cursor:pointer;font-size:18px;font-weight:700;line-height:1;}
+    body.editing-mode .spacer-delete{display:flex;}
+
     .grid.inactive:empty:not(.is-collapsed){display:flex;align-items:center;justify-content:center;min-height:78px;padding:10px;border:1px dashed var(--line);border-radius:11px;color:var(--muted);font-size:13px;transition:border-color .15s ease,color .15s ease,background .15s ease;}
     .grid.inactive:empty:not(.is-collapsed)::before{content:"Перетащите карточку сюда";pointer-events:none;}
     .grid.inactive:empty:not(.is-collapsed).dragover{border-color:var(--edit);background:rgba(255,204,102,.06);color:var(--edit);box-shadow:0 0 0 2px rgba(255,204,102,.18) inset;}
     .grid.inactive.is-collapsed{display:none;}
+
+    /* inactive section hidden from users */
+    .subhead.admin-only{display:none;}
+    body.editing-mode .subhead.admin-only{display:flex;}
+
     .card,.add-card{position:relative;display:grid;grid-template-columns:56px 1fr;grid-template-rows:1fr auto;gap:0 9px;align-items:center;min-height:65px;padding:9px;color:var(--txt);background:var(--panel);border:1px solid var(--line);border-radius:11px;text-decoration:none;transition:.15s;user-select:none;}
     .card:hover,.add-card:hover{transform:translateY(-2px);background:#1c304e;border-color:var(--accent);}
     .card.editing{outline:none;}
+    .card.drag-source{opacity:.4;}
+    .card.drag-over-before{box-shadow:-3px 0 0 0 var(--edit),inset 3px 0 0 0 var(--edit);}
+    .card.drag-over-after{box-shadow:3px 0 0 0 var(--edit),inset -3px 0 0 0 var(--edit);}
     .card.dragover,.grid.dragover{border-color:var(--edit);box-shadow:0 0 0 2px rgba(255,204,102,.25) inset;}
     .card img,.noicon{grid-row:1/3;width:56px;height:56px;object-fit:contain;}
     .noicon{display:grid;place-items:center;color:var(--accent);font-size:24px;}
@@ -51,11 +73,25 @@
     .add-card .plus{color:#dfe8ff;font-size:28px;font-weight:700;line-height:1;}
     .add-card.single{grid-template-columns:1fr;grid-template-rows:1fr;min-height:65px;}
     .add-card.single .plus{grid-row:1/3;}
+    .add-spacer-btn{opacity:.55;cursor:pointer;align-items:center;justify-content:center;min-height:40px;font-size:20px;}
+
     .subhead.toggleable{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:42px;margin-top:16px;padding:0 2px 9px;background:transparent;border:0;border-bottom:1px solid var(--line);border-radius:0;cursor:pointer;user-select:none;}
     .subhead .subtitle{color:var(--muted);font-size:14px;font-weight:400;transition:color .18s ease;}
     .subhead .arrow{display:inline-block;color:var(--accent);font-size:15px;line-height:1;transform:rotate(0deg);transition:transform .26s cubic-bezier(.2,.8,.2,1),color .18s ease;will-change:transform;}
     .subhead.toggleable:hover .subtitle{color:var(--accent);}
     .subhead.toggleable.is-collapsed .arrow{transform:rotate(-90deg);}
+
+    /* section title edit in editing mode */
+    .section-title-text{cursor:default;}
+    body.editing-mode .section-title-text{cursor:text;border-bottom:1px dashed var(--line);padding-bottom:1px;}
+    body.editing-mode .section-title-text:focus{outline:none;border-bottom-color:var(--accent);}
+    .section-controls{display:none;gap:6px;align-items:center;margin-left:8px;}
+    body.editing-mode .section-controls{display:flex;}
+    .section-btn{padding:4px 8px;font-size:12px;border-radius:7px;}
+    .section-btn.hide-btn{background:transparent;border-color:var(--muted);color:var(--muted);}
+    .section-btn.hide-btn.is-hidden{border-color:var(--edit);color:var(--edit);}
+    .section-btn.delete-section-btn{background:transparent;border-color:var(--danger);color:var(--danger);}
+
     .modal-backdrop{position:fixed;inset:0;z-index:2000;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(6,10,18,.72);}
     .modal{width:min(560px,100%);padding:16px;background:#111b2d;border:1px solid var(--line);border-radius:16px;box-shadow:0 20px 80px rgba(0,0,0,.45);}
     .modal h3{margin:0 0 12px;font-size:18px;}
@@ -75,6 +111,21 @@
     #modeBtn.save-mode{color:#111;background:var(--edit);border-color:var(--edit);}
     #loginBtn.logged-in{background:#1f5c34;border-color:#2c7a45;}
     #syncStatus{font-size:12px;color:var(--muted);margin-left:6px;}
+
+    /* toggle switch */
+    .toggle-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+    .toggle-row label{color:var(--muted);font-size:13px;margin:0;}
+    .toggle{position:relative;display:inline-block;width:42px;height:24px;flex-shrink:0;}
+    .toggle input{opacity:0;width:0;height:0;}
+    .toggle-slider{position:absolute;inset:0;background:#2d3e5a;border-radius:24px;cursor:pointer;transition:.2s;}
+    .toggle-slider:before{position:absolute;content:"";height:18px;width:18px;left:3px;bottom:3px;background:var(--muted);border-radius:50%;transition:.2s;}
+    .toggle input:checked + .toggle-slider{background:#2a6e42;}
+    .toggle input:checked + .toggle-slider:before{transform:translateX(18px);background:#4ade80;}
+
+    /* add section button */
+    #addSectionBtn{display:none;margin-top:8px;}
+    body.editing-mode #addSectionBtn{display:inline-flex;}
+
     @media(max-width:620px){.toolbar{align-items:stretch;}.undo-redo{width:100%;margin-left:0;}}
     @media(max-width:460px){.grid{grid-template-columns:1fr;}.input-row{grid-template-columns:1fr;}}
   </style>
@@ -83,7 +134,6 @@
 <body class="">
   <header>
     <h1>В поисках ИНЛО</h1>
-
     <div class="toolbar">
       <button id="loginBtn" type="button">Войти</button>
       <button id="modeBtn" type="button" style="display:none;">Редактировать</button>
@@ -94,18 +144,14 @@
   </header>
 
   <main id="main"></main>
+  <button id="addSectionBtn" type="button">+ Добавить категорию</button>
 
+  <!-- Login modal -->
   <div class="modal-backdrop" id="loginModal">
     <div class="modal">
       <h3>Вход администратора</h3>
-      <div class="form-row">
-        <label>Email</label>
-        <input id="loginEmail" type="email" autocomplete="username">
-      </div>
-      <div class="form-row">
-        <label>Пароль</label>
-        <input id="loginPassword" type="password" autocomplete="current-password">
-      </div>
+      <div class="form-row"><label>Email</label><input id="loginEmail" type="email" autocomplete="username"></div>
+      <div class="form-row"><label>Пароль</label><input id="loginPassword" type="password" autocomplete="current-password"></div>
       <div class="modal-actions">
         <button id="loginCancel" type="button">Отмена</button>
         <button id="loginSubmit" type="button">Войти</button>
@@ -113,30 +159,24 @@
     </div>
   </div>
 
+  <!-- Card edit modal -->
   <div class="modal-backdrop" id="modalBackdrop">
     <div class="modal">
       <h3 id="modalTitle">Новая карточка</h3>
+      <div class="form-row"><label>Раздел</label><select id="editSection"></select></div>
+      <div class="form-row"><label>Название</label><input id="editName" type="text"></div>
       <div class="form-row">
-        <label>Раздел</label>
-        <select id="editSection"></select>
-      </div>
-      <div class="form-row">
-        <label>Название</label>
-        <input id="editName" type="text">
-      </div>
-      <div class="form-row">
-        <div class="input-row">
-          <label style="grid-column:1/3;">Ссылка</label>
-        </div>
+        <div class="input-row"><label style="grid-column:1/3;">Ссылка</label></div>
         <input id="editHref" type="text">
       </div>
-      <div class="form-row">
-        <label>Картинка (URL)</label>
-        <input id="editImg" type="text">
-      </div>
-      <div class="form-row">
-        <label>Никнейм (необязательно)</label>
-        <input id="editNickname" type="text">
+      <div class="form-row"><label>Картинка (URL)</label><input id="editImg" type="text"></div>
+      <div class="form-row"><label>Никнейм (необязательно)</label><input id="editNickname" type="text"></div>
+      <div class="toggle-row">
+        <label class="toggle">
+          <input type="checkbox" id="editEnabled" checked>
+          <span class="toggle-slider"></span>
+        </label>
+        <label for="editEnabled" style="cursor:pointer;color:var(--txt);">Карточка активна</label>
       </div>
       <div class="modal-actions">
         <button id="cancelEdit" type="button">Отмена</button>
@@ -148,19 +188,15 @@
 
   <!-- Firebase SDK -->
   <script type="module">
-	// Import the functions you need from the SDKs you need
-	import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-	import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-analytics.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-analytics.js";
     import {
       getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut
     } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
     import {
-      getFirestore, doc, getDoc, setDoc, onSnapshot
+      getFirestore, doc, setDoc, onSnapshot
     } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
-	// TODO: Add SDKs for Firebase products that you want to use
-	// https://firebase.google.com/docs/web/setup#available-libraries
 
-    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
     const firebaseConfig = {
     apiKey: "AIzaSyAjIY9iH0gZT9WalyKTUh6zNinBNvt9aqQ",
     authDomain: "ovni-b5823.firebaseapp.com",
@@ -172,23 +208,17 @@
     measurementId: "G-ZCKKVMYFVN"
     };
 
-    // Вставьте сюда свой UID (после первого входа он выведется в консоль браузера)
     const ADMIN_UID = "xOqvdkpV57U8BSfnjePCRJRiaOi2";
-
-    const DOC_PATH = ["cards", "board"]; // collection "cards", document "board"
+    const DOC_PATH = ["cards", "board"];
 
     const app = initializeApp(firebaseConfig);
-	const analytics = getAnalytics(app);
+    const analytics = getAnalytics(app);
     const auth = getAuth(app);
     const db = getFirestore(app);
     const boardRef = doc(db, DOC_PATH[0], DOC_PATH[1]);
 
-    // -------- Начальные данные (используются только при первом запуске, если документа ещё нет) --------
     const seedData = {
-      "predmety-chr": {
-        title: "Предметы ЧР",
-        items: []
-      }
+      "predmety-chr": { title: "Предметы ЧР", items: [], hidden: false }
     };
 
     let data = {};
@@ -202,45 +232,47 @@
       collapsedInactive: {},
       pending: null,
       modalOpen: false,
-      drag: null
+      drag: null          // { section, index, zone }
     };
 
-    const main = document.getElementById("main");
-    const modeBtn = document.getElementById("modeBtn");
-    const undoBtn = document.getElementById("undoBtn");
-    const redoBtn = document.getElementById("redoBtn");
-    const loginBtn = document.getElementById("loginBtn");
+    const main       = document.getElementById("main");
+    const modeBtn    = document.getElementById("modeBtn");
+    const undoBtn    = document.getElementById("undoBtn");
+    const redoBtn    = document.getElementById("redoBtn");
+    const loginBtn   = document.getElementById("loginBtn");
     const syncStatus = document.getElementById("syncStatus");
+    const addSectionBtn = document.getElementById("addSectionBtn");
 
-    const loginModal = document.getElementById("loginModal");
-    const loginEmail = document.getElementById("loginEmail");
+    const loginModal    = document.getElementById("loginModal");
+    const loginEmail    = document.getElementById("loginEmail");
     const loginPassword = document.getElementById("loginPassword");
-    const loginSubmit = document.getElementById("loginSubmit");
-    const loginCancel = document.getElementById("loginCancel");
+    const loginSubmit   = document.getElementById("loginSubmit");
+    const loginCancel   = document.getElementById("loginCancel");
 
     const modalBackdrop = document.getElementById("modalBackdrop");
-    const modalTitle = document.getElementById("modalTitle");
-    const editSection = document.getElementById("editSection");
-    const editName = document.getElementById("editName");
-    const editHref = document.getElementById("editHref");
-    const editImg = document.getElementById("editImg");
-    const editNickname = document.getElementById("editNickname");
+    const modalTitle    = document.getElementById("modalTitle");
+    const editSection   = document.getElementById("editSection");
+    const editName      = document.getElementById("editName");
+    const editHref      = document.getElementById("editHref");
+    const editImg       = document.getElementById("editImg");
+    const editNickname  = document.getElementById("editNickname");
+    const editEnabled   = document.getElementById("editEnabled");
 
+    /* ── helpers ── */
     function isInactive(item){ return item.inactive === true; }
+    function isSpacer(item)  { return item.__type === "spacer"; }
 
     function getCardId(href){
       try { return new URL(href).searchParams.get("id") || ""; }
       catch { return ""; }
     }
-
     function getNickname(item){ return item.nickname || ""; }
-
     function getCardSubtitle(item){
-      const nickname = getNickname(item).trim();
-      return nickname ? nickname : `#${getCardId(item.href)}`;
+      const nick = getNickname(item).trim();
+      return nick ? nick : "#" + getCardId(item.href);
     }
 
-    // -------- Сохранение в Firestore (автосохранение) --------
+    /* ── save ── */
     let saveTimer = null;
     async function saveToCloud(){
       syncStatus.textContent = "Сохранение...";
@@ -249,14 +281,14 @@
         try {
           await setDoc(boardRef, { data, order, updatedAt: Date.now() });
           syncStatus.textContent = "Сохранено";
-        } catch (e) {
+        } catch(e){
           console.error(e);
           syncStatus.textContent = "Ошибка сохранения";
         }
-      }, 400); // небольшая задержка, чтобы не слать запрос на каждое микро-изменение
+      }, 400);
     }
 
-    // -------- Подписка на изменения в реальном времени --------
+    /* ── realtime sync ── */
     let applyingRemote = false;
     onSnapshot(boardRef, snap => {
       if(!snap.exists()){
@@ -265,7 +297,7 @@
       }
       const remote = snap.data();
       applyingRemote = true;
-      data = remote.data || {};
+      data  = remote.data  || {};
       order = remote.order || Object.keys(data);
       render();
       applyingRemote = false;
@@ -275,24 +307,21 @@
       syncStatus.textContent = "Нет соединения";
     });
 
-    // -------- Авторизация --------
+    /* ── auth ── */
     onAuthStateChanged(auth, user => {
       state.isAdmin = !!user && user.uid === ADMIN_UID;
       loginBtn.textContent = state.isAdmin ? "Выйти" : "Войти";
       loginBtn.classList.toggle("logged-in", state.isAdmin);
-      modeBtn.style.display = state.isAdmin ? "" : "none";
-      undoBtn.style.display = state.isAdmin ? "" : "none";
-      redoBtn.style.display = state.isAdmin ? "" : "none";
-      if(user) console.log("Ваш UID (вставьте его в ADMIN_UID):", user.uid);
+      modeBtn.style.display  = state.isAdmin ? "" : "none";
+      undoBtn.style.display  = state.isAdmin ? "" : "none";
+      redoBtn.style.display  = state.isAdmin ? "" : "none";
+      if(user) console.log("UID:", user.uid);
       if(!state.isAdmin) setEditing(false);
     });
 
     loginBtn.addEventListener("click", () => {
-      if(state.isAdmin){
-        signOut(auth);
-      } else {
-        loginModal.style.display = "flex";
-      }
+      if(state.isAdmin) signOut(auth);
+      else loginModal.style.display = "flex";
     });
     loginCancel.addEventListener("click", () => loginModal.style.display = "none");
     loginSubmit.addEventListener("click", async () => {
@@ -300,38 +329,102 @@
         await signInWithEmailAndPassword(auth, loginEmail.value.trim(), loginPassword.value);
         loginModal.style.display = "none";
         loginEmail.value = ""; loginPassword.value = "";
-      } catch (e) {
-        alert("Ошибка входа: " + e.message);
-      }
+      } catch(e){ alert("Ошибка входа: " + e.message); }
     });
 
-    // -------- Рендер --------
+    /* ═══════════════════════════════════════════
+       RENDER
+    ═══════════════════════════════════════════ */
     function render(){
       main.innerHTML = "";
 
       order.forEach(id => {
         if(!data[id]) return;
+        const sec = data[id];
+
+        // hide from non-admins if section is hidden
+        if(sec.hidden && !state.isAdmin) return;
+
         const section = document.createElement("section");
         section.id = id;
+        if(sec.hidden) section.classList.add("section-hidden-user");
 
-        const title = document.createElement("h2");
-        title.innerHTML = `${data[id].title} <em>${data[id].items.length}</em>`;
-        section.appendChild(title);
+        /* ── section header ── */
+        const h2 = document.createElement("h2");
 
+        const titleSpan = document.createElement("span");
+        titleSpan.className = "section-title-text";
+        titleSpan.contentEditable = state.editing ? "true" : "false";
+        titleSpan.spellcheck = false;
+        titleSpan.textContent = sec.title;
+        if(state.editing){
+          titleSpan.addEventListener("blur", () => {
+            const newTitle = titleSpan.textContent.trim();
+            if(newTitle && newTitle !== sec.title){
+              pushHistory();
+              data[id].title = newTitle;
+              saveToCloud();
+            }
+          });
+          titleSpan.addEventListener("keydown", e => {
+            if(e.key === "Enter"){ e.preventDefault(); titleSpan.blur(); }
+          });
+        }
+
+        const countEm = document.createElement("em");
+        countEm.textContent = sec.items.filter(it => !isSpacer(it)).length;
+
+        const sectionControls = document.createElement("div");
+        sectionControls.className = "section-controls";
+
+        if(state.editing){
+          const hideBtn = document.createElement("button");
+          hideBtn.className = "section-btn hide-btn" + (sec.hidden ? " is-hidden" : "");
+          hideBtn.type = "button";
+          hideBtn.title = sec.hidden ? "Показать категорию пользователям" : "Скрыть от пользователей";
+          hideBtn.textContent = sec.hidden ? "🚫 Скрытая" : "👁 Видимая";
+          hideBtn.addEventListener("click", () => {
+            pushHistory();
+            data[id].hidden = !data[id].hidden;
+            commit();
+          });
+
+          const delBtn = document.createElement("button");
+          delBtn.className = "section-btn delete-section-btn";
+          delBtn.type = "button";
+          delBtn.textContent = "✕";
+          delBtn.title = "Удалить категорию";
+          delBtn.addEventListener("click", () => {
+            if(!confirm(`Удалить категорию "${sec.title}" со всеми карточками?`)) return;
+            pushHistory();
+            delete data[id];
+            order.splice(order.indexOf(id), 1);
+            commit();
+          });
+
+          sectionControls.append(hideBtn, delBtn);
+        }
+
+        h2.append(titleSpan, countEm, sectionControls);
+        section.appendChild(h2);
+
+        /* ── active grid ── */
         const activeGrid = document.createElement("div");
         activeGrid.className = "grid";
         activeGrid.dataset.section = id;
         activeGrid.dataset.zone = "active";
 
-        const inactiveWrap = document.createElement("div");
-        inactiveWrap.className = "subhead toggleable";
-        const inactiveTitle = document.createElement("span");
-        inactiveTitle.className = "subtitle";
-        inactiveTitle.textContent = "Неактивные";
+        /* ── inactive section (admin-only toggle) ── */
+        const inactiveWrap = document.createElement("button");
+        inactiveWrap.className = "subhead toggleable admin-only";
+        inactiveWrap.type = "button";
+        const inactiveTitleSpan = document.createElement("span");
+        inactiveTitleSpan.className = "subtitle";
+        inactiveTitleSpan.textContent = "Неактивные";
         const inactiveArrow = document.createElement("span");
         inactiveArrow.className = "arrow";
         inactiveArrow.textContent = "▼";
-        inactiveWrap.append(inactiveTitle, inactiveArrow);
+        inactiveWrap.append(inactiveTitleSpan, inactiveArrow);
 
         const inactiveGrid = document.createElement("div");
         inactiveGrid.className = "grid inactive";
@@ -351,7 +444,15 @@
           inactiveGrid.classList.toggle("is-collapsed", nowCollapsed);
         });
 
-        data[id].items.forEach((item, index) => {
+        /* ── populate cards ── */
+        sec.items.forEach((item, index) => {
+          if(isSpacer(item)){
+            if(!isInactive(item)){
+              activeGrid.appendChild(createSpacerEl(id, index));
+            }
+            // spacers in inactive zone are skipped (no need)
+            return;
+          }
           const card = createCard(id, index, item, isInactive(item));
           if(isInactive(item)) inactiveGrid.appendChild(card);
           else activeGrid.appendChild(card);
@@ -359,6 +460,27 @@
 
         if(state.editing){
           activeGrid.appendChild(createAddCard(id));
+          // add spacer button
+          const addSpacerBtn = document.createElement("button");
+          addSpacerBtn.type = "button";
+          addSpacerBtn.className = "add-card single add-spacer-btn";
+          addSpacerBtn.title = "Добавить пустой отступ";
+          addSpacerBtn.innerHTML = "<span>⟷</span>";
+          addSpacerBtn.addEventListener("click", () => {
+            pushHistory();
+            // insert spacer before add-card (i.e. at end of active items)
+            const insertIdx = sec.items.filter(it => !isInactive(it)).length;
+            // find real index: count non-inactive items
+            let realIdx = 0, count = 0;
+            for(let i = 0; i < sec.items.length; i++){
+              if(!isInactive(sec.items[i])) count++;
+              if(count === insertIdx){ realIdx = i + 1; break; }
+              realIdx = sec.items.length;
+            }
+            data[id].items.splice(realIdx, 0, { __type: "spacer" });
+            commit();
+          });
+          activeGrid.appendChild(addSpacerBtn);
         }
 
         bindGridDropZone(activeGrid);
@@ -370,9 +492,49 @@
         main.appendChild(section);
       });
 
+      // Add section button position (after main)
       populateSectionSelect();
     }
 
+    /* ── spacer element ── */
+    function createSpacerEl(sectionId, index){
+      const wrap = document.createElement("div");
+      wrap.className = "spacer-block";
+      wrap.dataset.section = sectionId;
+      wrap.dataset.index = index;
+
+      const inner = document.createElement("div");
+      inner.className = "spacer-block-inner";
+      wrap.appendChild(inner);
+
+      if(state.editing){
+        const delBtn = document.createElement("button");
+        delBtn.className = "spacer-delete";
+        delBtn.type = "button";
+        delBtn.textContent = "×";
+        delBtn.title = "Удалить отступ";
+        delBtn.addEventListener("click", e => {
+          e.stopPropagation();
+          pushHistory();
+          data[sectionId].items.splice(index, 1);
+          commit();
+        });
+        wrap.appendChild(delBtn);
+
+        // drag spacer
+        wrap.draggable = true;
+        wrap.addEventListener("dragstart", e => {
+          state.drag = { section: sectionId, index, zone: "active", isSpacer: true };
+          wrap.style.opacity = "0.4";
+          e.dataTransfer.effectAllowed = "move";
+        });
+        wrap.addEventListener("dragend", () => { wrap.style.opacity = ""; state.drag = null; });
+      }
+
+      return wrap;
+    }
+
+    /* ── card element ── */
     function createCard(sectionId, index, item, inactive){
       const card = document.createElement("a");
       card.className = "card" + (state.editing ? " editing" : "") + (inactive ? " inactive-card" : "");
@@ -381,7 +543,7 @@
       card.rel = "noopener";
       card.draggable = state.editing;
       card.dataset.section = sectionId;
-      card.dataset.index = index;
+      card.dataset.index   = index;
 
       card.innerHTML = `
         <button class="delete-x" type="button" title="Удалить" aria-label="Удалить карточку">×</button>
@@ -402,11 +564,48 @@
           event.stopPropagation();
           deleteItem(sectionId, index);
         });
-        card.addEventListener("dragstart", () => {
-          state.drag = { section: sectionId, index };
-          card.classList.add("dragover");
+
+        /* ─── drag & drop (precise positioning) ─── */
+        card.addEventListener("dragstart", e => {
+          state.drag = { section: sectionId, index, zone: inactive ? "inactive" : "active" };
+          card.classList.add("drag-source");
+          e.dataTransfer.effectAllowed = "move";
         });
-        card.addEventListener("dragend", () => card.classList.remove("dragover"));
+        card.addEventListener("dragend", () => {
+          card.classList.remove("drag-source");
+          card.classList.remove("drag-over-before");
+          card.classList.remove("drag-over-after");
+        });
+
+        card.addEventListener("dragover", e => {
+          if(!state.drag) return;
+          e.preventDefault();
+          e.stopPropagation();
+          const rect = card.getBoundingClientRect();
+          const half = rect.left + rect.width / 2;
+          card.classList.toggle("drag-over-before", e.clientX < half);
+          card.classList.toggle("drag-over-after",  e.clientX >= half);
+        });
+        card.addEventListener("dragleave", () => {
+          card.classList.remove("drag-over-before");
+          card.classList.remove("drag-over-after");
+        });
+        card.addEventListener("drop", e => {
+          if(!state.drag) return;
+          e.preventDefault();
+          e.stopPropagation();
+          const rect = card.getBoundingClientRect();
+          const half = rect.left + rect.width / 2;
+          const before = e.clientX < half;
+          card.classList.remove("drag-over-before");
+          card.classList.remove("drag-over-after");
+
+          const toSection  = sectionId;
+          const toIndex    = index;
+          const toInactive = inactive;
+          moveItemPrecise(state.drag.section, state.drag.index, toSection, toIndex, before, toInactive);
+          state.drag = null;
+        });
       }
 
       return card;
@@ -421,29 +620,53 @@
       return button;
     }
 
+    /* ── grid drop zone (for dropping into empty or onto zone background) ── */
     function bindGridDropZone(grid){
       grid.addEventListener("dragover", event => {
         if(!state.editing || !state.drag) return;
         event.preventDefault();
         grid.classList.add("dragover");
       });
-      grid.addEventListener("dragleave", () => grid.classList.remove("dragover"));
+      grid.addEventListener("dragleave", e => {
+        if(!grid.contains(e.relatedTarget)) grid.classList.remove("dragover");
+      });
       grid.addEventListener("drop", event => {
         if(!state.editing || !state.drag) return;
+        // only handle if dropped directly on grid background (not on a card)
+        if(event.target !== grid) return;
         event.preventDefault();
         grid.classList.remove("dragover");
-        const toSection = grid.dataset.section;
-        const toZone = grid.dataset.zone;
-        moveItem(state.drag.section, state.drag.index, toSection, toZone === "inactive");
+        const toSection  = grid.dataset.section;
+        const toInactive = grid.dataset.zone === "inactive";
+        // append to end
+        moveItemAppend(state.drag.section, state.drag.index, toSection, toInactive);
         state.drag = null;
       });
     }
 
-    function moveItem(fromSection, fromIndex, toSection, makeInactive){
+    /* ── move: precise insert before/after a target card ── */
+    function moveItemPrecise(fromSection, fromIndex, toSection, toIndex, before, makeInactive){
+      if(fromSection === toSection && fromIndex === toIndex) return;
       pushHistory();
-	  const item = data[fromSection].items.splice(fromIndex, 1)[0];
-	  if(makeInactive) item.inactive = true;
-	  else delete item.inactive;
+      const item = data[fromSection].items.splice(fromIndex, 1)[0];
+      if(makeInactive) item.inactive = true;
+      else delete item.inactive;
+
+      // recalculate toIndex after splice (only if same section and fromIndex < toIndex)
+      let adjustedTo = toIndex;
+      if(fromSection === toSection && fromIndex < toIndex) adjustedTo--;
+
+      const insertAt = before ? adjustedTo : adjustedTo + 1;
+      data[toSection].items.splice(Math.max(0, insertAt), 0, item);
+      commit();
+    }
+
+    /* ── move: append to end of zone ── */
+    function moveItemAppend(fromSection, fromIndex, toSection, makeInactive){
+      pushHistory();
+      const item = data[fromSection].items.splice(fromIndex, 1)[0];
+      if(makeInactive) item.inactive = true;
+      else delete item.inactive;
       data[toSection].items.push(item);
       commit();
     }
@@ -455,20 +678,18 @@
       commit();
     }
 
-    // -------- История (undo/redo) --------
+    /* ── history ── */
     function pushHistory(){
       state.history.push(JSON.stringify({ data, order }));
       if(state.history.length > 50) state.history.shift();
       state.future = [];
     }
-
     function restoreFrom(snapshot){
-      const restored = JSON.parse(snapshot);
-      data = restored.data;
-      order = restored.order;
+      const r = JSON.parse(snapshot);
+      data  = r.data;
+      order = r.order;
       commit();
     }
-
     undoBtn.addEventListener("click", () => {
       if(!state.history.length) return;
       state.future.push(JSON.stringify({ data, order }));
@@ -480,12 +701,9 @@
       restoreFrom(state.future.pop());
     });
 
-    function commit(){
-      render();
-      saveToCloud();
-    }
+    function commit(){ render(); saveToCloud(); }
 
-    // -------- Режим редактирования --------
+    /* ── editing mode ── */
     function setEditing(enabled){
       state.editing = enabled && state.isAdmin;
       document.body.classList.toggle("editing-mode", state.editing);
@@ -495,10 +713,22 @@
     }
     modeBtn.addEventListener("click", () => setEditing(!state.editing));
 
-    // -------- Модалка добавления/редактирования --------
+    /* ── add section ── */
+    addSectionBtn.addEventListener("click", () => {
+      const title = prompt("Название новой категории:");
+      if(!title || !title.trim()) return;
+      const id = "sec-" + Date.now();
+      pushHistory();
+      data[id] = { title: title.trim(), items: [], hidden: false };
+      order.push(id);
+      commit();
+    });
+
+    /* ── section select for modal ── */
     function populateSectionSelect(){
       editSection.innerHTML = "";
       order.forEach(id => {
+        if(!data[id]) return;
         const opt = document.createElement("option");
         opt.value = id;
         opt.textContent = data[id].title;
@@ -506,15 +736,18 @@
       });
     }
 
+    /* ── open card editor ── */
     function openEditor(sectionId, index, item){
       state.pending = { section: sectionId, index };
       state.modalOpen = true;
       modalTitle.textContent = index >= 0 ? "Редактировать карточку" : "Новая карточка";
-      editSection.value = sectionId;
-      editName.value = item ? item.name : "";
-      editHref.value = item ? item.href : "";
-      editImg.value = item ? (item.img || "") : "";
-      editNickname.value = item ? getNickname(item) : "";
+      editSection.value    = sectionId;
+      editName.value       = item ? item.name     : "";
+      editHref.value       = item ? item.href     : "";
+      editImg.value        = item ? (item.img||"") : "";
+      editNickname.value   = item ? getNickname(item) : "";
+      // toggle: active = NOT inactive
+      editEnabled.checked  = item ? !isInactive(item) : true;
       modalBackdrop.style.display = "flex";
     }
 
@@ -527,25 +760,21 @@
     document.getElementById("saveEdit").addEventListener("click", () => {
       const { section, index } = state.pending;
       const newSection = editSection.value;
-      const name = editName.value.trim();
-      const href = editHref.value.trim();
-      const img = editImg.value.trim();
-      const nickname = editNickname.value.trim();
+      const name       = editName.value.trim();
+      const href       = editHref.value.trim();
+      const img        = editImg.value.trim();
+      const nickname   = editNickname.value.trim();
+      const enabled    = editEnabled.checked;
 
-      if(!name || !href){
-        alert("Заполните название и ссылку.");
-        return;
-      }
+      if(!name || !href){ alert("Заполните название и ссылку."); return; }
 
       pushHistory();
 
       const item = { name, href, img };
-	  if(nickname) item.nickname = nickname;
-		
-      if(index >= 0){
-        const previous = data[section].items[index];
-		if(previous.inactive) item.inactive = true;
+      if(nickname) item.nickname = nickname;
+      if(!enabled) item.inactive = true;
 
+      if(index >= 0){
         if(newSection === section){
           data[section].items[index] = item;
         } else {
@@ -561,12 +790,10 @@
     });
 
     document.getElementById("cancelEdit").addEventListener("click", closeModal);
-    modalBackdrop.addEventListener("click", event => {
-      if(event.target === modalBackdrop) closeModal();
-    });
-    document.addEventListener("keydown", event => {
+    modalBackdrop.addEventListener("click", e => { if(e.target === modalBackdrop) closeModal(); });
+    document.addEventListener("keydown", e => {
       if(!state.modalOpen) return;
-      if(event.key === "Escape") closeModal();
+      if(e.key === "Escape") closeModal();
     });
   </script>
 </body>
