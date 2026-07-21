@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>OVNI</title>
+<title>В поисках ИНЛО</title>
 <style>
 :root{
   --bg:#0d1526; --panel:#172338; --line:#2d3e5a; --accent:#7db6ff;
@@ -14,9 +14,12 @@
 svg{width:16px;height:16px;display:block;flex-shrink:0}
 body{margin:0;background:var(--bg);color:var(--txt);font:16px system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
 header{position:sticky;top:0;z-index:1000;isolation:isolate;padding:16px max(18px,calc(50% - 610px));background:#0d1526f7;backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
-h1{margin:0 0 11px;font-size:22px}
+h1{margin:0 0 11px;font-size:22px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+#syncStatus{font-size:12px;color:var(--muted);font-weight:400}
 .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
-button{padding:8px 12px;color:var(--txt);background:#1b3355;border:1px solid var(--line);border-radius:10px;cursor:pointer;font:inherit}
+.toolbar-left{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.toolbar-right{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-left:auto}
+button{padding:8px 12px 10px;color:var(--txt);background:#1b3355;border:1px solid var(--line);border-radius:10px;cursor:pointer;font:inherit;display:inline-flex;align-items:center;justify-content:center;line-height:1}
 main{position:relative;z-index:1;max-width:1220px;margin:0 auto;padding:22px 18px 48px}
 section{margin-bottom:28px;scroll-margin-top:108px}
 h2{display:flex;align-items:center;gap:10px;margin:0 0 12px;font-size:20px}
@@ -50,6 +53,10 @@ small{padding-top:3px;color:var(--muted);font-size:11px}
 .editing-mode .delete-x{display:flex}
 .editing-mode .card{cursor:grab}
 .editing-mode .card:active{cursor:grabbing}
+.card-toggle-dot{position:absolute;bottom:6px;right:6px;z-index:5;display:none;width:12px;height:12px;border-radius:50%;border:2px solid var(--bg);background:var(--muted);cursor:pointer;transition:background .18s ease,transform .12s ease;padding:0}
+.card-toggle-dot.on{background:var(--accent)}
+.card-toggle-dot:hover{transform:scale(1.15)}
+.editing-mode .card-toggle-dot{display:block}
 .add-card{align-items:center;justify-items:center;opacity:.55;cursor:pointer}
 .add-card .plus{color:#dfe8ff;font-size:22px;font-weight:400;line-height:1;display:flex;align-items:center;justify-content:center;width:100%;height:100%}
 .add-card.single{grid-template-columns:1fr;grid-template-rows:1fr;min-height:65px;display:flex;align-items:center;justify-content:center}
@@ -66,18 +73,21 @@ body.editing-mode .section-controls{display:flex}
 .modal h3{margin:0 0 12px;font-size:18px;padding-right:50px}
 .form-row{display:grid;gap:6px;margin-bottom:12px}
 label{color:var(--muted);font-size:13px}
-input{width:100%;padding:10px 12px;color:var(--txt);background:#0e1727;border:1px solid var(--line);border-radius:10px;font:inherit}
+input,select{width:100%;padding:10px 12px;color:var(--txt);background:#0e1727;border:1px solid var(--line);border-radius:10px;font:inherit;cursor:pointer}
+input{cursor:text}
+input:focus,select:focus{outline:none;border-color:var(--accent)}
 input:disabled{color:var(--muted);background:#0b1321;border-color:#233149;opacity:.62;cursor:default}
 .split-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .input-with-icon{display:flex;gap:6px;align-items:center}
 .input-with-icon input{flex:1}
 .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
-.helper{margin-top:8px;color:var(--muted);font-size:13px;line-height:1.4}
-.undo-redo{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-left:auto}
-#undoBtn,#redoBtn{width:40px;height:40px;padding:0;font-size:22px;line-height:1}
+#saveEdit{background:var(--accent);color:#0d1526;border-color:var(--accent);font-weight:600}
+#saveEdit:hover{background:#8fc2ff}
+.undo-redo{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+#undoBtn,#redoBtn{width:40px;height:40px;padding:0}
+#undoBtn svg,#redoBtn svg{width:18px;height:18px;stroke-width:1.7}
 #modeBtn.save-mode{color:#111;background:var(--edit);border-color:var(--edit)}
 #loginBtn.logged-in{background:#1f5c34;border-color:#2c7a45}
-#syncStatus{font-size:12px;color:var(--muted);margin-left:6px}
 .modal-toggle-corner.toggle{position:absolute!important;top:16px;right:16px}
 .toggle{position:relative;display:inline-block;width:42px;height:24px;flex-shrink:0}
 .toggle input{opacity:0;width:0;height:0}
@@ -85,29 +95,31 @@ input:disabled{color:var(--muted);background:#0b1321;border-color:#233149;opacit
 .toggle-slider:before{position:absolute;content:"";height:18px;width:18px;left:3px;bottom:3px;background:var(--muted);border-radius:50%;transition:.2s}
 .toggle input:checked+.toggle-slider{background:#2c5a8a}
 .toggle input:checked+.toggle-slider:before{transform:translateX(18px);background:var(--accent)}
-#addSectionBtn{display:none;margin-top:8px}
+#addSectionBtn{display:none}
 body.editing-mode #addSectionBtn{display:inline-flex}
-@media (max-width:620px){.toolbar{align-items:stretch}.undo-redo{width:100%;margin-left:0}}
+@media (max-width:620px){.toolbar{align-items:stretch}.toolbar-right{margin-left:0;width:100%;justify-content:flex-start}}
 @media (max-width:460px){.grid{grid-template-columns:1fr}.split-row{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <header>
-  <h1>OVNI</h1>
+  <h1>В поисках ИНЛО <span id="syncStatus"></span></h1>
   <div class="toolbar">
-    <button id="loginBtn" type="button">Войти</button>
-    <button id="modeBtn" type="button" style="display:none">Редактировать</button>
-    <div class="undo-redo">
-      <button id="undoBtn" type="button" title="Отменить" style="display:none">↶</button>
-      <button id="redoBtn" type="button" title="Повторить" style="display:none">↷</button>
+    <div class="toolbar-left">
+      <button id="loginBtn" type="button">Войти</button>
+      <button id="modeBtn" type="button" style="display:none">Редактировать</button>
+      <div class="undo-redo">
+        <button id="undoBtn" type="button" title="Отменить" style="display:none"></button>
+        <button id="redoBtn" type="button" title="Повторить" style="display:none"></button>
+      </div>
     </div>
-    <span id="syncStatus"></span>
+    <div class="toolbar-right">
+      <button id="addSectionBtn" type="button">+ Добавить категорию</button>
+    </div>
   </div>
 </header>
 
 <main id="main"></main>
-
-<button id="addSectionBtn" type="button" style="margin:0 18px 24px">+ Добавить категорию</button>
 
 <div class="modal-backdrop" id="loginModal">
   <div class="modal">
@@ -127,7 +139,7 @@ body.editing-mode #addSectionBtn{display:inline-flex}
       <input type="checkbox" id="editEnabled" checked>
       <span class="toggle-slider"></span>
     </label>
-    <h3 id="modalTitle">Новая карточка</h3>
+    <h3 id="modalTitle">Карточка предмета</h3>
     <div class="form-row">
       <label>Раздел</label>
       <select id="editSection"></select>
@@ -159,7 +171,6 @@ body.editing-mode #addSectionBtn{display:inline-flex}
       <button id="cancelEdit" type="button">Отмена</button>
       <button id="saveEdit" type="button">Сохранить</button>
     </div>
-    <div class="helper">Изменения сохраняются автоматически и сразу видны всем, кто открыл страницу.</div>
   </div>
 </div>
 
@@ -178,7 +189,7 @@ const firebaseConfig = {
     messagingSenderId: "916848124747",
     appId: "1:916848124747:web:7fa20edb5701619498fece",
     measurementId: "G-ZCKKVMYFVN"
-    };
+};
 
 const ADMIN_UID = "xOqvdkpV57U8BSfnjePCRJRiaOi2";
 const DOC_PATH = ["cards","board"];
@@ -189,23 +200,22 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const boardRef = doc(db, DOC_PATH[0], DOC_PATH[1]);
 
-/* ---------------------------------------------------------------------
-   Спецкатегории: привязка теперь жёстко по id секции (не по полю
-   specialType и не по названию). Все карточки внутри этих секций,
-   независимо от статуса enabled/disabled, автоматически получают
-   общее name/img.
---------------------------------------------------------------------- */
+/* Спецкатегории — жёсткая привязка по реальным id секций из Firestore.
+   Все карточки внутри этих секций, независимо от enabled/disabled,
+   получают общее name/img. */
 const SPECIAL_SECTIONS = {
   "semena":     { name: "Семена пропуска", img: "https://www.lowadi.com/media/equideo/image/produits/60/graines-pass.png" },
-  "or":    { name: "Очки роста",       img: "https://www.lowadi.com/media/equideo/image/produits/60/vieillissement.png" },
+  "or":         { name: "Очки роста",       img: "https://www.lowadi.com/media/equideo/image/produits/60/vieillissement.png" },
   "check-list": { name: "Рандом",           img: "" }
 };
 
 const seedData = {
   "predmety-chr": { title: "Предметы", items: [], hidden: false },
-  "semena":     { title: "Семена пропуска", items: [], hidden: false },
-  "or":    { title: "Очки роста",       items: [], hidden: false },
-  "check-list": { title: "Рандом",           items: [], hidden: false }
+  "bonusy":       { title: "Бонусы", items: [], hidden: false },
+  "snaryazhenie": { title: "Снаряжение", items: [], hidden: false },
+  "semena":       { title: "Семена пропуска", items: [], hidden: false },
+  "or":           { title: "Очки роста", items: [], hidden: false },
+  "check-list":   { title: "Чек-лист", items: [], hidden: false }
 };
 
 let data = {};
@@ -243,6 +253,11 @@ const ICON_EYE_CLOSED = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" vie
 const ICON_X = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>`;
 const ICON_DUPLICATE = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><rect x="3" y="3" width="13" height="13" rx="2.5"/><rect x="8" y="8" width="13" height="13" rx="2.5" fill="var(--panel)"/></svg>`;
 const ICON_SPACER_ADD = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v6m0 12v-6m0 0-3.5 3.5M12 15l3.5 3.5M12 9 8.5 5.5M12 9l3.5-3.5M4.5 12h15"/></svg>`;
+/* Undo/Redo — новые иконки в едином минималистичном стиле (дуга-стрелка) */
+const ICON_UNDO = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7 4 11l4 4"/><path stroke-linecap="round" stroke-linejoin="round" d="M4 11h10a6 6 0 1 1 0 12H8"/></svg>`;
+const ICON_REDO = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7l4 4-4 4"/><path stroke-linecap="round" stroke-linejoin="round" d="M20 11H10a6 6 0 1 0 0 12h6"/></svg>`;
+undoBtn.innerHTML = ICON_UNDO;
+redoBtn.innerHTML = ICON_REDO;
 
 /* helpers */
 function isInactive(item){ return item.inactive === true; }
@@ -316,13 +331,10 @@ loginSubmit.addEventListener("click", async ()=>{
   }catch(e){ alert(e.message); }
 });
 
-/* ---------------------------------------------------------------------
-   RENDER
-   Изменение: единый грид на секцию (без отдельного блока «Неактивные»
-   и без аккордеона). Неактивные карточки видны только админу, вперемешку
-   с активными, с приглушённым стилем. Обычные пользователи их вообще
-   не получают в DOM.
---------------------------------------------------------------------- */
+/* RENDER: единый грид на секцию, неактивные вперемешку с активными
+   (видны только админу, приглушённые). Счётчик карточек в заголовке
+   секции считает по-разному для админа (все) и пользователя (только
+   активные), чтобы число совпадало с реально видимыми карточками. */
 function render(){
   main.innerHTML = "";
   order.forEach(id=>{
@@ -352,8 +364,9 @@ function render(){
       titleSpan.addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); titleSpan.blur(); } });
     }
 
+    const visibleCount = sec.items.filter(it=>!isSpacer(it) && (state.isAdmin || !isInactive(it))).length;
     const countEm = document.createElement("em");
-    countEm.textContent = sec.items.filter(it=>!isSpacer(it)).length;
+    countEm.textContent = visibleCount;
 
     const sectionControls = document.createElement("div");
     sectionControls.className = "section-controls";
@@ -483,6 +496,7 @@ function createCard(sectionId, index, item, inactive){
     ${item.img ? `<img src="${item.img}" alt="" onerror="this.style.visibility='hidden'">` : `<span class="noicon">?</span>`}
     <span class="name"></span>
     <small></small>
+    <button class="card-toggle-dot${!inactive ? " on" : ""}" type="button" title="${inactive ? "Включить" : "Отключить"}"></button>
   `;
   card.querySelector(".name").textContent = item.name;
   card.querySelector("small").textContent = getCardSubtitle(item);
@@ -491,6 +505,13 @@ function createCard(sectionId, index, item, inactive){
     card.addEventListener("click", event=>{ event.preventDefault(); openEditor(sectionId, index, item); });
     card.querySelector(".delete-x").addEventListener("click", event=>{
       event.preventDefault(); event.stopPropagation(); deleteItem(sectionId, index);
+    });
+    card.querySelector(".card-toggle-dot").addEventListener("click", event=>{
+      event.preventDefault(); event.stopPropagation();
+      pushHistory();
+      const it = data[sectionId].items[index];
+      if(isInactive(it)) delete it.inactive; else it.inactive = true;
+      commit();
     });
     card.addEventListener("dragstart", e=>{
       state.drag = { section: sectionId, index };
@@ -637,7 +658,7 @@ function openEditor(sectionId, index, item){
   state.pending = { section: sectionId, index };
   state.modalOpen = true;
   state.hrefUnlocked = index < 0;
-  modalTitle.textContent = index >= 0 ? "Редактирование" : "Новая карточка";
+  modalTitle.textContent = "Карточка предмета";
   editSection.value = sectionId;
   editName.value = item ? item.name : "";
   editHref.value = item ? item.href : "";
@@ -660,7 +681,9 @@ function closeModal(){
   state.pending = null;
 }
 document.getElementById("cancelEdit").addEventListener("click", closeModal);
-document.getElementById("saveEdit").addEventListener("click", ()=>{
+document.getElementById("saveEdit").addEventListener("click", saveEditHandler);
+
+function saveEditHandler(){
   const { section, index } = state.pending;
   const newSection = editSection.value;
   const name = editName.value.trim();
@@ -689,6 +712,13 @@ document.getElementById("saveEdit").addEventListener("click", ()=>{
   }
   closeModal();
   commit();
+}
+
+/* Enter — сохранить, Esc — отмена (только когда модалка карточки открыта) */
+document.addEventListener("keydown", e=>{
+  if(!state.modalOpen) return;
+  if(e.key === "Enter"){ e.preventDefault(); saveEditHandler(); }
+  else if(e.key === "Escape"){ e.preventDefault(); closeModal(); }
 });
 </script>
 </body>
