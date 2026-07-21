@@ -1,0 +1,583 @@
+
+<!DOCTYPE html>
+<html lang="ru"><head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>В поисках ИНЛО</title>
+
+  <style>
+    :root{
+      color-scheme:dark;
+      --bg:#0d1526;
+      --panel:#172338;
+      --line:#2d3e5a;
+      --accent:#7db6ff;
+      --txt:#eef5ff;
+      --muted:#a7b4c8;
+      --edit:#ffcc66;
+      --danger:#d94848;
+    }
+    *{box-sizing:border-box;}
+    body{margin:0;background:var(--bg);color:var(--txt);font:16px system-ui,-apple-system,"Segoe UI",Arial,sans-serif;}
+    header{position:sticky;top:0;z-index:1000;isolation:isolate;padding:16px max(18px,calc((100% - 1220px)/2));background:#0d1526f7;backdrop-filter:blur(10px);border-bottom:1px solid var(--line);}
+    h1{margin:0 0 11px;font-size:22px;}
+    .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px;}
+    button{padding:8px 12px;color:var(--txt);background:#1b3355;border:1px solid var(--line);border-radius:10px;cursor:pointer;font:inherit;}
+    main{position:relative;z-index:1;max-width:1220px;margin:auto;padding:22px 18px 48px;}
+    section{margin-bottom:28px;scroll-margin-top:108px;}
+    h2{display:flex;align-items:center;gap:10px;margin:0 0 12px;font-size:20px;}
+    em{color:var(--muted);font-size:13px;font-style:normal;font-weight:500;}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(188px,1fr));gap:10px;}
+    .grid.inactive{margin-top:8px;}
+    .grid.inactive:empty:not(.is-collapsed){display:flex;align-items:center;justify-content:center;min-height:78px;padding:10px;border:1px dashed var(--line);border-radius:11px;color:var(--muted);font-size:13px;transition:border-color .15s ease,color .15s ease,background .15s ease;}
+    .grid.inactive:empty:not(.is-collapsed)::before{content:"Перетащите карточку сюда";pointer-events:none;}
+    .grid.inactive:empty:not(.is-collapsed).dragover{border-color:var(--edit);background:rgba(255,204,102,.06);color:var(--edit);box-shadow:0 0 0 2px rgba(255,204,102,.18) inset;}
+    .grid.inactive.is-collapsed{display:none;}
+    .card,.add-card{position:relative;display:grid;grid-template-columns:56px 1fr;grid-template-rows:1fr auto;gap:0 9px;align-items:center;min-height:65px;padding:9px;color:var(--txt);background:var(--panel);border:1px solid var(--line);border-radius:11px;text-decoration:none;transition:.15s;user-select:none;}
+    .card:hover,.add-card:hover{transform:translateY(-2px);background:#1c304e;border-color:var(--accent);}
+    .card.editing{outline:none;}
+    .card.dragover,.grid.dragover{border-color:var(--edit);box-shadow:0 0 0 2px rgba(255,204,102,.25) inset;}
+    .card img,.noicon{grid-row:1/3;width:56px;height:56px;object-fit:contain;}
+    .noicon{display:grid;place-items:center;color:var(--accent);font-size:24px;}
+    .name{font-weight:650;line-height:1.16;}
+    small{padding-top:3px;color:var(--muted);font-size:11px;}
+    .inactive-card{opacity:.45;}
+    .delete-x{position:absolute;top:-10px;right:-10px;z-index:5;display:none;align-items:center;justify-content:center;width:28px;height:28px;padding:0;color:var(--danger);background:var(--bg);border:0;border-radius:50%;cursor:pointer;font-size:24px;font-weight:700;line-height:1;}
+    .delete-x:hover{color:#ff6c6c;transform:scale(1.08);}
+    .editing-mode .delete-x{display:flex;}
+    .editing-mode .card{cursor:grab;}
+    .editing-mode .card:active{cursor:grabbing;}
+    .add-card{align-items:center;justify-items:center;opacity:.55;cursor:pointer;}
+    .add-card .plus{color:#dfe8ff;font-size:28px;font-weight:700;line-height:1;}
+    .add-card.single{grid-template-columns:1fr;grid-template-rows:1fr;min-height:65px;}
+    .add-card.single .plus{grid-row:1/3;}
+    .subhead.toggleable{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:42px;margin-top:16px;padding:0 2px 9px;background:transparent;border:0;border-bottom:1px solid var(--line);border-radius:0;cursor:pointer;user-select:none;}
+    .subhead .subtitle{color:var(--muted);font-size:14px;font-weight:400;transition:color .18s ease;}
+    .subhead .arrow{display:inline-block;color:var(--accent);font-size:15px;line-height:1;transform:rotate(0deg);transition:transform .26s cubic-bezier(.2,.8,.2,1),color .18s ease;will-change:transform;}
+    .subhead.toggleable:hover .subtitle{color:var(--accent);}
+    .subhead.toggleable.is-collapsed .arrow{transform:rotate(-90deg);}
+    .modal-backdrop{position:fixed;inset:0;z-index:2000;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(6,10,18,.72);}
+    .modal{width:min(560px,100%);padding:16px;background:#111b2d;border:1px solid var(--line);border-radius:16px;box-shadow:0 20px 80px rgba(0,0,0,.45);}
+    .modal h3{margin:0 0 12px;font-size:18px;}
+    .form-row{display:grid;gap:6px;margin-bottom:12px;}
+    .form-row select{width:100%;padding:10px 12px;color:var(--txt);background:#0e1727;border:1px solid var(--line);border-radius:10px;font:inherit;cursor:pointer;}
+    .form-row select:focus{outline:none;border-color:var(--accent);}
+    label{color:var(--muted);font-size:13px;}
+    input{width:100%;padding:10px 12px;color:var(--txt);background:#0e1727;border:1px solid var(--line);border-radius:10px;font:inherit;}
+    input:disabled{color:var(--muted);background:#0b1321;border-color:#233149;opacity:.62;cursor:default;}
+    .input-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;}
+    .link-toggle{padding:0;color:var(--muted);background:transparent;border:0;border-radius:0;cursor:pointer;font:inherit;font-size:13px;font-weight:400;line-height:1;text-decoration:none;transition:color .18s ease;}
+    .link-toggle:hover,.link-toggle:focus-visible{color:var(--accent);background:transparent;outline:none;}
+    .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px;}
+    .helper{margin-top:8px;color:var(--muted);font-size:13px;line-height:1.4;}
+    .undo-redo{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-left:auto;}
+    #undoBtn,#redoBtn{width:40px;height:40px;padding:0;font-size:22px;line-height:1;}
+    #modeBtn.save-mode{color:#111;background:var(--edit);border-color:var(--edit);}
+    #loginBtn.logged-in{background:#1f5c34;border-color:#2c7a45;}
+    #syncStatus{font-size:12px;color:var(--muted);margin-left:6px;}
+    @media(max-width:620px){.toolbar{align-items:stretch;}.undo-redo{width:100%;margin-left:0;}}
+    @media(max-width:460px){.grid{grid-template-columns:1fr;}.input-row{grid-template-columns:1fr;}}
+  </style>
+</head>
+
+<body class="">
+  <header>
+    <h1>В поисках ИНЛО</h1>
+
+    <div class="toolbar">
+      <button id="loginBtn" type="button">Войти</button>
+      <button id="modeBtn" type="button" style="display:none;">Редактировать</button>
+      <button id="undoBtn" type="button" title="Отменить" style="display:none;">↶</button>
+      <button id="redoBtn" type="button" title="Повторить" style="display:none;">↷</button>
+      <span id="syncStatus">Подключение...</span>
+    </div>
+  </header>
+
+  <main id="main"></main>
+
+  <div class="modal-backdrop" id="loginModal">
+    <div class="modal">
+      <h3>Вход администратора</h3>
+      <div class="form-row">
+        <label>Email</label>
+        <input id="loginEmail" type="email" autocomplete="username">
+      </div>
+      <div class="form-row">
+        <label>Пароль</label>
+        <input id="loginPassword" type="password" autocomplete="current-password">
+      </div>
+      <div class="modal-actions">
+        <button id="loginCancel" type="button">Отмена</button>
+        <button id="loginSubmit" type="button">Войти</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal">
+      <h3 id="modalTitle">Новая карточка</h3>
+      <div class="form-row">
+        <label>Раздел</label>
+        <select id="editSection"></select>
+      </div>
+      <div class="form-row">
+        <label>Название</label>
+        <input id="editName" type="text">
+      </div>
+      <div class="form-row">
+        <div class="input-row">
+          <label style="grid-column:1/3;">Ссылка</label>
+        </div>
+        <input id="editHref" type="text">
+      </div>
+      <div class="form-row">
+        <label>Картинка (URL)</label>
+        <input id="editImg" type="text">
+      </div>
+      <div class="form-row">
+        <label>Никнейм (необязательно)</label>
+        <input id="editNickname" type="text">
+      </div>
+      <div class="modal-actions">
+        <button id="cancelEdit" type="button">Отмена</button>
+        <button id="saveEdit" type="button">Сохранить</button>
+      </div>
+      <div class="helper">Изменения сохраняются автоматически и сразу видны всем, кто открыл страницу.</div>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+	// Import the functions you need from the SDKs you need
+	import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+	import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-analytics.js";
+    import {
+      getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut
+    } from "https://www.gstatic.com/firebasejs/10.16.0/firebase-auth.js";
+    import {
+      getFirestore, doc, getDoc, setDoc, onSnapshot
+    } from "https://www.gstatic.com/firebasejs/10.16.0/firebase-firestore.js";
+	// TODO: Add SDKs for Firebase products that you want to use
+	// https://firebase.google.com/docs/web/setup#available-libraries
+
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    const firebaseConfig = {
+    apiKey: "AIzaSyAjIY9iH0gZT9WalyKTUh6zNinBNvt9aqQ",
+    authDomain: "ovni-b5823.firebaseapp.com",
+    databaseURL: "https://ovni-b5823-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "ovni-b5823",
+    storageBucket: "ovni-b5823.firebasestorage.app",
+    messagingSenderId: "916848124747",
+    appId: "1:916848124747:web:7fa20edb5701619498fece",
+    measurementId: "G-ZCKKVMYFVN"
+    };
+
+    // Вставьте сюда свой UID (после первого входа он выведется в консоль браузера)
+    const ADMIN_UID = "xOqvdkpV57U8BSfnjePCRJRiaOi2";
+
+    const DOC_PATH = ["cards", "board"]; // collection "cards", document "board"
+
+    const app = initializeApp(firebaseConfig);
+	const analytics = getAnalytics(app);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const boardRef = doc(db, DOC_PATH[0], DOC_PATH[1]);
+
+    // -------- Начальные данные (используются только при первом запуске, если документа ещё нет) --------
+    const seedData = {
+      "predmety-chr": {
+        title: "Предметы ЧР",
+        items: []
+      }
+    };
+
+    let data = {};
+    let order = [];
+
+    const state = {
+      editing: false,
+      isAdmin: false,
+      history: [],
+      future: [],
+      collapsedInactive: {},
+      pending: null,
+      modalOpen: false,
+      drag: null
+    };
+
+    const main = document.getElementById("main");
+    const modeBtn = document.getElementById("modeBtn");
+    const undoBtn = document.getElementById("undoBtn");
+    const redoBtn = document.getElementById("redoBtn");
+    const loginBtn = document.getElementById("loginBtn");
+    const syncStatus = document.getElementById("syncStatus");
+
+    const loginModal = document.getElementById("loginModal");
+    const loginEmail = document.getElementById("loginEmail");
+    const loginPassword = document.getElementById("loginPassword");
+    const loginSubmit = document.getElementById("loginSubmit");
+    const loginCancel = document.getElementById("loginCancel");
+
+    const modalBackdrop = document.getElementById("modalBackdrop");
+    const modalTitle = document.getElementById("modalTitle");
+    const editSection = document.getElementById("editSection");
+    const editName = document.getElementById("editName");
+    const editHref = document.getElementById("editHref");
+    const editImg = document.getElementById("editImg");
+    const editNickname = document.getElementById("editNickname");
+
+    function isInactive(item){ return item[3] === true; }
+
+    function getCardId(href){
+      try { return new URL(href).searchParams.get("id") || ""; }
+      catch { return ""; }
+    }
+
+    function getNickname(item){
+      if(item[3] === true) return item[4] || "";
+      return item[3] || "";
+    }
+
+    function getCardSubtitle(item){
+      const nickname = getNickname(item).trim();
+      return nickname ? nickname : `#${getCardId(item[1])}`;
+    }
+
+    // -------- Сохранение в Firestore (автосохранение) --------
+    let saveTimer = null;
+    async function saveToCloud(){
+      syncStatus.textContent = "Сохранение...";
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(async () => {
+        try {
+          await setDoc(boardRef, { data, order, updatedAt: Date.now() });
+          syncStatus.textContent = "Сохранено";
+        } catch (e) {
+          console.error(e);
+          syncStatus.textContent = "Ошибка сохранения";
+        }
+      }, 400); // небольшая задержка, чтобы не слать запрос на каждое микро-изменение
+    }
+
+    // -------- Подписка на изменения в реальном времени --------
+    let applyingRemote = false;
+    onSnapshot(boardRef, snap => {
+      if(!snap.exists()){
+        setDoc(boardRef, { data: seedData, order: Object.keys(seedData) });
+        return;
+      }
+      const remote = snap.data();
+      applyingRemote = true;
+      data = remote.data || {};
+      order = remote.order || Object.keys(data);
+      render();
+      applyingRemote = false;
+      syncStatus.textContent = "Синхронизировано";
+    }, err => {
+      console.error(err);
+      syncStatus.textContent = "Нет соединения";
+    });
+
+    // -------- Авторизация --------
+    onAuthStateChanged(auth, user => {
+      state.isAdmin = !!user && user.uid === ADMIN_UID;
+      loginBtn.textContent = state.isAdmin ? "Выйти" : "Войти";
+      loginBtn.classList.toggle("logged-in", state.isAdmin);
+      modeBtn.style.display = state.isAdmin ? "" : "none";
+      undoBtn.style.display = state.isAdmin ? "" : "none";
+      redoBtn.style.display = state.isAdmin ? "" : "none";
+      if(user) console.log("Ваш UID (вставьте его в ADMIN_UID):", user.uid);
+      if(!state.isAdmin) setEditing(false);
+    });
+
+    loginBtn.addEventListener("click", () => {
+      if(state.isAdmin){
+        signOut(auth);
+      } else {
+        loginModal.style.display = "flex";
+      }
+    });
+    loginCancel.addEventListener("click", () => loginModal.style.display = "none");
+    loginSubmit.addEventListener("click", async () => {
+      try {
+        await signInWithEmailAndPassword(auth, loginEmail.value.trim(), loginPassword.value);
+        loginModal.style.display = "none";
+        loginEmail.value = ""; loginPassword.value = "";
+      } catch (e) {
+        alert("Ошибка входа: " + e.message);
+      }
+    });
+
+    // -------- Рендер --------
+    function render(){
+      main.innerHTML = "";
+
+      order.forEach(id => {
+        if(!data[id]) return;
+        const section = document.createElement("section");
+        section.id = id;
+
+        const title = document.createElement("h2");
+        title.innerHTML = `${data[id].title} <em>${data[id].items.length}</em>`;
+        section.appendChild(title);
+
+        const activeGrid = document.createElement("div");
+        activeGrid.className = "grid";
+        activeGrid.dataset.section = id;
+        activeGrid.dataset.zone = "active";
+
+        const inactiveWrap = document.createElement("div");
+        inactiveWrap.className = "subhead toggleable";
+        const inactiveTitle = document.createElement("span");
+        inactiveTitle.className = "subtitle";
+        inactiveTitle.textContent = "Неактивные";
+        const inactiveArrow = document.createElement("span");
+        inactiveArrow.className = "arrow";
+        inactiveArrow.textContent = "▼";
+        inactiveWrap.append(inactiveTitle, inactiveArrow);
+
+        const inactiveGrid = document.createElement("div");
+        inactiveGrid.className = "grid inactive";
+        inactiveGrid.dataset.section = id;
+        inactiveGrid.dataset.zone = "inactive";
+
+        const collapsed = state.collapsedInactive[id] !== false;
+        if(collapsed){
+          inactiveWrap.classList.add("is-collapsed");
+          inactiveGrid.classList.add("is-collapsed");
+        }
+
+        inactiveWrap.addEventListener("click", () => {
+          const nowCollapsed = !inactiveWrap.classList.contains("is-collapsed");
+          state.collapsedInactive[id] = nowCollapsed;
+          inactiveWrap.classList.toggle("is-collapsed", nowCollapsed);
+          inactiveGrid.classList.toggle("is-collapsed", nowCollapsed);
+        });
+
+        data[id].items.forEach((item, index) => {
+          const card = createCard(id, index, item, isInactive(item));
+          if(isInactive(item)) inactiveGrid.appendChild(card);
+          else activeGrid.appendChild(card);
+        });
+
+        if(state.editing){
+          activeGrid.appendChild(createAddCard(id));
+        }
+
+        bindGridDropZone(activeGrid);
+        bindGridDropZone(inactiveGrid);
+
+        section.appendChild(activeGrid);
+        section.appendChild(inactiveWrap);
+        section.appendChild(inactiveGrid);
+        main.appendChild(section);
+      });
+
+      populateSectionSelect();
+    }
+
+    function createCard(sectionId, index, item, inactive){
+      const card = document.createElement("a");
+      card.className = "card" + (state.editing ? " editing" : "") + (inactive ? " inactive-card" : "");
+      card.href = item[1];
+      card.target = "_blank";
+      card.rel = "noopener";
+      card.draggable = state.editing;
+      card.dataset.section = sectionId;
+      card.dataset.index = index;
+
+      card.innerHTML = `
+        <button class="delete-x" type="button" title="Удалить" aria-label="Удалить карточку">×</button>
+        ${item[2] ? `<img src="${item[2]}" alt="" onerror="this.style.visibility='hidden'">` : `<span class="noicon">↗</span>`}
+        <span class="name"></span>
+        <small></small>
+      `;
+      card.querySelector(".name").textContent = item[0];
+      card.querySelector("small").textContent = getCardSubtitle(item);
+
+      if(state.editing){
+        card.addEventListener("click", event => {
+          event.preventDefault();
+          openEditor(sectionId, index, item);
+        });
+        card.querySelector(".delete-x").addEventListener("click", event => {
+          event.preventDefault();
+          event.stopPropagation();
+          deleteItem(sectionId, index);
+        });
+        card.addEventListener("dragstart", () => {
+          state.drag = { section: sectionId, index };
+          card.classList.add("dragover");
+        });
+        card.addEventListener("dragend", () => card.classList.remove("dragover"));
+      }
+
+      return card;
+    }
+
+    function createAddCard(sectionId){
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "add-card single";
+      button.innerHTML = `<span class="plus">+</span>`;
+      button.addEventListener("click", () => openEditor(sectionId, -1, null));
+      return button;
+    }
+
+    function bindGridDropZone(grid){
+      grid.addEventListener("dragover", event => {
+        if(!state.editing || !state.drag) return;
+        event.preventDefault();
+        grid.classList.add("dragover");
+      });
+      grid.addEventListener("dragleave", () => grid.classList.remove("dragover"));
+      grid.addEventListener("drop", event => {
+        if(!state.editing || !state.drag) return;
+        event.preventDefault();
+        grid.classList.remove("dragover");
+        const toSection = grid.dataset.section;
+        const toZone = grid.dataset.zone;
+        moveItem(state.drag.section, state.drag.index, toSection, toZone === "inactive");
+        state.drag = null;
+      });
+    }
+
+    function moveItem(fromSection, fromIndex, toSection, makeInactive){
+      pushHistory();
+      const item = data[fromSection].items.splice(fromIndex, 1)[0];
+      const nickname = getNickname(item);
+      item.length = 3;
+      if(makeInactive){
+        item.push(true);
+        if(nickname) item.push(nickname);
+      } else if(nickname){
+        item.push(nickname);
+      }
+      data[toSection].items.push(item);
+      commit();
+    }
+
+    function deleteItem(sectionId, index){
+      if(!confirm("Удалить карточку?")) return;
+      pushHistory();
+      data[sectionId].items.splice(index, 1);
+      commit();
+    }
+
+    // -------- История (undo/redo) --------
+    function pushHistory(){
+      state.history.push(JSON.stringify({ data, order }));
+      if(state.history.length > 50) state.history.shift();
+      state.future = [];
+    }
+
+    function restoreFrom(snapshot){
+      const restored = JSON.parse(snapshot);
+      data = restored.data;
+      order = restored.order;
+      commit();
+    }
+
+    undoBtn.addEventListener("click", () => {
+      if(!state.history.length) return;
+      state.future.push(JSON.stringify({ data, order }));
+      restoreFrom(state.history.pop());
+    });
+    redoBtn.addEventListener("click", () => {
+      if(!state.future.length) return;
+      state.history.push(JSON.stringify({ data, order }));
+      restoreFrom(state.future.pop());
+    });
+
+    function commit(){
+      render();
+      saveToCloud();
+    }
+
+    // -------- Режим редактирования --------
+    function setEditing(enabled){
+      state.editing = enabled && state.isAdmin;
+      document.body.classList.toggle("editing-mode", state.editing);
+      modeBtn.classList.toggle("save-mode", state.editing);
+      modeBtn.textContent = state.editing ? "Готово" : "Редактировать";
+      render();
+    }
+    modeBtn.addEventListener("click", () => setEditing(!state.editing));
+
+    // -------- Модалка добавления/редактирования --------
+    function populateSectionSelect(){
+      editSection.innerHTML = "";
+      order.forEach(id => {
+        const opt = document.createElement("option");
+        opt.value = id;
+        opt.textContent = data[id].title;
+        editSection.appendChild(opt);
+      });
+    }
+
+    function openEditor(sectionId, index, item){
+      state.pending = { section: sectionId, index };
+      state.modalOpen = true;
+      modalTitle.textContent = index >= 0 ? "Редактировать карточку" : "Новая карточка";
+      editSection.value = sectionId;
+      editName.value = item ? item[0] : "";
+      editHref.value = item ? item[1] : "";
+      editImg.value = item ? (item[2] || "") : "";
+      editNickname.value = item ? getNickname(item) : "";
+      modalBackdrop.style.display = "flex";
+    }
+
+    function closeModal(){
+      state.modalOpen = false;
+      modalBackdrop.style.display = "none";
+      state.pending = null;
+    }
+
+    document.getElementById("saveEdit").addEventListener("click", () => {
+      const { section, index } = state.pending;
+      const newSection = editSection.value;
+      const name = editName.value.trim();
+      const href = editHref.value.trim();
+      const img = editImg.value.trim();
+      const nickname = editNickname.value.trim();
+
+      if(!name || !href){
+        alert("Заполните название и ссылку.");
+        return;
+      }
+
+      pushHistory();
+
+      const item = [name, href, img];
+      if(index >= 0){
+        const previous = data[section].items[index];
+        const wasInactive = previous[3] === true;
+        if(wasInactive) item.push(true);
+        if(nickname) item.push(nickname);
+
+        if(newSection === section){
+          data[section].items[index] = item;
+        } else {
+          data[section].items.splice(index, 1);
+          data[newSection].items.push(item);
+        }
+      } else {
+        if(nickname) item.push(nickname);
+        data[newSection].items.push(item);
+      }
+
+      closeModal();
+      commit();
+    });
+
+    document.getElementById("cancelEdit").addEventListener("click", closeModal);
+    modalBackdrop.addEventListener("click", event => {
+      if(event.target === modalBackdrop) closeModal();
+    });
+    document.addEventListener("keydown", event => {
+      if(!state.modalOpen) return;
+      if(event.key === "Escape") closeModal();
+    });
+  </script>
+</body>
+</html>
