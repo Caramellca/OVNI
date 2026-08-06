@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>В поисках ИНЛО</title>
+<link rel="icon" type="image/png" href="https://www.lowadi.com/media/equideo/image//fonctionnels/20/cadeau.png">
 <style>
 :root{
   --bg:#0d1526; --panel:#172338; --line:#2d3e5a; --accent:#7db6ff;
@@ -12,7 +13,8 @@
 *{box-sizing:border-box}
 svg{width:16px;height:16px;display:block;flex-shrink:0}
 body{margin:0;background:var(--bg);color:var(--txt);font:16px system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
-header{position:sticky;top:0;z-index:1000;isolation:isolate;padding:16px max(18px,calc(50% - 610px)) 8px;background:#0d1526f7;backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+header{position:sticky;top:0;z-index:1000;isolation:isolate;padding:16px max(18px,calc(50% - 610px)) 16px;background:#0d1526f7;backdrop-filter:blur(10px);border-bottom:1px solid var(--line);transition:transform .25s ease}
+header.header-hidden{transform:translateY(-100%)}
 h1{margin:0 0 18px;font-size:22px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
 #syncStatus{font-size:12px;color:var(--muted);font-weight:400;font-style:italic}
 .toolbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:0}
@@ -149,6 +151,8 @@ body.editing-mode #addSpacerToolbarBtn{display:inline-flex}
   .toolbar{align-items:stretch}
   .toolbar-right{margin-left:0;width:100%;justify-content:flex-start}
   body:not(.is-admin) #loginBtn{display:none}
+  header{padding-bottom:4px}
+  .hint-text{display:none!important}
 }
 @media (max-width:460px){.grid{grid-template-columns:1fr}.split-row{grid-template-columns:1fr}}
 </style>
@@ -160,8 +164,8 @@ body.editing-mode #addSpacerToolbarBtn{display:inline-flex}
     <div class="toolbar-left">
       <button id="reportBtn" type="button" style="display:none">Сообщить об ИНЛО</button>
       <span id="reportHint" class="hint-text" style="display:none">
-        <span class="hint-line1">Сообщите о статусе ИНЛО на вашей страничке или на страничке другого игрока</span>
-        <span class="hint-line2">читаю все ваши сообщения, вахаха) пишите всё что хотите</span>
+        <span class="hint-line1">читаю все ваши сообщения, вахаха) пишите всё что хотите</span>
+        <span class="hint-line2">Сообщите о статусе ИНЛО на вашей страничке или на страничке другого игрока</span>
       </span>
       <button id="modeBtn" type="button" style="display:none">Редактировать</button>
       <button id="addSpacerToolbarBtn" type="button" title="Перетащите в нужное место категории" draggable="true"></button>
@@ -335,6 +339,7 @@ const state = {
   pending:null, activeModal:null, drag:null, sectionDrag:null, hrefUnlocked:false, editEnabled:true
 };
 
+const header = document.querySelector("header");
 const main = document.getElementById("main");
 const modeBtn = document.getElementById("modeBtn");
 const undoBtn = document.getElementById("undoBtn");
@@ -510,6 +515,24 @@ addSpacerToolbarBtn.addEventListener("dragstart", e=>{
   e.dataTransfer.effectAllowed = "copy";
 });
 addSpacerToolbarBtn.addEventListener("dragend", ()=>{ state.drag = null; });
+
+/* Скрытие меню при скролле вниз (только мобильная версия) */
+let lastScrollY = window.scrollY;
+function handleHeaderScroll(){
+  if(window.innerWidth > 620){
+    header.classList.remove("header-hidden");
+    return;
+  }
+  const currentY = window.scrollY;
+  if(currentY > lastScrollY && currentY > 80){
+    header.classList.add("header-hidden");
+  }else{
+    header.classList.remove("header-hidden");
+  }
+  lastScrollY = currentY;
+}
+window.addEventListener("scroll", handleHeaderScroll, { passive: true });
+window.addEventListener("resize", handleHeaderScroll);
 
 /* RENDER */
 function render(){
