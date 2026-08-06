@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -122,6 +121,25 @@ body.editing-mode #addSectionBtn{display:inline-flex}
 #addSpacerToolbarBtn{display:none;width:36px;height:36px;padding:0;cursor:grab}
 #addSpacerToolbarBtn:active{cursor:grabbing}
 body.editing-mode #addSpacerToolbarBtn{display:inline-flex}
+#reportBtn{background:#1f5c34;border-color:#2c7a45}
+#reportBtn:hover{background:#256b3d}
+.hint-text{font-size:12px;color:var(--muted);max-width:280px;line-height:1.3}
+#messagesBtn{position:relative}
+.msg-badge{position:absolute;top:-8px;right:-8px;min-width:18px;height:18px;padding:0 4px;border-radius:9px;background:var(--danger);color:#fff;font-size:11px;font-weight:700;display:none;align-items:center;justify-content:center;line-height:1}
+.char-counter{font-size:11px;color:var(--muted);text-align:right;margin-top:-2px}
+.messages-list{display:flex;flex-direction:column;gap:8px;max-height:420px;overflow-y:auto;margin-bottom:14px;padding-right:4px}
+.msg-item{background:#0e1727;border:1px solid var(--line);border-radius:12px;padding:10px 12px;color:var(--txt);transition:color .2s ease}
+.msg-item.is-read{color:var(--muted)}
+.msg-nick{font-weight:650;font-size:13px;margin-bottom:2px;color:var(--accent)}
+.msg-item.is-read .msg-nick{color:var(--muted)}
+.msg-text{font-size:14px;line-height:1.35;white-space:pre-wrap;word-break:break-word}
+.msg-meta{display:flex;justify-content:flex-end;align-items:center;gap:5px;margin-top:5px;font-size:11px;color:var(--muted)}
+.msg-ticks{display:inline-flex;color:var(--accent)}
+.msg-item.is-read .msg-ticks{color:var(--muted)}
+.msg-ticks svg{width:14px;height:14px}
+.messages-empty{color:var(--muted);font-size:14px;text-align:center;padding:24px 0}
+.toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.95);z-index:4000;padding:14px 22px;background:#111b2d;border:1px solid var(--line);border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.5);color:var(--txt);font-size:15px;opacity:0;pointer-events:none;transition:opacity .25s ease,transform .25s ease}
+.toast.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
 @media (max-width:620px){.toolbar{align-items:stretch}.toolbar-right{margin-left:0;width:100%;justify-content:flex-start}}
 @media (max-width:460px){.grid{grid-template-columns:1fr}.split-row{grid-template-columns:1fr}}
 </style>
@@ -132,7 +150,10 @@ body.editing-mode #addSpacerToolbarBtn{display:inline-flex}
   <div class="toolbar">
     <div class="toolbar-left">
       <button id="loginBtn" type="button">Войти</button>
+      <button id="reportBtn" type="button" style="display:none">Сообщить об ИНЛО</button>
+      <span id="reportHint" class="hint-text" style="display:none">Сообщите администратору о статусе ИНЛО на вашей страничке или страничке другого игрока</span>
       <button id="modeBtn" type="button" style="display:none">Редактировать</button>
+      <button id="messagesBtn" type="button" style="display:none">Посмотреть сообщения<span id="messagesBadge" class="msg-badge">0</span></button>
       <div class="undo-redo">
         <button id="undoBtn" type="button" title="Отменить последнее действие" style="display:none">Вернуть</button>
         <button id="redoBtn" type="button" title="Повторить отменённое действие" style="display:none">Повторить</button>
@@ -204,11 +225,48 @@ body.editing-mode #addSpacerToolbarBtn{display:inline-flex}
   </div>
 </div>
 
+<div class="modal-backdrop" id="reportModalBackdrop">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Сообщить об ИНЛО</h3>
+    </div>
+    <div class="form-row">
+      <label>Никнейм</label>
+      <input id="reportNickname" type="text" maxlength="100">
+    </div>
+    <div class="form-row">
+      <label>Сообщение *</label>
+      <input id="reportMessage" type="text" maxlength="200">
+      <div class="char-counter" id="reportCounter">0/200</div>
+      <span class="field-error" id="reportMessageError">Заполните это поле</span>
+    </div>
+    <div class="modal-actions">
+      <button id="reportCancel" type="button">Отмена</button>
+      <button id="reportSubmit" type="button" class="primary-btn">Отправить</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="messagesModalBackdrop">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Сообщения</h3>
+    </div>
+    <div class="messages-list" id="messagesList"></div>
+    <div class="modal-actions" style="justify-content:space-between">
+      <button id="clearMessagesBtn" type="button">Очистить историю</button>
+      <button id="markReadBtn" type="button" class="primary-btn">Прочитано</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-analytics.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc, onSnapshot, collection, addDoc, query, orderBy, writeBatch, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyAjIY9iH0gZT9WalyKTUh6zNinBNvt9aqQ",
@@ -229,6 +287,7 @@ const analytics = getAnalytics(app);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const boardRef = doc(db, DOC_PATH[0], DOC_PATH[1]);
+const reportsCol = collection(db, "reports");
 
 const SPECIAL_SECTIONS = {
   "semena":     { name: "Семена пропуска", img: "https://www.lowadi.com/media/equideo/image/produits/60/graines-pass.png" },
@@ -255,10 +314,13 @@ function formatUpdateDate(ts){
 let data = {};
 let order = [];
 let lastUpdatedAt = null;
+let reports = [];
+let unreadCount = 0;
+let reportsUnsub = null;
 
 const state = {
   editing:false, isAdmin:false, history:[], future:[],
-  pending:null, modalOpen:false, drag:null, sectionDrag:null, hrefUnlocked:false, editEnabled:true
+  pending:null, activeModal:null, drag:null, sectionDrag:null, hrefUnlocked:false, editEnabled:true
 };
 
 const main = document.getElementById("main");
@@ -285,12 +347,30 @@ const editNickname = document.getElementById("editNickname");
 const editEnabledDot = document.getElementById("editEnabledDot");
 const editEnabledLabel = editEnabledDot.querySelector(".switch-label");
 
+const reportBtn = document.getElementById("reportBtn");
+const reportHint = document.getElementById("reportHint");
+const reportModalBackdrop = document.getElementById("reportModalBackdrop");
+const reportNickname = document.getElementById("reportNickname");
+const reportMessage = document.getElementById("reportMessage");
+const reportCounter = document.getElementById("reportCounter");
+const reportCancel = document.getElementById("reportCancel");
+const reportSubmit = document.getElementById("reportSubmit");
+const messagesBtn = document.getElementById("messagesBtn");
+const messagesBadge = document.getElementById("messagesBadge");
+const messagesModalBackdrop = document.getElementById("messagesModalBackdrop");
+const messagesList = document.getElementById("messagesList");
+const markReadBtn = document.getElementById("markReadBtn");
+const clearMessagesBtn = document.getElementById("clearMessagesBtn");
+const toast = document.getElementById("toast");
+
 const ICON_EYE_OPEN = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>`;
 const ICON_EYE_CLOSED = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88"/></svg>`;
 const ICON_X = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>`;
 const ICON_DRAG = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" d="M4 9h16M4 15h16"/></svg>`;
 const ICON_DUPLICATE = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><rect x="3" y="3" width="13" height="13" rx="2.5"/><rect x="8" y="8" width="13" height="13" rx="2.5" fill="var(--panel)"/></svg>`;
 const ICON_SPACER_DRAG = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 2.5v4.5m0 0-2-2m2 2 2-2M12 21.5V17m0 0-2 2m2-2 2 2M4.5 12h15"/></svg>`;
+const ICON_TICK_SINGLE = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m4 12 5 5L20 6"/></svg>`;
+const ICON_TICK_DOUBLE = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m1 12 5 5L16 7"/><path stroke-linecap="round" stroke-linejoin="round" d="m8 12 5 5L23 7"/></svg>`;
 addSpacerToolbarBtn.innerHTML = ICON_SPACER_DRAG;
 
 /* helpers */
@@ -299,6 +379,18 @@ function isSpacer(item){ return item.type === "spacer"; }
 function getCardId(href){ try{ return new URL(href).searchParams.get("id"); }catch(e){ return ""; } }
 function getNickname(item){ return item.nickname || ""; }
 function getCardSubtitle(item){ const nick=(getNickname(item)||"").trim(); return nick? nick : getCardId(item.href); }
+function escapeHtml(str){
+  const d = document.createElement("div");
+  d.textContent = str == null ? "" : str;
+  return d.innerHTML;
+}
+function formatMsgDate(d){
+  const dd = String(d.getDate()).padStart(2,"0");
+  const mm = String(d.getMonth()+1).padStart(2,"0");
+  const hh = String(d.getHours()).padStart(2,"0");
+  const mi = String(d.getMinutes()).padStart(2,"0");
+  return `${dd}.${mm} ${hh}:${mi}`;
+}
 
 function applySpecialSection(sectionId, item){
   const special = SPECIAL_SECTIONS[sectionId];
@@ -348,6 +440,28 @@ onSnapshot(boardRef, (snap)=>{
   }catch(err){ console.error(err); syncStatus.textContent = "Ошибка синхронизации"; }
 });
 
+/* REPORTS (messages to admin) */
+function subscribeReports(){
+  if(reportsUnsub) return;
+  const q = query(reportsCol, orderBy("createdAt","asc"));
+  reportsUnsub = onSnapshot(q, snap=>{
+    reports = snap.docs.map(d=>({ id:d.id, ...d.data() }));
+    unreadCount = reports.filter(r=>!r.read).length;
+    updateMessagesBadge();
+    if(state.activeModal === "messages") renderMessagesList();
+  }, err=>console.error(err));
+}
+function unsubscribeReports(){
+  if(reportsUnsub){ reportsUnsub(); reportsUnsub = null; }
+  reports = [];
+  unreadCount = 0;
+  updateMessagesBadge();
+}
+function updateMessagesBadge(){
+  messagesBadge.textContent = unreadCount;
+  messagesBadge.style.display = unreadCount > 0 ? "flex" : "none";
+}
+
 onAuthStateChanged(auth, (user)=>{
   state.isAdmin = !!user && user.uid === ADMIN_UID;
   loginBtn.textContent = state.isAdmin ? "Выйти" : "Войти";
@@ -356,6 +470,10 @@ onAuthStateChanged(auth, (user)=>{
   modeBtn.style.display = state.isAdmin ? "inline-flex" : "none";
   undoBtn.style.display = state.isAdmin ? "inline-flex" : "none";
   redoBtn.style.display = state.isAdmin ? "inline-flex" : "none";
+  reportBtn.style.display = state.isAdmin ? "none" : "inline-flex";
+  reportHint.style.display = state.isAdmin ? "none" : "block";
+  messagesBtn.style.display = state.isAdmin ? "inline-flex" : "none";
+  if(state.isAdmin) subscribeReports(); else unsubscribeReports();
   if(user) console.log("UID:", user.uid);
   if(!state.isAdmin) setEditing(false);
   updateSyncStatusDisplay();
@@ -750,7 +868,7 @@ editEnabledDot.addEventListener("click", ()=>{ setEditEnabled(!state.editEnabled
 
 function openEditor(sectionId, index, item){
   state.pending = { section: sectionId, index };
-  state.modalOpen = true;
+  state.activeModal = "card";
   state.hrefUnlocked = index < 0;
   editSection.value = sectionId;
   editName.value = item ? item.name : "";
@@ -771,13 +889,12 @@ editHrefUnlock.addEventListener("click", ()=>{
   editHref.focus();
 });
 function closeModal(){
-  state.modalOpen = false;
+  state.activeModal = null;
   modalBackdrop.style.display = "none";
   state.pending = null;
 }
 document.getElementById("cancelEdit").addEventListener("click", closeModal);
 document.getElementById("saveEdit").addEventListener("click", saveEditHandler);
-
 function saveEditHandler(){
   const { section, index } = state.pending;
   const newSection = editSection.value;
@@ -814,6 +931,105 @@ function saveEditHandler(){
   commit();
 }
 
+/* REPORT MODAL (сообщить об ИНЛО) */
+function openReportModal(){
+  reportNickname.value = "";
+  reportMessage.value = "";
+  reportCounter.textContent = "0/200";
+  reportMessage.closest(".form-row").classList.remove("has-error");
+  state.activeModal = "report";
+  reportModalBackdrop.style.display = "flex";
+  setTimeout(()=>reportNickname.focus(), 0);
+}
+function closeReportModal(){
+  state.activeModal = null;
+  reportModalBackdrop.style.display = "none";
+}
+reportBtn.addEventListener("click", openReportModal);
+reportCancel.addEventListener("click", closeReportModal);
+reportMessage.addEventListener("input", ()=>{
+  reportCounter.textContent = `${reportMessage.value.length}/200`;
+});
+reportSubmit.addEventListener("click", submitReport);
+async function submitReport(){
+  const nickname = reportNickname.value.trim();
+  const text = reportMessage.value.trim();
+  const row = reportMessage.closest(".form-row");
+  row.classList.toggle("has-error", !text);
+  if(!text) return;
+  reportSubmit.disabled = true;
+  try{
+    await addDoc(reportsCol, { nickname, text, read:false, createdAt: serverTimestamp() });
+    closeReportModal();
+    showToast("Сообщение отправлено!");
+  }catch(e){
+    console.error(e);
+    alert("Не удалось отправить сообщение. Попробуйте позже.");
+  }finally{
+    reportSubmit.disabled = false;
+  }
+}
+
+let toastTimer = null;
+function showToast(text){
+  toast.textContent = text;
+  toast.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>toast.classList.remove("show"), 2200);
+}
+
+/* MESSAGES MODAL (админ) */
+function openMessagesModal(){
+  state.activeModal = "messages";
+  messagesModalBackdrop.style.display = "flex";
+  renderMessagesList();
+}
+function closeMessagesModal(){
+  state.activeModal = null;
+  messagesModalBackdrop.style.display = "none";
+}
+messagesBtn.addEventListener("click", openMessagesModal);
+function renderMessagesList(){
+  messagesList.innerHTML = "";
+  if(!reports.length){
+    messagesList.innerHTML = `<div class="messages-empty">Сообщений пока нет</div>`;
+    return;
+  }
+  reports.forEach(r=>{
+    const el = document.createElement("div");
+    el.className = "msg-item" + (r.read ? " is-read" : "");
+    const dateStr = (r.createdAt && r.createdAt.toDate) ? formatMsgDate(r.createdAt.toDate()) : "";
+    el.innerHTML = `
+      ${r.nickname ? `<div class="msg-nick">${escapeHtml(r.nickname)}</div>` : ``}
+      <div class="msg-text">${escapeHtml(r.text)}</div>
+      <div class="msg-meta">
+        <span>${dateStr}</span>
+        <span class="msg-ticks">${r.read ? ICON_TICK_DOUBLE : ICON_TICK_SINGLE}</span>
+      </div>
+    `;
+    messagesList.appendChild(el);
+  });
+  messagesList.scrollTop = messagesList.scrollHeight;
+}
+markReadBtn.addEventListener("click", async ()=>{
+  const unread = reports.filter(r=>!r.read);
+  closeMessagesModal();
+  if(!unread.length) return;
+  try{
+    const batch = writeBatch(db);
+    unread.forEach(r=> batch.update(doc(db,"reports", r.id), { read:true }));
+    await batch.commit();
+  }catch(e){ console.error(e); }
+});
+clearMessagesBtn.addEventListener("click", async ()=>{
+  if(!reports.length) return;
+  if(!confirm("Удалить всю историю сообщений?")) return;
+  try{
+    const batch = writeBatch(db);
+    reports.forEach(r=> batch.delete(doc(db,"reports", r.id)));
+    await batch.commit();
+  }catch(e){ console.error(e); }
+});
 
 let autoScrollRAF = null;
 function autoScrollTick(e){
@@ -837,9 +1053,16 @@ document.addEventListener("dragover", e=>{
 });
 
 document.addEventListener("keydown", e=>{
-  if(state.modalOpen){
+  if(state.activeModal === "card"){
     if(e.key === "Enter"){ e.preventDefault(); saveEditHandler(); return; }
     if(e.key === "Escape"){ e.preventDefault(); closeModal(); return; }
+  }
+  if(state.activeModal === "report"){
+    if(e.key === "Enter"){ e.preventDefault(); submitReport(); return; }
+    if(e.key === "Escape"){ e.preventDefault(); closeReportModal(); return; }
+  }
+  if(state.activeModal === "messages"){
+    if(e.key === "Escape"){ e.preventDefault(); closeMessagesModal(); return; }
   }
   if(state.isAdmin && (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z"){
     e.preventDefault();
