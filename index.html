@@ -126,8 +126,8 @@ body.editing-mode #addSpacerToolbarBtn{display:inline-flex}
 #reportBtn{background:#1f5c34;border-color:#2c7a45}
 #reportBtn:hover{background:#256b3d}
 .hint-text{display:flex;flex-direction:column;gap:2px;line-height:1.3;flex:1 1 auto;min-width:0}
-.hint-line1{color:var(--muted);font-size:12px;font-style:italic;white-space:nowrap}
-.hint-line2{color:var(--line);font-size:12px;font-style:italic;white-space:nowrap}
+.hint-line1{color:var(--line);font-size:12px;font-style:italic;white-space:nowrap}
+.hint-line2{color:var(--muted);font-size:12px;font-style:italic;white-space:nowrap}
 @media (max-width:900px){
   .hint-line1,.hint-line2{white-space:normal}
 }
@@ -521,12 +521,15 @@ let lastScrollY = window.scrollY;
 function handleHeaderScroll(){
   if(window.innerWidth > 620){
     header.classList.remove("header-hidden");
+    lastScrollY = window.scrollY;
     return;
   }
   const currentY = window.scrollY;
-  if(currentY > lastScrollY && currentY > 80){
+  const delta = currentY - lastScrollY;
+  if(Math.abs(delta) < 30) return;
+  if(delta > 0 && currentY > 80){
     header.classList.add("header-hidden");
-  }else{
+  }else if(delta < 0){
     header.classList.remove("header-hidden");
   }
   lastScrollY = currentY;
