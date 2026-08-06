@@ -12,14 +12,14 @@
 *{box-sizing:border-box}
 svg{width:16px;height:16px;display:block;flex-shrink:0}
 body{margin:0;background:var(--bg);color:var(--txt);font:16px system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
-header{position:sticky;top:0;z-index:1000;isolation:isolate;padding:16px max(18px,calc(50% - 610px));background:#0d1526f7;backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
-h1{margin:0 0 11px;font-size:22px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+header{position:sticky;top:0;z-index:1000;isolation:isolate;padding:16px max(18px,calc(50% - 610px)) 8px;background:#0d1526f7;backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+h1{margin:0 0 18px;font-size:22px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
 #syncStatus{font-size:12px;color:var(--muted);font-weight:400;font-style:italic}
-.toolbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:12px}
+.toolbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:0}
 .toolbar-left{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
 .toolbar-right{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-left:auto}
 button{padding:8px 12px 10px;color:var(--txt);background:#1b3355;border:1px solid var(--line);border-radius:10px;cursor:pointer;font:inherit;display:inline-flex;align-items:center;justify-content:center;line-height:1}
-main{position:relative;z-index:1;max-width:1220px;margin:0 auto;padding:22px 18px 48px}
+main{position:relative;z-index:1;max-width:1220px;margin:0 auto;padding:12px 18px 48px}
 section{margin-bottom:28px;scroll-margin-top:108px;transition:opacity .15s}
 section.section-drag-source{opacity:.4}
 section.section-drag-over{outline:2px dashed var(--edit);outline-offset:4px;border-radius:8px}
