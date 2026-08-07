@@ -257,8 +257,8 @@ body.editing-mode #addSpacerToolbarBtn{display:inline-flex}
     </div>
     <div class="form-row">
       <label>Никнейм</label>
-      <input id="reportNickname" type="text" maxlength="50">
-      <div class="char-counter" id="reportNicknameCounter">0/50</div>
+      <input id="reportNickname" type="text" maxlength="30">
+      <div class="char-counter" id="reportNicknameCounter">0/30</div>
     </div>
     <div class="form-row">
       <label>Сообщение *</label>
@@ -985,7 +985,7 @@ function openReportModal(){
   reportNickname.value = "";
   reportMessage.value = "";
   reportCounter.textContent = "0/200";
-  reportNicknameCounter.textContent = "0/50";
+  reportNicknameCounter.textContent = "0/30";
   reportMessage.closest(".form-row").classList.remove("has-error");
   state.activeModal = "report";
   reportModalBackdrop.style.display = "flex";
@@ -998,7 +998,7 @@ function closeReportModal(){
 reportBtn.addEventListener("click", openReportModal);
 reportCancel.addEventListener("click", closeReportModal);
 reportNickname.addEventListener("input", ()=>{
-  reportNicknameCounter.textContent = `${reportNickname.value.length}/50`;
+  reportNicknameCounter.textContent = `${reportNickname.value.length}/30`;
 });
 reportMessage.addEventListener("input", ()=>{
   reportCounter.textContent = `${reportMessage.value.length}/200`;
