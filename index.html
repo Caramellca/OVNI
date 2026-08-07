@@ -154,8 +154,8 @@ body.editing-mode #addSpacerToolbarBtn{display:inline-flex}
   header{padding-bottom:4px}
   .hint-text{display:none!important}
 }
-  .modal-hint{display:none;flex-direction:column;gap:4px;margin:-4px 0 14px}
-  .modal-hint .hint-line1,.modal-hint .hint-line2{white-space:normal}
+.modal-hint{display:none;flex-direction:column;gap:4px;margin:-4px 0 14px}
+.modal-hint .hint-line1,.modal-hint .hint-line2{white-space:normal}
 @media (max-width:620px){
   .modal-hint{display:flex}
 }
@@ -257,7 +257,8 @@ body.editing-mode #addSpacerToolbarBtn{display:inline-flex}
     </div>
     <div class="form-row">
       <label>Никнейм</label>
-      <input id="reportNickname" type="text" maxlength="100">
+      <input id="reportNickname" type="text" maxlength="50">
+      <div class="char-counter" id="reportNicknameCounter">0/50</div>
     </div>
     <div class="form-row">
       <label>Сообщение *</label>
@@ -377,6 +378,7 @@ const reportBtn = document.getElementById("reportBtn");
 const reportHint = document.getElementById("reportHint");
 const reportModalBackdrop = document.getElementById("reportModalBackdrop");
 const reportNickname = document.getElementById("reportNickname");
+const reportNicknameCounter = document.getElementById("reportNicknameCounter");
 const reportMessage = document.getElementById("reportMessage");
 const reportCounter = document.getElementById("reportCounter");
 const reportCancel = document.getElementById("reportCancel");
@@ -983,6 +985,7 @@ function openReportModal(){
   reportNickname.value = "";
   reportMessage.value = "";
   reportCounter.textContent = "0/200";
+  reportNicknameCounter.textContent = "0/50";
   reportMessage.closest(".form-row").classList.remove("has-error");
   state.activeModal = "report";
   reportModalBackdrop.style.display = "flex";
@@ -994,6 +997,9 @@ function closeReportModal(){
 }
 reportBtn.addEventListener("click", openReportModal);
 reportCancel.addEventListener("click", closeReportModal);
+reportNickname.addEventListener("input", ()=>{
+  reportNicknameCounter.textContent = `${reportNickname.value.length}/50`;
+});
 reportMessage.addEventListener("input", ()=>{
   reportCounter.textContent = `${reportMessage.value.length}/200`;
 });
