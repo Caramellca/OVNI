@@ -12,15 +12,43 @@
 }
 *{box-sizing:border-box}
 svg{width:16px;height:16px;display:block;flex-shrink:0}
-body{margin:0;background:var(--bg);color:var(--txt);font:16px system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
-header{position:sticky;top:0;z-index:1000;isolation:isolate;padding:16px max(18px,calc(50% - 610px)) 16px;background:#0d1526f7;backdrop-filter:blur(10px);border-bottom:1px solid var(--line);transition:transform .25s ease}
-header.header-hidden{transform:translateY(-100%)}
-h1{margin:0 0 18px;font-size:22px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
-#syncStatus{font-size:12px;color:var(--muted);font-weight:400;font-style:italic}
-.toolbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:0}
+body{margin:0;background:var(--bg);color:var(--txt);font:16px system-ui,-apple-system,"Segoe UI",Arial,sans-serif;overflow-x:hidden}
+
+/* Единая шапка — никогда не прячется */
+header{
+  position:sticky; top:0; z-index:1001; isolation:isolate;
+  padding:16px max(18px,calc(50% - 610px)) 12px;
+  background:#0d1526f7; backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);
+}
+.header-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+h1{margin:0;font-size:22px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+#syncStatus{display:block;font-size:12px;color:var(--muted);font-weight:400;font-style:italic;margin-bottom:10px}
+
+.category-tabs{
+  display:flex; flex-wrap:wrap; gap:8px;
+}
+.category-tab{
+  padding:7px 12px 8px; border-radius:9px;
+  font-size:13px; white-space:nowrap;
+  background:var(--line); color:var(--txt); border:none; cursor:pointer;
+}
+.category-tab:hover{background:var(--accent);color:var(--bg)}
+@media (max-width:620px){
+  .category-tabs{
+    flex-wrap:nowrap; overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch;
+    margin-left:-18px; margin-right:-18px;
+    padding-left:18px; padding-right:18px;
+  }
+  .category-tabs::-webkit-scrollbar{display:none}
+  .category-tab{flex:0 0 auto}
+}
+.toolbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:0;padding:12px max(18px,calc(50% - 610px)) 0}
 .toolbar-left{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
 .toolbar-right{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-left:auto}
 button{padding:8px 12px 10px;color:var(--txt);background:#1b3355;border:1px solid var(--line);border-radius:10px;cursor:pointer;font:inherit;display:inline-flex;align-items:center;justify-content:center;line-height:1}
+#loginBtn{background:transparent;border:1px solid var(--line);color:var(--muted);padding:6px 10px 7px;font-size:13px}
+#loginBtn:hover{color:var(--txt);border-color:var(--accent)}
 main{position:relative;z-index:1;max-width:1220px;margin:0 auto;padding:12px 18px 48px}
 section{margin-bottom:28px;scroll-margin-top:108px;transition:opacity .15s}
 section.section-drag-source{opacity:.4}
@@ -38,6 +66,7 @@ body.editing-mode .spacer-controls{display:flex}
 .card,.add-card{position:relative;display:grid;grid-template-columns:56px 1fr;grid-template-rows:1fr auto;gap:0 9px;align-items:center;min-height:65px;padding:9px;color:var(--txt);background:var(--panel);border:1px solid var(--line);border-radius:11px;text-decoration:none;transition:.15s;user-select:none}
 .card:hover,.add-card:hover{transform:translateY(-2px);background:#1c304e;border-color:var(--accent)}
 .card.editing{outline:none}
+.card.selectable{padding-right:36px;cursor:pointer}
 .card.drag-source{opacity:.4}
 .card.drag-over-before{box-shadow:-3px 0 0 0 var(--edit),inset 3px 0 0 0 var(--edit)}
 .card.drag-over-after{box-shadow:3px 0 0 0 var(--edit),inset -3px 0 0 0 var(--edit)}
@@ -117,20 +146,12 @@ input:-webkit-autofill:active{
 #saveEdit:hover,.primary-btn:hover{background:#8fc2ff}
 .undo-redo{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
 #modeBtn.save-mode{color:#111;background:var(--edit);border-color:var(--edit)}
-#loginBtn.logged-in{background:#1f5c34;border-color:#2c7a45}
+#loginBtn.logged-in{color:#7ee0a0;border-color:#2c7a45}
 #addSectionBtn{display:none}
 body.editing-mode #addSectionBtn{display:inline-flex}
 #addSpacerToolbarBtn{display:none;width:36px;height:36px;padding:0;cursor:grab}
 #addSpacerToolbarBtn:active{cursor:grabbing}
 body.editing-mode #addSpacerToolbarBtn{display:inline-flex}
-#reportBtn{background:#1f5c34;border-color:#2c7a45}
-#reportBtn:hover{background:#256b3d}
-.hint-text{display:flex;flex-direction:column;gap:2px;line-height:1.3;flex:1 1 auto;min-width:0}
-.hint-line1{color:var(--line);font-size:12px;font-style:italic;white-space:nowrap}
-.hint-line2{color:var(--muted);font-size:12px;font-style:italic;white-space:nowrap}
-@media (max-width:900px){
-  .hint-line1,.hint-line2{white-space:normal}
-}
 #messagesBtn{position:relative}
 .msg-badge{position:absolute;top:-8px;right:-8px;min-width:18px;height:18px;padding:0 4px;border-radius:9px;background:var(--danger);color:#fff;font-size:11px;font-weight:700;display:none;align-items:center;justify-content:center;line-height:1}
 .char-counter{font-size:11px;color:var(--muted);text-align:right;margin-top:-2px}
@@ -145,49 +166,150 @@ body.editing-mode #addSpacerToolbarBtn{display:inline-flex}
 .msg-item.is-read .msg-ticks{color:var(--muted)}
 .msg-ticks svg{width:14px;height:14px}
 .messages-empty{color:var(--muted);font-size:14px;text-align:center;padding:24px 0}
-.toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.95);z-index:4000;padding:14px 22px;background:#111b2d;border:1px solid var(--line);border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.5);color:var(--txt);font-size:15px;opacity:0;pointer-events:none;transition:opacity .25s ease,transform .25s ease}
+
+/* Тост — крупный, контрастный, одна строка */
+.toast{
+  position:fixed; top:50%; left:50%;
+  transform:translate(-50%,-50%) scale(.95);
+  z-index:4000;
+  padding:18px 28px;
+  background:var(--accent);
+  border:none;
+  border-radius:14px;
+  box-shadow:none;
+  color:#0d1526;
+  font-size:18px;
+  font-weight:700;
+  white-space:nowrap;
+  opacity:0; pointer-events:none;
+  transition:opacity .25s ease, transform .25s ease;
+}
 .toast.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+@media (max-width:620px){
+  .toast{font-size:15px;padding:14px 20px}
+}
+
+/* Статус карточки "Ниже шанс" — наползает на угол карточки */
+.card-status-badge{
+  position:absolute; top:-9px; right:-9px; z-index:7;
+  padding:4px 8px 5px; border-radius:8px;
+  background:#2a405f; color:var(--accent);
+  font-size:10px; font-weight:700; line-height:1;
+  pointer-events:none;
+}
+.admin-status-alert{
+  position:absolute; top:-8px; left:-8px; z-index:8;
+  display:grid; place-items:center; width:19px; height:19px;
+  border:2px solid var(--bg); border-radius:50%;
+  background:var(--danger); color:#fff; font-size:12px; font-weight:800;
+  animation:statusPulse 1.3s ease-in-out infinite;
+}
+@keyframes statusPulse{50%{transform:scale(1.16);box-shadow:0 0 0 5px rgba(217,72,72,.15)}}
+
+/* Радиокнопка выбора карточки (режим "Больше нет / Поймал") */
+.card-select-radio{
+  position:absolute; top:50%; right:9px; z-index:9;
+  transform:translateY(-50%);
+  width:20px; height:20px; border-radius:50%;
+  border:2px solid var(--muted); background:var(--panel);
+  padding:0; cursor:pointer;
+}
+.card-select-radio.checked{border-color:var(--accent)}
+.card-select-radio.checked::after{
+  content:""; position:absolute; inset:4px; border-radius:50%; background:var(--accent);
+}
+
+/* Кнопки "Больше нет / Поймал" — фиксированная полоса внизу, никогда не меняют размер/положение.
+   После нажатия любой из них левая всегда становится "Отменить", правая — "Подтвердить"
+   с мелкой курсивной подписью, какое действие подтверждается. */
+.user-drop-zones{
+  display:none;
+  position:fixed; left:0; right:0; bottom:0; z-index:1500;
+  gap:10px;
+  padding:12px max(18px,calc(50% - 610px));
+  background:#0d1526f2; backdrop-filter:blur(10px);
+  border-top:1px solid var(--line);
+}
+.user-drop-zone{
+  flex:1 1 0; height:60px; padding:8px 14px;
+  border:1.5px solid transparent; border-radius:11px;
+  display:flex; align-items:center; justify-content:center;
+  transition:background .15s ease,color .15s ease,opacity .15s ease,border-color .15s ease;
+  cursor:pointer;
+  font-weight:400;
+}
+.zone-content{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center}
+.zone-line{display:flex;align-items:center;justify-content:center;gap:4px;font-size:13px;font-weight:400;line-height:1.2;white-space:nowrap}
+.zone-caption{font-size:10px;font-style:italic;font-weight:400;opacity:.75;line-height:1;white-space:nowrap}
+.zone-emoji{display:inline-flex;align-items:center;justify-content:center;width:1.1em;flex-shrink:0}
+
+.user-drop-zone.left{background:rgba(217,161,58,.14);border-color:#d9a13e;color:#d9a13e}
+.user-drop-zone.left:hover{background:rgba(217,161,58,.22)}
+
+.user-drop-zone.right{background:rgba(125,182,255,.14);border-color:var(--accent);color:var(--accent)}
+.user-drop-zone.right:hover{background:rgba(125,182,255,.22)}
+
+/* Едва заметное дыхание кнопки "Поймал", пока сигнал не активирован — напоминание отметить находку */
+@keyframes catchPulse{
+  0%,100%{background:rgba(125,182,255,.10)}
+  50%{background:rgba(125,182,255,.18)}
+}
+.user-drop-zone.right:not(.as-confirm){animation:catchPulse 3.4s ease-in-out infinite}
+
+.user-drop-zone.waiting{opacity:.55;cursor:default}
+
+.user-drop-zone.as-cancel{background:transparent;border-color:var(--line);color:var(--muted);-webkit-tap-highlight-color:transparent}
+.user-drop-zone.as-cancel:hover{background:transparent;border-color:var(--accent);color:var(--txt)}
+
+.user-drop-zone.as-confirm{background:rgba(125,182,255,.14);border-color:var(--accent);color:var(--accent);-webkit-tap-highlight-color:transparent}
+.user-drop-zone.as-confirm:hover{background:rgba(125,182,255,.24)}
+.user-drop-zone.as-confirm.waiting{opacity:.55;cursor:default}
+
+body:not(.is-admin) .user-drop-zones{display:flex}
+body:not(.is-admin) main{padding-bottom:104px}
+
 @media (max-width:620px){
   .toolbar{align-items:stretch}
   .toolbar-right{margin-left:0;width:100%;justify-content:flex-start}
-  body:not(.is-admin) #loginBtn{display:none}
-  header{padding-bottom:4px}
-  .hint-text{display:none!important}
-}
-.modal-hint{display:none;flex-direction:column;gap:4px;margin:-4px 0 14px}
-.modal-hint .hint-line1,.modal-hint .hint-line2{white-space:normal}
-@media (max-width:620px){
-  .modal-hint{display:flex}
+  body:not(.is-admin) .grid{grid-template-columns:1fr}
 }
 @media (max-width:460px){.grid{grid-template-columns:1fr}.split-row{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <header>
-  <h1>В поисках ИНЛО <span id="syncStatus"></span></h1>
-  <div class="toolbar">
-    <div class="toolbar-left">
-      <button id="reportBtn" type="button" style="display:none">Сообщить об ИНЛО</button>
-      <span id="reportHint" class="hint-text" style="display:none">
-        <span class="hint-line1">читаю все ваши сообщения, вахаха) пишите всё что хотите</span>
-        <span class="hint-line2">Сообщите о статусе ИНЛО на вашей страничке или на страничке другого игрока</span>
-      </span>
-      <button id="modeBtn" type="button" style="display:none">Редактировать</button>
-      <button id="addSpacerToolbarBtn" type="button" title="Перетащите в нужное место категории" draggable="true"></button>
-      <button id="addSectionBtn" type="button">+ Новая категория</button>
-      <div class="undo-redo">
-        <button id="undoBtn" type="button" title="Отменить последнее действие" style="display:none">Вернуть</button>
-        <button id="redoBtn" type="button" title="Повторить отменённое действие" style="display:none">Повторить</button>
-      </div>
-    </div>
-    <div class="toolbar-right">
-      <button id="messagesBtn" type="button" style="display:none">Посмотреть сообщения<span id="messagesBadge" class="msg-badge">0</span></button>
-      <button id="loginBtn" type="button">Войти</button>
+  <div class="header-top">
+    <h1>В поисках ИНЛО</h1>
+    <button id="loginBtn" type="button">Вход</button>
+  </div>
+  <span id="syncStatus"></span>
+  <nav class="category-tabs" id="categoryTabs" aria-label="Категории"></nav>
+</header>
+<div class="toolbar">
+  <div class="toolbar-left">
+    <button id="modeBtn" type="button" style="display:none">Редактировать</button>
+    <button id="addSpacerToolbarBtn" type="button" title="Перетащите в нужное место категории" draggable="true"></button>
+    <button id="addSectionBtn" type="button">+ Новая категория</button>
+    <div class="undo-redo">
+      <button id="undoBtn" type="button" title="Отменить последнее действие" style="display:none">Вернуть</button>
+      <button id="redoBtn" type="button" title="Повторить отменённое действие" style="display:none">Повторить</button>
     </div>
   </div>
-</header>
+  <div class="toolbar-right">
+    <button id="messagesBtn" type="button" style="display:none">Посмотреть сообщения<span id="messagesBadge" class="msg-badge">0</span></button>
+  </div>
+</div>
 
 <main id="main"></main>
+
+<div class="user-drop-zones" id="userDropZones">
+  <button type="button" class="user-drop-zone left" id="userStopDrop">
+    <span class="zone-content"><span class="zone-line"><span class="zone-label">Больше нет / Изменилось</span></span></span>
+  </button>
+  <button type="button" class="user-drop-zone right" id="userCatchDrop">
+    <span class="zone-content"><span class="zone-line"><span class="zone-label">Поймал(-а)</span><span class="zone-emoji">🎉</span></span></span>
+  </button>
+</div>
 
 <div class="modal-backdrop" id="loginModal">
   <div class="modal">
@@ -239,36 +361,12 @@ body.editing-mode #addSpacerToolbarBtn{display:inline-flex}
         <span class="field-error" id="editHrefError">Заполните это поле</span>
       </div>
     </div>
+    <div class="modal-actions" id="statusEditActions" style="display:none;justify-content:flex-start;margin-top:0">
+      <button id="clearCardStatusBtn" type="button">Снять пометку «Ниже шанс»</button>
+    </div>
     <div class="modal-actions">
       <button id="cancelEdit" type="button">Отмена</button>
       <button id="saveEdit" type="button">Сохранить</button>
-    </div>
-  </div>
-</div>
-
-<div class="modal-backdrop" id="reportModalBackdrop">
-  <div class="modal">
-    <div class="modal-header">
-      <h3>Сообщить об ИНЛО</h3>
-    </div>
-    <div class="modal-hint">
-      <span class="hint-line2">Сообщите о статусе ИНЛО на вашей страничке или на страничке другого игрока</span>
-      <span class="hint-line1">читаю все ваши сообщения, вахаха) пишите всё что хотите</span>
-    </div>
-    <div class="form-row">
-      <label>Никнейм</label>
-      <input id="reportNickname" type="text" maxlength="30">
-      <div class="char-counter" id="reportNicknameCounter">0/30</div>
-    </div>
-    <div class="form-row">
-      <label>Сообщение *</label>
-      <input id="reportMessage" type="text" maxlength="200">
-      <div class="char-counter" id="reportCounter">0/200</div>
-      <span class="field-error" id="reportMessageError">Заполните это поле</span>
-    </div>
-    <div class="modal-actions">
-      <button id="reportCancel" type="button">Отмена</button>
-      <button id="reportSubmit" type="button" class="primary-btn">Отправить</button>
     </div>
   </div>
 </div>
@@ -280,6 +378,7 @@ body.editing-mode #addSpacerToolbarBtn{display:inline-flex}
     </div>
     <div class="messages-list" id="messagesList"></div>
     <div class="modal-actions" style="justify-content:space-between">
+      <button id="clearAllStatusesBtn" type="button">Сбросить все статусы</button>
       <button id="clearMessagesBtn" type="button">Очистить историю</button>
       <button id="markReadBtn" type="button" class="primary-btn">Прочитано</button>
     </div>
@@ -292,7 +391,7 @@ body.editing-mode #addSpacerToolbarBtn{display:inline-flex}
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-analytics.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, onSnapshot, collection, addDoc, query, orderBy, writeBatch, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection, addDoc, query, orderBy, writeBatch, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyAjIY9iH0gZT9WalyKTUh6zNinBNvt9aqQ",
@@ -314,13 +413,13 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const boardRef = doc(db, DOC_PATH[0], DOC_PATH[1]);
 const reportsCol = collection(db, "reports");
+const cardStatusesCol = collection(db, "cardStatuses");
 
 const SPECIAL_SECTIONS = {
   "semena":     { name: "Семена пропуска", img: "https://www.lowadi.com/media/equideo/image/produits/60/graines-pass.png" },
   "or":         { name: "Очки роста",       img: "https://www.lowadi.com/media/equideo/image/produits/60/vieillissement.png" },
   "check-list": { name: "Рандом",           img: "" }
 };
-
 const seedData = {
   "predmety-chr": { title: "Предметы", items: [], hidden: false },
   "bonusy":       { title: "Бонусы", items: [], hidden: false },
@@ -343,13 +442,19 @@ let lastUpdatedAt = null;
 let reports = [];
 let unreadCount = 0;
 let reportsUnsub = null;
+let cardStatuses = new Set();
+let cardStatusesUnsub = null;
+
+let signalMode = null;      // "catch" | "stop" | null
+let signalStage = "idle";   // "idle" | "picking" | "confirming"
+let signalTarget = null;    // { section, index, item }
 
 const state = {
   editing:false, isAdmin:false, history:[], future:[],
   pending:null, activeModal:null, drag:null, sectionDrag:null, hrefUnlocked:false, editEnabled:true
 };
 
-const header = document.querySelector("header");
+const categoryTabs = document.getElementById("categoryTabs");
 const main = document.getElementById("main");
 const modeBtn = document.getElementById("modeBtn");
 const undoBtn = document.getElementById("undoBtn");
@@ -373,24 +478,28 @@ const editImg = document.getElementById("editImg");
 const editNickname = document.getElementById("editNickname");
 const editEnabledDot = document.getElementById("editEnabledDot");
 const editEnabledLabel = editEnabledDot.querySelector(".switch-label");
+const statusEditActions = document.getElementById("statusEditActions");
+const clearCardStatusBtn = document.getElementById("clearCardStatusBtn");
 
-const reportBtn = document.getElementById("reportBtn");
-const reportHint = document.getElementById("reportHint");
-const reportModalBackdrop = document.getElementById("reportModalBackdrop");
-const reportNickname = document.getElementById("reportNickname");
-const reportNicknameCounter = document.getElementById("reportNicknameCounter");
-const reportMessage = document.getElementById("reportMessage");
-const reportCounter = document.getElementById("reportCounter");
-const reportCancel = document.getElementById("reportCancel");
-const reportSubmit = document.getElementById("reportSubmit");
 const messagesBtn = document.getElementById("messagesBtn");
 const messagesBadge = document.getElementById("messagesBadge");
 const messagesModalBackdrop = document.getElementById("messagesModalBackdrop");
 const messagesList = document.getElementById("messagesList");
 const markReadBtn = document.getElementById("markReadBtn");
 const clearMessagesBtn = document.getElementById("clearMessagesBtn");
+const clearAllStatusesBtn = document.getElementById("clearAllStatusesBtn");
 const toast = document.getElementById("toast");
+const userDropZones = document.getElementById("userDropZones");
+const userStopDrop = document.getElementById("userStopDrop");
+const userCatchDrop = document.getElementById("userCatchDrop");
 
+const ZONE_LABEL_STOP = `<span class="zone-line"><span class="zone-label">Больше нет / Изменилось</span></span>`;
+const ZONE_LABEL_CATCH = `<span class="zone-line"><span class="zone-label">Поймал(-а)</span><span class="zone-emoji">🎉</span></span>`;
+const ZONE_LABEL_CANCEL = `<span class="zone-line"><span class="zone-label">Отменить</span></span>`;
+function confirmLabel(mode){
+  const caption = mode === "catch" ? "Поймал(-а)" : "Больше нет / Изменилось";
+  return `<span class="zone-line"><span class="zone-label">Подтвердить</span></span><span class="zone-caption">${caption}</span>`;
+}
 const ICON_EYE_OPEN = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>`;
 const ICON_EYE_CLOSED = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88"/></svg>`;
 const ICON_X = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>`;
@@ -468,7 +577,7 @@ onSnapshot(boardRef, (snap)=>{
   }catch(err){ console.error(err); syncStatus.textContent = "Ошибка синхронизации"; }
 });
 
-/* REPORTS (messages to admin) */
+/* REPORTS (сообщения админу — раздел сохранён для истории и служебных кнопок) */
 function subscribeReports(){
   if(reportsUnsub) return;
   const q = query(reportsCol, orderBy("createdAt","asc"));
@@ -490,20 +599,41 @@ function updateMessagesBadge(){
   messagesBadge.style.display = unreadCount > 0 ? "flex" : "none";
 }
 
+/* CARD STATUSES ("Ниже шанс") — видны всем, подписка не зависит от роли */
+function statusIdFor(item){
+  return encodeURIComponent(item.href);
+}
+function subscribeCardStatuses(){
+  if(cardStatusesUnsub) return;
+  cardStatusesUnsub = onSnapshot(cardStatusesCol, snap=>{
+    cardStatuses = new Set(snap.docs.map(d=>d.id));
+    render();
+  }, err=>console.error(err));
+}
+function hasCardStatus(item){
+  return cardStatuses.has(statusIdFor(item));
+}
+async function setCardStatus(item){
+  await setDoc(doc(db, "cardStatuses", statusIdFor(item)), { updatedAt: serverTimestamp() });
+}
+async function removeCardStatus(item){
+  await deleteDoc(doc(db, "cardStatuses", statusIdFor(item)));
+}
+subscribeCardStatuses();
+
 onAuthStateChanged(auth, (user)=>{
   state.isAdmin = !!user && user.uid === ADMIN_UID;
-  loginBtn.textContent = state.isAdmin ? "Выйти" : "Войти";
+  loginBtn.textContent = state.isAdmin ? "Выход" : "Вход";
   loginBtn.classList.toggle("logged-in", state.isAdmin);
   document.body.classList.toggle("is-admin", state.isAdmin);
   modeBtn.style.display = state.isAdmin ? "inline-flex" : "none";
   undoBtn.style.display = state.isAdmin ? "inline-flex" : "none";
   redoBtn.style.display = state.isAdmin ? "inline-flex" : "none";
-  reportBtn.style.display = state.isAdmin ? "none" : "inline-flex";
-  reportHint.style.display = state.isAdmin ? "none" : "flex";
   messagesBtn.style.display = state.isAdmin ? "inline-flex" : "none";
   if(state.isAdmin) subscribeReports(); else unsubscribeReports();
   if(user) console.log("UID:", user.uid);
   if(!state.isAdmin) setEditing(false);
+  cancelSignal();
   updateSyncStatusDisplay();
   render();
 });
@@ -527,26 +657,107 @@ addSpacerToolbarBtn.addEventListener("dragstart", e=>{
 });
 addSpacerToolbarBtn.addEventListener("dragend", ()=>{ state.drag = null; });
 
-/* Скрытие меню при скролле вниз (только мобильная версия) */
-let lastScrollY = window.scrollY;
-function handleHeaderScroll(){
-  if(window.innerWidth > 620){
-    header.classList.remove("header-hidden");
-    lastScrollY = window.scrollY;
-    return;
-  }
-  const currentY = window.scrollY;
-  const delta = currentY - lastScrollY;
-  if(Math.abs(delta) < 30) return;
-  if(delta > 0 && currentY > 80){
-    header.classList.add("header-hidden");
-  }else if(delta < 0){
-    header.classList.remove("header-hidden");
-  }
-  lastScrollY = currentY;
+/* ТАБЫ КАТЕГОРИЙ (без визуальной подсветки активного таба) */
+function renderCategoryTabs(){
+  categoryTabs.innerHTML = "";
+  order.forEach(id=>{
+    const sec = data[id];
+    if(!sec || (sec.hidden && !state.isAdmin)) return;
+    const tab = document.createElement("button");
+    tab.type = "button";
+    tab.className = "category-tab";
+    tab.textContent = sec.title;
+    tab.dataset.sectionId = id;
+    tab.addEventListener("click", ()=>scrollToSection(id));
+    categoryTabs.appendChild(tab);
+  });
 }
-window.addEventListener("scroll", handleHeaderScroll, { passive: true });
-window.addEventListener("resize", handleHeaderScroll);
+
+function scrollToSection(id){
+  const target = document.getElementById(id);
+  if(!target) return;
+  const rect = target.getBoundingClientRect();
+  const offset = window.scrollY + rect.top - window.innerHeight * 0.22;
+  window.scrollTo({ top: Math.max(0, offset), behavior: "smooth" });
+}
+
+/* МЕХАНИКА "БОЛЬШЕ НЕТ / ПОЙМАЛ" — кнопка, затем выбор карточки, затем подтверждение.
+   После нажатия любой из кнопок левая всегда становится "Отменить", а правая —
+   "Подтвердить" с подписью, какое действие подтверждается. */
+async function handleUserSignal(item, direction){
+  try{
+    await setCardStatus(item);
+    showToast(direction > 0 ? "Поздравляю!!! 🥳" : "Будет исправлено ❤️");
+  }catch(err){
+    console.error(err);
+    showToast("Не удалось сохранить отметку");
+  }
+}
+
+function updateSignalUI(){
+  const leftContent = userStopDrop.querySelector(".zone-content");
+  const rightContent = userCatchDrop.querySelector(".zone-content");
+
+  userStopDrop.classList.remove("as-cancel","waiting");
+  userCatchDrop.classList.remove("as-confirm","waiting");
+
+  if(signalMode === null){
+    leftContent.innerHTML = ZONE_LABEL_STOP;
+    rightContent.innerHTML = ZONE_LABEL_CATCH;
+  }else{
+    userStopDrop.classList.add("as-cancel");
+    leftContent.innerHTML = ZONE_LABEL_CANCEL;
+
+    userCatchDrop.classList.add("as-confirm");
+    if(signalStage === "picking") userCatchDrop.classList.add("waiting");
+    rightContent.innerHTML = confirmLabel(signalMode);
+  }
+  render();
+}
+
+function cancelSignal(){
+  signalMode = null;
+  signalStage = "idle";
+  signalTarget = null;
+  updateSignalUI();
+}
+
+async function confirmSignal(){
+  if(!signalTarget) return;
+  const direction = signalMode === "catch" ? 1 : -1;
+  const item = signalTarget.item;
+  signalMode = null;
+  signalStage = "idle";
+  signalTarget = null;
+  updateSignalUI();
+  await handleUserSignal(item, direction);
+}
+
+function startSignal(mode){
+  signalMode = mode;
+  signalStage = "picking";
+  signalTarget = null;
+  updateSignalUI();
+}
+
+function pickCard(sectionId, index, item){
+  if(signalStage !== "picking" && signalStage !== "confirming") return;
+  signalTarget = { section: sectionId, index, item };
+  signalStage = "confirming";
+  updateSignalUI();
+}
+
+userStopDrop.addEventListener("click", ()=>{
+  if(signalMode !== null) cancelSignal();
+  else startSignal("stop");
+});
+userCatchDrop.addEventListener("click", ()=>{
+  if(signalMode !== null){
+    if(signalStage === "confirming") confirmSignal();
+  }else{
+    startSignal("catch");
+  }
+});
 
 /* RENDER */
 function render(){
@@ -673,6 +884,7 @@ function render(){
     main.appendChild(section);
   });
   populateSectionSelect();
+  renderCategoryTabs();
 }
 
 function createSpacerEl(sectionId, index){
@@ -728,7 +940,6 @@ function createCard(sectionId, index, item, inactive){
   card.href = item.href;
   card.target = "_blank";
   card.rel = "noopener";
-  card.draggable = state.editing;
   card.dataset.section = sectionId;
   card.dataset.index = index;
   card.innerHTML = `
@@ -740,6 +951,37 @@ function createCard(sectionId, index, item, inactive){
   `;
   card.querySelector(".name").textContent = item.name;
   card.querySelector("small").textContent = getCardSubtitle(item);
+
+  if(hasCardStatus(item)){
+    const badge = document.createElement("span");
+    badge.className = "card-status-badge";
+    badge.textContent = "Ниже шанс";
+    card.appendChild(badge);
+    if(state.isAdmin){
+      const alertIcon = document.createElement("span");
+      alertIcon.className = "admin-status-alert";
+      alertIcon.textContent = "!";
+      card.appendChild(alertIcon);
+    }
+  }
+
+  const isPickable = !state.isAdmin && signalMode !== null;
+  if(isPickable){
+    card.classList.add("selectable");
+    const isChecked = signalTarget && signalTarget.section === sectionId && signalTarget.index === index;
+    const radio = document.createElement("button");
+    radio.type = "button";
+    radio.className = "card-select-radio" + (isChecked ? " checked" : "");
+    radio.addEventListener("click", e=>{
+      e.preventDefault(); e.stopPropagation();
+      pickCard(sectionId, index, item);
+    });
+    card.appendChild(radio);
+    card.addEventListener("click", e=>{
+      e.preventDefault();
+      pickCard(sectionId, index, item);
+    });
+  }
 
   if(state.editing){
     card.addEventListener("click", event=>{ event.preventDefault(); openEditor(sectionId, index, item); });
@@ -788,6 +1030,7 @@ function createCard(sectionId, index, item, inactive){
       }
       state.drag = null;
     });
+    card.draggable = true;
   }
   return card;
 }
@@ -874,7 +1117,6 @@ redoBtn.addEventListener("click", ()=>{
   state.history.push(JSON.stringify({ data, order }));
   restoreFrom(state.future.pop());
 });
-
 function commit(){ render(); saveToCloud(); }
 
 function setEditing(enabled){
@@ -929,6 +1171,17 @@ function openEditor(sectionId, index, item){
   editHrefUnlock.style.display = state.hrefUnlocked ? "none" : "flex";
   editName.closest(".form-row").classList.remove("has-error");
   editHref.closest(".form-row").classList.remove("has-error");
+
+  const hasStatus = !!(item && hasCardStatus(item));
+  statusEditActions.style.display = hasStatus ? "flex" : "none";
+  clearCardStatusBtn.onclick = async ()=>{
+    if(!item || !hasCardStatus(item)) return;
+    try{
+      await removeCardStatus(item);
+      statusEditActions.style.display = "none";
+    }catch(err){ console.error(err); }
+  };
+
   modalBackdrop.style.display = "flex";
 }
 editHrefUnlock.addEventListener("click", ()=>{
@@ -963,7 +1216,6 @@ function saveEditHandler(){
   let item = { name, href, img };
   if(nickname) item.nickname = nickname;
   if(!enabled) item.inactive = true;
-
   if(index >= 0){
     if(newSection === section){
       data[section].items[index] = item;
@@ -978,49 +1230,6 @@ function saveEditHandler(){
   }
   closeModal();
   commit();
-}
-
-/* REPORT MODAL (сообщить об ИНЛО) */
-function openReportModal(){
-  reportNickname.value = "";
-  reportMessage.value = "";
-  reportCounter.textContent = "0/200";
-  reportNicknameCounter.textContent = "0/30";
-  reportMessage.closest(".form-row").classList.remove("has-error");
-  state.activeModal = "report";
-  reportModalBackdrop.style.display = "flex";
-  setTimeout(()=>reportNickname.focus(), 0);
-}
-function closeReportModal(){
-  state.activeModal = null;
-  reportModalBackdrop.style.display = "none";
-}
-reportBtn.addEventListener("click", openReportModal);
-reportCancel.addEventListener("click", closeReportModal);
-reportNickname.addEventListener("input", ()=>{
-  reportNicknameCounter.textContent = `${reportNickname.value.length}/30`;
-});
-reportMessage.addEventListener("input", ()=>{
-  reportCounter.textContent = `${reportMessage.value.length}/200`;
-});
-reportSubmit.addEventListener("click", submitReport);
-async function submitReport(){
-  const nickname = reportNickname.value.trim();
-  const text = reportMessage.value.trim();
-  const row = reportMessage.closest(".form-row");
-  row.classList.toggle("has-error", !text);
-  if(!text) return;
-  reportSubmit.disabled = true;
-  try{
-    await addDoc(reportsCol, { nickname, text, read:false, createdAt: serverTimestamp() });
-    closeReportModal();
-    showToast("Сообщение отправлено!");
-  }catch(e){
-    console.error(e);
-    alert("Не удалось отправить сообщение. Попробуйте позже.");
-  }finally{
-    reportSubmit.disabled = false;
-  }
 }
 
 let toastTimer = null;
@@ -1083,6 +1292,15 @@ clearMessagesBtn.addEventListener("click", async ()=>{
     await batch.commit();
   }catch(e){ console.error(e); }
 });
+clearAllStatusesBtn.addEventListener("click", async ()=>{
+  if(!cardStatuses.size) return;
+  if(!confirm("Снять все пометки «Ниже шанс»?")) return;
+  try{
+    const batch = writeBatch(db);
+    cardStatuses.forEach(id=> batch.delete(doc(db, "cardStatuses", id)));
+    await batch.commit();
+  }catch(e){ console.error(e); }
+});
 
 let autoScrollRAF = null;
 function autoScrollTick(e){
@@ -1109,10 +1327,6 @@ document.addEventListener("keydown", e=>{
   if(state.activeModal === "card"){
     if(e.key === "Enter"){ e.preventDefault(); saveEditHandler(); return; }
     if(e.key === "Escape"){ e.preventDefault(); closeModal(); return; }
-  }
-  if(state.activeModal === "report"){
-    if(e.key === "Enter"){ e.preventDefault(); submitReport(); return; }
-    if(e.key === "Escape"){ e.preventDefault(); closeReportModal(); return; }
   }
   if(state.activeModal === "messages"){
     if(e.key === "Escape"){ e.preventDefault(); closeMessagesModal(); return; }
