@@ -14,10 +14,10 @@
 svg{width:16px;height:16px;display:block;flex-shrink:0}
 body{margin:0;background:var(--bg);color:var(--txt);font:16px system-ui,-apple-system,"Segoe UI",Arial,sans-serif;overflow-x:hidden}
 
-/* Единая шапка — никогда не прячется */
+/* Единая шапка — никогда не прячется. Панель редактирования теперь внутри неё и всегда доступна. */
 header{
   position:sticky; top:0; z-index:1001; isolation:isolate;
-  padding:16px max(18px,calc(50% - 610px)) 12px;
+  padding:16px max(18px,calc(50% - 610px)) 14px;
   background:#0d1526f7; backdrop-filter:blur(10px);
   border-bottom:1px solid var(--line);
 }
@@ -43,7 +43,7 @@ h1{margin:0;font-size:22px;display:flex;align-items:baseline;gap:10px;flex-wrap:
   .category-tabs::-webkit-scrollbar{display:none}
   .category-tab{flex:0 0 auto}
 }
-.toolbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:0;padding:12px max(18px,calc(50% - 610px)) 0}
+.toolbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:10px}
 .toolbar-left{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
 .toolbar-right{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-left:auto}
 button{padding:8px 12px 10px;color:var(--txt);background:#1b3355;border:1px solid var(--line);border-radius:10px;cursor:pointer;font:inherit;display:inline-flex;align-items:center;justify-content:center;line-height:1}
@@ -152,20 +152,6 @@ body.editing-mode #addSectionBtn{display:inline-flex}
 #addSpacerToolbarBtn{display:none;width:36px;height:36px;padding:0;cursor:grab}
 #addSpacerToolbarBtn:active{cursor:grabbing}
 body.editing-mode #addSpacerToolbarBtn{display:inline-flex}
-#messagesBtn{position:relative}
-.msg-badge{position:absolute;top:-8px;right:-8px;min-width:18px;height:18px;padding:0 4px;border-radius:9px;background:var(--danger);color:#fff;font-size:11px;font-weight:700;display:none;align-items:center;justify-content:center;line-height:1}
-.char-counter{font-size:11px;color:var(--muted);text-align:right;margin-top:-2px}
-.messages-list{display:flex;flex-direction:column;gap:8px;max-height:420px;overflow-y:auto;margin-bottom:14px;padding-right:4px}
-.msg-item{background:#0e1727;border:1px solid var(--line);border-radius:12px;padding:10px 12px;color:var(--txt);transition:color .2s ease}
-.msg-item.is-read{color:var(--muted)}
-.msg-nick{font-weight:650;font-size:13px;margin-bottom:2px;color:var(--accent)}
-.msg-item.is-read .msg-nick{color:var(--muted)}
-.msg-text{font-size:14px;line-height:1.35;white-space:pre-wrap;word-break:break-word}
-.msg-meta{display:flex;justify-content:flex-end;align-items:center;gap:5px;margin-top:5px;font-size:11px;color:var(--muted)}
-.msg-ticks{display:inline-flex;color:var(--accent)}
-.msg-item.is-read .msg-ticks{color:var(--muted)}
-.msg-ticks svg{width:14px;height:14px}
-.messages-empty{color:var(--muted);font-size:14px;text-align:center;padding:24px 0}
 
 /* Тост — крупный, контрастный, одна строка */
 .toast{
@@ -252,9 +238,9 @@ body.editing-mode #addSpacerToolbarBtn{display:inline-flex}
 /* Едва заметное дыхание кнопки "Поймал", пока сигнал не активирован — напоминание отметить находку */
 @keyframes catchPulse{
   0%,100%{background:rgba(125,182,255,.10)}
-  50%{background:rgba(125,182,255,.18)}
+  50%{background:rgba(125,182,255,.20)}
 }
-.user-drop-zone.right:not(.as-confirm){animation:catchPulse 3.4s ease-in-out infinite}
+.user-drop-zone.right:not(.as-confirm){animation:catchPulse 3.2s ease-in-out infinite}
 
 .user-drop-zone.waiting{opacity:.55;cursor:default}
 
@@ -284,21 +270,21 @@ body:not(.is-admin) main{padding-bottom:104px}
   </div>
   <span id="syncStatus"></span>
   <nav class="category-tabs" id="categoryTabs" aria-label="Категории"></nav>
-</header>
-<div class="toolbar">
-  <div class="toolbar-left">
-    <button id="modeBtn" type="button" style="display:none">Редактировать</button>
-    <button id="addSpacerToolbarBtn" type="button" title="Перетащите в нужное место категории" draggable="true"></button>
-    <button id="addSectionBtn" type="button">+ Новая категория</button>
-    <div class="undo-redo">
-      <button id="undoBtn" type="button" title="Отменить последнее действие" style="display:none">Вернуть</button>
-      <button id="redoBtn" type="button" title="Повторить отменённое действие" style="display:none">Повторить</button>
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <button id="modeBtn" type="button" style="display:none">Редактировать</button>
+      <button id="addSpacerToolbarBtn" type="button" title="Перетащите в нужное место категории" draggable="true"></button>
+      <button id="addSectionBtn" type="button">+ Новая категория</button>
+      <div class="undo-redo">
+        <button id="undoBtn" type="button" title="Отменить последнее действие" style="display:none">Вернуть</button>
+        <button id="redoBtn" type="button" title="Повторить отменённое действие" style="display:none">Повторить</button>
+      </div>
+    </div>
+    <div class="toolbar-right">
+      <button id="clearAllStatusesBtn" type="button" style="display:none">Сбросить все статусы</button>
     </div>
   </div>
-  <div class="toolbar-right">
-    <button id="messagesBtn" type="button" style="display:none">Посмотреть сообщения<span id="messagesBadge" class="msg-badge">0</span></button>
-  </div>
-</div>
+</header>
 
 <main id="main"></main>
 
@@ -371,27 +357,13 @@ body:not(.is-admin) main{padding-bottom:104px}
   </div>
 </div>
 
-<div class="modal-backdrop" id="messagesModalBackdrop">
-  <div class="modal">
-    <div class="modal-header">
-      <h3>Сообщения</h3>
-    </div>
-    <div class="messages-list" id="messagesList"></div>
-    <div class="modal-actions" style="justify-content:space-between">
-      <button id="clearAllStatusesBtn" type="button">Сбросить все статусы</button>
-      <button id="clearMessagesBtn" type="button">Очистить историю</button>
-      <button id="markReadBtn" type="button" class="primary-btn">Прочитано</button>
-    </div>
-  </div>
-</div>
-
 <div class="toast" id="toast"></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-analytics.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection, addDoc, query, orderBy, writeBatch, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection, writeBatch, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyAjIY9iH0gZT9WalyKTUh6zNinBNvt9aqQ",
@@ -412,7 +384,6 @@ const analytics = getAnalytics(app);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const boardRef = doc(db, DOC_PATH[0], DOC_PATH[1]);
-const reportsCol = collection(db, "reports");
 const cardStatusesCol = collection(db, "cardStatuses");
 
 const SPECIAL_SECTIONS = {
@@ -439,9 +410,6 @@ function formatUpdateDate(ts){
 let data = {};
 let order = [];
 let lastUpdatedAt = null;
-let reports = [];
-let unreadCount = 0;
-let reportsUnsub = null;
 let cardStatuses = new Set();
 let cardStatusesUnsub = null;
 
@@ -463,6 +431,7 @@ const loginBtn = document.getElementById("loginBtn");
 const syncStatus = document.getElementById("syncStatus");
 const addSectionBtn = document.getElementById("addSectionBtn");
 const addSpacerToolbarBtn = document.getElementById("addSpacerToolbarBtn");
+const clearAllStatusesBtn = document.getElementById("clearAllStatusesBtn");
 const loginModal = document.getElementById("loginModal");
 const loginEmail = document.getElementById("loginEmail");
 const loginPassword = document.getElementById("loginPassword");
@@ -481,13 +450,6 @@ const editEnabledLabel = editEnabledDot.querySelector(".switch-label");
 const statusEditActions = document.getElementById("statusEditActions");
 const clearCardStatusBtn = document.getElementById("clearCardStatusBtn");
 
-const messagesBtn = document.getElementById("messagesBtn");
-const messagesBadge = document.getElementById("messagesBadge");
-const messagesModalBackdrop = document.getElementById("messagesModalBackdrop");
-const messagesList = document.getElementById("messagesList");
-const markReadBtn = document.getElementById("markReadBtn");
-const clearMessagesBtn = document.getElementById("clearMessagesBtn");
-const clearAllStatusesBtn = document.getElementById("clearAllStatusesBtn");
 const toast = document.getElementById("toast");
 const userDropZones = document.getElementById("userDropZones");
 const userStopDrop = document.getElementById("userStopDrop");
@@ -506,8 +468,6 @@ const ICON_X = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0
 const ICON_DRAG = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" d="M4 9h16M4 15h16"/></svg>`;
 const ICON_DUPLICATE = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><rect x="3" y="3" width="13" height="13" rx="2.5"/><rect x="8" y="8" width="13" height="13" rx="2.5" fill="var(--panel)"/></svg>`;
 const ICON_SPACER_DRAG = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 2.5v4.5m0 0-2-2m2 2 2-2M12 21.5V17m0 0-2 2m2-2 2 2M4.5 12h15"/></svg>`;
-const ICON_TICK_SINGLE = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m4 12 5 5L20 6"/></svg>`;
-const ICON_TICK_DOUBLE = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m1 12 5 5L16 7"/><path stroke-linecap="round" stroke-linejoin="round" d="m8 12 5 5L23 7"/></svg>`;
 addSpacerToolbarBtn.innerHTML = ICON_SPACER_DRAG;
 
 /* helpers */
@@ -516,18 +476,6 @@ function isSpacer(item){ return item.type === "spacer"; }
 function getCardId(href){ try{ return new URL(href).searchParams.get("id"); }catch(e){ return ""; } }
 function getNickname(item){ return item.nickname || ""; }
 function getCardSubtitle(item){ const nick=(getNickname(item)||"").trim(); return nick? nick : getCardId(item.href); }
-function escapeHtml(str){
-  const d = document.createElement("div");
-  d.textContent = str == null ? "" : str;
-  return d.innerHTML;
-}
-function formatMsgDate(d){
-  const dd = String(d.getDate()).padStart(2,"0");
-  const mm = String(d.getMonth()+1).padStart(2,"0");
-  const hh = String(d.getHours()).padStart(2,"0");
-  const mi = String(d.getMinutes()).padStart(2,"0");
-  return `${dd}.${mm} ${hh}:${mi}`;
-}
 
 function applySpecialSection(sectionId, item){
   const special = SPECIAL_SECTIONS[sectionId];
@@ -577,28 +525,6 @@ onSnapshot(boardRef, (snap)=>{
   }catch(err){ console.error(err); syncStatus.textContent = "Ошибка синхронизации"; }
 });
 
-/* REPORTS (сообщения админу — раздел сохранён для истории и служебных кнопок) */
-function subscribeReports(){
-  if(reportsUnsub) return;
-  const q = query(reportsCol, orderBy("createdAt","asc"));
-  reportsUnsub = onSnapshot(q, snap=>{
-    reports = snap.docs.map(d=>({ id:d.id, ...d.data() }));
-    unreadCount = reports.filter(r=>!r.read).length;
-    updateMessagesBadge();
-    if(state.activeModal === "messages") renderMessagesList();
-  }, err=>console.error(err));
-}
-function unsubscribeReports(){
-  if(reportsUnsub){ reportsUnsub(); reportsUnsub = null; }
-  reports = [];
-  unreadCount = 0;
-  updateMessagesBadge();
-}
-function updateMessagesBadge(){
-  messagesBadge.textContent = unreadCount;
-  messagesBadge.style.display = unreadCount > 0 ? "flex" : "none";
-}
-
 /* CARD STATUSES ("Ниже шанс") — видны всем, подписка не зависит от роли */
 function statusIdFor(item){
   return encodeURIComponent(item.href);
@@ -629,8 +555,7 @@ onAuthStateChanged(auth, (user)=>{
   modeBtn.style.display = state.isAdmin ? "inline-flex" : "none";
   undoBtn.style.display = state.isAdmin ? "inline-flex" : "none";
   redoBtn.style.display = state.isAdmin ? "inline-flex" : "none";
-  messagesBtn.style.display = state.isAdmin ? "inline-flex" : "none";
-  if(state.isAdmin) subscribeReports(); else unsubscribeReports();
+  clearAllStatusesBtn.style.display = state.isAdmin ? "inline-flex" : "none";
   if(user) console.log("UID:", user.uid);
   if(!state.isAdmin) setEditing(false);
   cancelSignal();
@@ -656,6 +581,16 @@ addSpacerToolbarBtn.addEventListener("dragstart", e=>{
   e.dataTransfer.effectAllowed = "copy";
 });
 addSpacerToolbarBtn.addEventListener("dragend", ()=>{ state.drag = null; });
+
+clearAllStatusesBtn.addEventListener("click", async ()=>{
+  if(!cardStatuses.size) return;
+  if(!confirm("Снять все пометки «Ниже шанс»?")) return;
+  try{
+    const batch = writeBatch(db);
+    cardStatuses.forEach(id=> batch.delete(doc(db, "cardStatuses", id)));
+    await batch.commit();
+  }catch(e){ console.error(e); }
+});
 
 /* ТАБЫ КАТЕГОРИЙ (без визуальной подсветки активного таба) */
 function renderCategoryTabs(){
@@ -1240,96 +1175,10 @@ function showToast(text){
   toastTimer = setTimeout(()=>toast.classList.remove("show"), 2200);
 }
 
-/* MESSAGES MODAL (админ) */
-function openMessagesModal(){
-  state.activeModal = "messages";
-  messagesModalBackdrop.style.display = "flex";
-  renderMessagesList();
-}
-function closeMessagesModal(){
-  state.activeModal = null;
-  messagesModalBackdrop.style.display = "none";
-}
-messagesBtn.addEventListener("click", openMessagesModal);
-function renderMessagesList(){
-  messagesList.innerHTML = "";
-  if(!reports.length){
-    messagesList.innerHTML = `<div class="messages-empty">Сообщений пока нет</div>`;
-    return;
-  }
-  reports.forEach(r=>{
-    const el = document.createElement("div");
-    el.className = "msg-item" + (r.read ? " is-read" : "");
-    const dateStr = (r.createdAt && r.createdAt.toDate) ? formatMsgDate(r.createdAt.toDate()) : "";
-    el.innerHTML = `
-      ${r.nickname ? `<div class="msg-nick">${escapeHtml(r.nickname)}</div>` : ``}
-      <div class="msg-text">${escapeHtml(r.text)}</div>
-      <div class="msg-meta">
-        <span>${dateStr}</span>
-        <span class="msg-ticks">${r.read ? ICON_TICK_DOUBLE : ICON_TICK_SINGLE}</span>
-      </div>
-    `;
-    messagesList.appendChild(el);
-  });
-  messagesList.scrollTop = messagesList.scrollHeight;
-}
-markReadBtn.addEventListener("click", async ()=>{
-  const unread = reports.filter(r=>!r.read);
-  closeMessagesModal();
-  if(!unread.length) return;
-  try{
-    const batch = writeBatch(db);
-    unread.forEach(r=> batch.update(doc(db,"reports", r.id), { read:true }));
-    await batch.commit();
-  }catch(e){ console.error(e); }
-});
-clearMessagesBtn.addEventListener("click", async ()=>{
-  if(!reports.length) return;
-  if(!confirm("Удалить всю историю сообщений?")) return;
-  try{
-    const batch = writeBatch(db);
-    reports.forEach(r=> batch.delete(doc(db,"reports", r.id)));
-    await batch.commit();
-  }catch(e){ console.error(e); }
-});
-clearAllStatusesBtn.addEventListener("click", async ()=>{
-  if(!cardStatuses.size) return;
-  if(!confirm("Снять все пометки «Ниже шанс»?")) return;
-  try{
-    const batch = writeBatch(db);
-    cardStatuses.forEach(id=> batch.delete(doc(db, "cardStatuses", id)));
-    await batch.commit();
-  }catch(e){ console.error(e); }
-});
-
-let autoScrollRAF = null;
-function autoScrollTick(e){
-  const margin = 90;
-  const maxSpeed = 22;
-  const y = e.clientY;
-  const vh = window.innerHeight;
-  let speed = 0;
-  if(y < margin){
-    speed = -maxSpeed * (1 - y / margin);
-  }else if(y > vh - margin){
-    speed = maxSpeed * (1 - (vh - y) / margin);
-  }
-  if(speed !== 0){
-    window.scrollBy(0, speed);
-  }
-}
-document.addEventListener("dragover", e=>{
-  e.preventDefault();
-  autoScrollTick(e);
-});
-
 document.addEventListener("keydown", e=>{
   if(state.activeModal === "card"){
     if(e.key === "Enter"){ e.preventDefault(); saveEditHandler(); return; }
     if(e.key === "Escape"){ e.preventDefault(); closeModal(); return; }
-  }
-  if(state.activeModal === "messages"){
-    if(e.key === "Escape"){ e.preventDefault(); closeMessagesModal(); return; }
   }
   if(state.isAdmin && (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z"){
     e.preventDefault();
