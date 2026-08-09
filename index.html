@@ -1074,6 +1074,7 @@ addSectionBtn.addEventListener("click", ()=>{
 });
 
 function populateSectionSelect(){
+  const prevValue = editSection.value;
   editSection.innerHTML = "";
   order.forEach(id=>{
     if(!data[id]) return;
@@ -1082,6 +1083,7 @@ function populateSectionSelect(){
     opt.textContent = data[id].title;
     editSection.appendChild(opt);
   });
+  if(prevValue && data[prevValue]) editSection.value = prevValue;
 }
 
 function setEditEnabled(val){
