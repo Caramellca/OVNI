@@ -9,6 +9,7 @@
 :root{
   --bg:#0d1526; --panel:#172338; --line:#2d3e5a; --accent:#7db6ff;
   --txt:#eef5ff; --muted:#a7b4c8; --edit:#ffcc66; --danger:#d94848;
+  --stop-color:#d9a13e;
 }
 *{box-sizing:border-box}
 svg{width:16px;height:16px;display:block;flex-shrink:0}
@@ -153,6 +154,27 @@ body.editing-mode #addSectionBtn{display:inline-flex}
 #addSpacerToolbarBtn:active{cursor:grabbing}
 body.editing-mode #addSpacerToolbarBtn{display:inline-flex}
 
+/* Пояснение к отметкам "Поймал / Больше нет" — показывается один раз, до выбора карточки */
+.info-text{color:var(--txt);font-size:14px;line-height:1.5;margin:0 0 14px}
+.info-legend{display:flex;gap:14px;align-items:center;margin:0 0 14px;padding:12px;background:#0e1727;border:1px solid var(--line);border-radius:12px}
+.legend-explain{display:flex;flex-direction:column;gap:10px;flex:1;min-width:0}
+.legend-row{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--txt);line-height:1.3}
+.legend-preview{width:220px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.legend-card{position:relative;display:grid;grid-template-columns:48px 1fr;grid-template-rows:1fr auto;gap:0 10px;align-items:center;width:100%;min-height:60px;padding:9px;color:var(--txt);background:var(--panel);border:1px solid var(--line);border-radius:11px}
+.legend-card img,.legend-card .noicon{grid-row:1/3;width:48px;height:48px;object-fit:contain}
+.legend-card .noicon{display:grid;place-items:center;color:var(--accent);font-size:22px}
+.legend-card .name{font-weight:650;line-height:1.16;font-size:13px}
+.legend-card small{padding-top:2px;color:var(--muted);font-size:11px}
+.info-checkbox{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;cursor:pointer;user-select:none;margin-bottom:2px}
+.checkbox-box{position:relative;width:18px;height:18px;flex-shrink:0;border:1.5px solid var(--line);border-radius:5px;background:#111b2d;display:inline-flex;align-items:center;justify-content:center}
+.checkbox-box input{position:absolute;inset:0;margin:0;padding:0;opacity:0;cursor:pointer}
+.checkbox-check{width:12px;height:12px;color:var(--edit);opacity:0;transition:opacity .12s ease;pointer-events:none}
+.checkbox-box input:checked ~ .checkbox-check{opacity:1}
+.checkbox-box input:focus-visible ~ .checkbox-check,
+.checkbox-box:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
+.info-close-link{color:var(--muted);font-size:14px;cursor:pointer;padding:6px 2px;transition:color .15s ease}
+.info-close-link:hover{color:var(--txt)}
+
 /* Тост — крупный, контрастный, одна строка */
 .toast{
   position:fixed; top:50%; left:50%;
@@ -175,14 +197,13 @@ body.editing-mode #addSpacerToolbarBtn{display:inline-flex}
   .toast{font-size:15px;padding:14px 20px}
 }
 
-/* Статус карточки "Ниже шанс" — наползает на угол карточки */
-.card-status-badge{
-  position:absolute; top:-9px; right:-9px; z-index:7;
-  padding:4px 8px 5px; border-radius:8px;
-  background:#2a405f; color:var(--accent);
-  font-size:10px; font-weight:700; line-height:1;
-  pointer-events:none;
-}
+/* Статусы карточки — дизайн в стиле кнопок сигналов: полупрозрачная подложка + яркая рамка + цветной текст.
+   Синий = "Ниже шанс" (сегодня уже поймали), жёлтый = "Больше нет / Изменилось". Могут стоять оба сразу. */
+.card-status-badges{position:absolute;top:-9px;right:-9px;z-index:7;display:flex;flex-direction:row-reverse;gap:4px;pointer-events:none}
+.status-badge{padding:4px 8px 5px;border:1px solid transparent;border-radius:8px;font-size:10px;font-weight:400;line-height:1;white-space:nowrap}
+.status-badge.catch{background:rgba(125,182,255,.16);border-color:var(--accent);color:var(--accent)}
+.status-badge.stop{background:rgba(217,161,58,.16);border-color:var(--stop-color);color:var(--stop-color);font-weight:700;padding:4px 7px 5px}
+
 .admin-status-alert{
   position:absolute; top:-8px; left:-8px; z-index:8;
   display:grid; place-items:center; width:19px; height:19px;
@@ -207,7 +228,8 @@ body.editing-mode #addSpacerToolbarBtn{display:inline-flex}
 
 /* Кнопки "Больше нет / Поймал" — фиксированная полоса внизу, никогда не меняют размер/положение.
    После нажатия любой из них левая всегда становится "Отменить", правая — "Подтвердить"
-   с мелкой курсивной подписью, какое действие подтверждается. */
+   с мелкой курсивной подписью, какое действие подтверждается. Цвет "Подтвердить" совпадает
+   с цветом той кнопки, что была нажата — чтобы не путать пользователя переключением на синий. */
 .user-drop-zones{
   display:none;
   position:fixed; left:0; right:0; bottom:0; z-index:1500;
@@ -229,7 +251,7 @@ body.editing-mode #addSpacerToolbarBtn{display:inline-flex}
 .zone-caption{font-size:10px;font-style:italic;font-weight:400;opacity:.75;line-height:1;white-space:nowrap}
 .zone-emoji{display:inline-flex;align-items:center;justify-content:center;width:1.1em;flex-shrink:0}
 
-.user-drop-zone.left{background:rgba(217,161,58,.14);border-color:#d9a13e;color:#d9a13e}
+.user-drop-zone.left{background:rgba(217,161,58,.14);border-color:var(--stop-color);color:var(--stop-color)}
 .user-drop-zone.left:hover{background:rgba(217,161,58,.22)}
 
 .user-drop-zone.right{background:rgba(125,182,255,.14);border-color:var(--accent);color:var(--accent)}
@@ -247,9 +269,14 @@ body.editing-mode #addSpacerToolbarBtn{display:inline-flex}
 .user-drop-zone.as-cancel{background:transparent;border-color:var(--line);color:var(--muted);-webkit-tap-highlight-color:transparent}
 .user-drop-zone.as-cancel:hover{background:transparent;border-color:var(--accent);color:var(--txt)}
 
+/* "Подтвердить" по умолчанию (подтверждаем "Поймал") — голубой, как правая кнопка */
 .user-drop-zone.as-confirm{background:rgba(125,182,255,.14);border-color:var(--accent);color:var(--accent);-webkit-tap-highlight-color:transparent}
 .user-drop-zone.as-confirm:hover{background:rgba(125,182,255,.24)}
 .user-drop-zone.as-confirm.waiting{opacity:.55;cursor:default}
+
+/* "Подтвердить" при подтверждении "Больше нет" — перекрашивается в жёлтый, как левая кнопка */
+.user-drop-zone.as-confirm.confirm-stop{background:rgba(217,161,58,.14);border-color:var(--stop-color);color:var(--stop-color)}
+.user-drop-zone.as-confirm.confirm-stop:hover{background:rgba(217,161,58,.24)}
 
 body:not(.is-admin) .user-drop-zones{display:flex}
 body:not(.is-admin) main{padding-bottom:104px}
@@ -259,7 +286,12 @@ body:not(.is-admin) main{padding-bottom:104px}
   .toolbar-right{margin-left:0;width:100%;justify-content:flex-start}
   body:not(.is-admin) .grid{grid-template-columns:1fr}
 }
-@media (max-width:460px){.grid{grid-template-columns:1fr}.split-row{grid-template-columns:1fr}}
+@media (max-width:460px){
+  .grid{grid-template-columns:1fr}
+  .split-row{grid-template-columns:1fr}
+  .info-legend{flex-direction:column}
+  .legend-preview{width:100%}
+}
 </style>
 </head>
 <body>
@@ -348,11 +380,38 @@ body:not(.is-admin) main{padding-bottom:104px}
       </div>
     </div>
     <div class="modal-actions" id="statusEditActions" style="display:none;justify-content:flex-start;margin-top:0">
-      <button id="clearCardStatusBtn" type="button">Снять пометку «Ниже шанс»</button>
+      <button id="clearCardStatusBtn" type="button">Снять пометки с этой карточки</button>
     </div>
     <div class="modal-actions">
       <button id="cancelEdit" type="button">Отмена</button>
       <button id="saveEdit" type="button">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="signalInfoModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Как работают отметки</h3>
+    </div>
+    <p class="info-text">Отметки <b>полностью анонимны</b>. Когда вы отмечаете карточку, на ней появляется небольшой бейдж, который служит подсказкой всем игрокам:</p>
+    <div class="info-legend">
+      <div class="legend-explain">
+        <div class="legend-row"><span class="status-badge stop">!</span><span>нет предмета или условия изменились</span></div>
+        <div class="legend-row"><span class="status-badge catch">Ниже шанс</span><span>предмет ловили сегодня</span></div>
+      </div>
+      <div class="legend-preview" id="legendPreview"></div>
+    </div>
+    <p class="info-text">В конце дня админ исправляет отмеченные карточки и снимает бейджи.<br>Не&nbsp;бойтесь ошибаться, всё поправимо. Спасибо, что помогаете поддерживать страничку актуальной и живой!<br><br>Ваша barsa &lt;3</p>
+    <label class="info-checkbox">
+      <span class="checkbox-box">
+        <input type="checkbox" id="signalInfoDontShow">
+        <svg class="checkbox-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="m5 13 4 4L19 7"/></svg>
+      </span>
+      <span>Всё понятно, больше не показывать</span>
+    </label>
+    <div class="modal-actions">
+      <span class="info-close-link" id="signalInfoClose" role="button" tabindex="0">Закрыть</span>
     </div>
   </div>
 </div>
@@ -378,6 +437,7 @@ const firebaseConfig = {
 
 const ADMIN_UID = "xOqvdkpV57U8BSfnjePCRJRiaOi2";
 const DOC_PATH = ["cards","board"];
+const SIGNAL_INFO_KEY = "ovni_signal_info_seen";
 
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
@@ -410,12 +470,13 @@ function formatUpdateDate(ts){
 let data = {};
 let order = [];
 let lastUpdatedAt = null;
-let cardStatuses = new Set();
+let cardStatusMap = new Map(); // statusId -> { catch?:true, stop?:true, updatedAt }
 let cardStatusesUnsub = null;
 
-let signalMode = null;      // "catch" | "stop" | null
-let signalStage = "idle";   // "idle" | "picking" | "confirming"
-let signalTarget = null;    // { section, index, item }
+let signalMode = null;        // "catch" | "stop" | null
+let signalStage = "idle";     // "idle" | "picking" | "confirming"
+let signalTarget = null;      // { section, index, item }
+let pendingSignalMode = null; // режим, ожидающий закрытия пояснения
 
 const state = {
   editing:false, isAdmin:false, history:[], future:[],
@@ -454,6 +515,11 @@ const toast = document.getElementById("toast");
 const userDropZones = document.getElementById("userDropZones");
 const userStopDrop = document.getElementById("userStopDrop");
 const userCatchDrop = document.getElementById("userCatchDrop");
+
+const signalInfoModal = document.getElementById("signalInfoModal");
+const signalInfoDontShow = document.getElementById("signalInfoDontShow");
+const signalInfoClose = document.getElementById("signalInfoClose");
+const legendPreview = document.getElementById("legendPreview");
 
 const ZONE_LABEL_STOP = `<span class="zone-line"><span class="zone-label">Больше нет / Изменилось</span></span>`;
 const ZONE_LABEL_CATCH = `<span class="zone-line"><span class="zone-label">Поймал(-а)</span><span class="zone-emoji">🎉</span></span>`;
@@ -525,22 +591,28 @@ onSnapshot(boardRef, (snap)=>{
   }catch(err){ console.error(err); syncStatus.textContent = "Ошибка синхронизации"; }
 });
 
-/* CARD STATUSES ("Ниже шанс") — видны всем, подписка не зависит от роли */
+/* CARD STATUSES — видны всем, подписка не зависит от роли.
+   Один документ на карточку, поля catch/stop независимы и могут быть true одновременно. */
 function statusIdFor(item){
   return encodeURIComponent(item.href);
 }
 function subscribeCardStatuses(){
   if(cardStatusesUnsub) return;
   cardStatusesUnsub = onSnapshot(cardStatusesCol, snap=>{
-    cardStatuses = new Set(snap.docs.map(d=>d.id));
+    cardStatusMap = new Map(snap.docs.map(d=>[d.id, d.data()]));
     render();
   }, err=>console.error(err));
 }
-function hasCardStatus(item){
-  return cardStatuses.has(statusIdFor(item));
+function getCardStatus(item){
+  const s = cardStatusMap.get(statusIdFor(item));
+  return { catch: !!(s && s.catch), stop: !!(s && s.stop) };
 }
-async function setCardStatus(item){
-  await setDoc(doc(db, "cardStatuses", statusIdFor(item)), { updatedAt: serverTimestamp() });
+function hasAnyCardStatus(item){
+  const s = getCardStatus(item);
+  return s.catch || s.stop;
+}
+async function setCardStatus(item, type){
+  await setDoc(doc(db, "cardStatuses", statusIdFor(item)), { [type]: true, updatedAt: serverTimestamp() }, { merge: true });
 }
 async function removeCardStatus(item){
   await deleteDoc(doc(db, "cardStatuses", statusIdFor(item)));
@@ -583,11 +655,11 @@ addSpacerToolbarBtn.addEventListener("dragstart", e=>{
 addSpacerToolbarBtn.addEventListener("dragend", ()=>{ state.drag = null; });
 
 clearAllStatusesBtn.addEventListener("click", async ()=>{
-  if(!cardStatuses.size) return;
-  if(!confirm("Снять все пометки «Ниже шанс»?")) return;
+  if(!cardStatusMap.size) return;
+  if(!confirm("Снять все пометки со всех карточек?")) return;
   try{
     const batch = writeBatch(db);
-    cardStatuses.forEach(id=> batch.delete(doc(db, "cardStatuses", id)));
+    cardStatusMap.forEach((_, id)=> batch.delete(doc(db, "cardStatuses", id)));
     await batch.commit();
   }catch(e){ console.error(e); }
 });
@@ -616,13 +688,45 @@ function scrollToSection(id){
   window.scrollTo({ top: Math.max(0, offset), behavior: "smooth" });
 }
 
-/* МЕХАНИКА "БОЛЬШЕ НЕТ / ПОЙМАЛ" — кнопка, затем выбор карточки, затем подтверждение.
-   После нажатия любой из кнопок левая всегда становится "Отменить", а правая —
-   "Подтвердить" с подписью, какое действие подтверждается. */
-async function handleUserSignal(item, direction){
+/* Пример-превью для пояснения — берём первую реальную карточку из базы, показываем некликабельно
+   с обоими бейджами сразу, чтобы наглядно показать, как они выглядят. */
+function findFirstRealItem(){
+  for(const id of order){
+    const sec = data[id];
+    if(!sec || !sec.items) continue;
+    for(const item of sec.items){
+      if(!isSpacer(item)) return item;
+    }
+  }
+  return null;
+}
+function renderLegendPreview(){
+  const item = findFirstRealItem();
+  if(!item){ legendPreview.innerHTML = ""; return; }
+  legendPreview.innerHTML = `
+    <div class="legend-card">
+      ${item.img ? `<img src="${item.img}" alt="" onerror="this.style.visibility='hidden'">` : `<span class="noicon">?</span>`}
+      <span class="name"></span>
+      <small></small>
+      <div class="card-status-badges">
+        <span class="status-badge stop">!</span>
+        <span class="status-badge catch">Ниже шанс</span>
+      </div>
+    </div>
+  `;
+  legendPreview.querySelector(".name").textContent = item.name;
+  legendPreview.querySelector("small").textContent = getCardSubtitle(item);
+}
+
+/* МЕХАНИКА "БОЛЬШЕ НЕТ / ПОЙМАЛ".
+   При первом в этом браузере запуске сигнала (ещё до выбора карточки) показывается
+   пояснение с затемнением фона — пока оно открыто, обе нижние кнопки недоступны,
+   т.к. модалка перекрывает всё. Закрывается ссылкой "Закрыть", после чего сигнал
+   стартует как обычно. Цвет кнопки "Подтвердить" совпадает с цветом нажатой кнопки. */
+async function handleUserSignal(item, mode){
   try{
-    await setCardStatus(item);
-    showToast(direction > 0 ? "Поздравляю!!! 🥳" : "Будет исправлено ❤️");
+    await setCardStatus(item, mode);
+    showToast(mode === "catch" ? "Поздравляю!!! 🥳" : "Будет исправлено ❤️");
   }catch(err){
     console.error(err);
     showToast("Не удалось сохранить отметку");
@@ -634,7 +738,7 @@ function updateSignalUI(){
   const rightContent = userCatchDrop.querySelector(".zone-content");
 
   userStopDrop.classList.remove("as-cancel","waiting");
-  userCatchDrop.classList.remove("as-confirm","waiting");
+  userCatchDrop.classList.remove("as-confirm","waiting","confirm-stop");
 
   if(signalMode === null){
     leftContent.innerHTML = ZONE_LABEL_STOP;
@@ -644,6 +748,7 @@ function updateSignalUI(){
     leftContent.innerHTML = ZONE_LABEL_CANCEL;
 
     userCatchDrop.classList.add("as-confirm");
+    if(signalMode === "stop") userCatchDrop.classList.add("confirm-stop");
     if(signalStage === "picking") userCatchDrop.classList.add("waiting");
     rightContent.innerHTML = confirmLabel(signalMode);
   }
@@ -659,13 +764,13 @@ function cancelSignal(){
 
 async function confirmSignal(){
   if(!signalTarget) return;
-  const direction = signalMode === "catch" ? 1 : -1;
+  const mode = signalMode;
   const item = signalTarget.item;
   signalMode = null;
   signalStage = "idle";
   signalTarget = null;
   updateSignalUI();
-  await handleUserSignal(item, direction);
+  await handleUserSignal(item, mode);
 }
 
 function startSignal(mode){
@@ -682,15 +787,50 @@ function pickCard(sectionId, index, item){
   updateSignalUI();
 }
 
+function openSignalInfoModal(){
+  state.activeModal = "signalInfo";
+  signalInfoDontShow.checked = false;
+  renderLegendPreview();
+  signalInfoModal.style.display = "flex";
+}
+function closeSignalInfoModal(){
+  state.activeModal = null;
+  signalInfoModal.style.display = "none";
+}
+function dismissSignalInfo(){
+  if(signalInfoDontShow.checked){
+    try{ localStorage.setItem(SIGNAL_INFO_KEY, "1"); }catch(e){}
+  }
+  closeSignalInfoModal();
+  const mode = pendingSignalMode;
+  pendingSignalMode = null;
+  if(mode) startSignal(mode);
+}
+signalInfoClose.addEventListener("click", dismissSignalInfo);
+signalInfoClose.addEventListener("keydown", e=>{
+  if(e.key === "Enter" || e.key === " "){ e.preventDefault(); dismissSignalInfo(); }
+});
+
+function requestSignal(mode){
+  let seen = false;
+  try{ seen = localStorage.getItem(SIGNAL_INFO_KEY) === "1"; }catch(e){}
+  if(seen){
+    startSignal(mode);
+  }else{
+    pendingSignalMode = mode;
+    openSignalInfoModal();
+  }
+}
+
 userStopDrop.addEventListener("click", ()=>{
   if(signalMode !== null) cancelSignal();
-  else startSignal("stop");
+  else requestSignal("stop");
 });
 userCatchDrop.addEventListener("click", ()=>{
   if(signalMode !== null){
     if(signalStage === "confirming") confirmSignal();
   }else{
-    startSignal("catch");
+    requestSignal("catch");
   }
 });
 
@@ -887,11 +1027,23 @@ function createCard(sectionId, index, item, inactive){
   card.querySelector(".name").textContent = item.name;
   card.querySelector("small").textContent = getCardSubtitle(item);
 
-  if(hasCardStatus(item)){
-    const badge = document.createElement("span");
-    badge.className = "card-status-badge";
-    badge.textContent = "Ниже шанс";
-    card.appendChild(badge);
+  const status = getCardStatus(item);
+  if(status.catch || status.stop){
+    const badges = document.createElement("div");
+    badges.className = "card-status-badges";
+    if(status.stop){
+      const b = document.createElement("span");
+      b.className = "status-badge stop";
+      b.textContent = "!";
+      badges.appendChild(b);
+    }
+    if(status.catch){
+      const b = document.createElement("span");
+      b.className = "status-badge catch";
+      b.textContent = "Ниже шанс";
+      badges.appendChild(b);
+    }
+    card.appendChild(badges);
     if(state.isAdmin){
       const alertIcon = document.createElement("span");
       alertIcon.className = "admin-status-alert";
@@ -1109,10 +1261,10 @@ function openEditor(sectionId, index, item){
   editName.closest(".form-row").classList.remove("has-error");
   editHref.closest(".form-row").classList.remove("has-error");
 
-  const hasStatus = !!(item && hasCardStatus(item));
+  const hasStatus = !!(item && hasAnyCardStatus(item));
   statusEditActions.style.display = hasStatus ? "flex" : "none";
   clearCardStatusBtn.onclick = async ()=>{
-    if(!item || !hasCardStatus(item)) return;
+    if(!item || !hasAnyCardStatus(item)) return;
     try{
       await removeCardStatus(item);
       statusEditActions.style.display = "none";
@@ -1181,6 +1333,9 @@ document.addEventListener("keydown", e=>{
   if(state.activeModal === "card"){
     if(e.key === "Enter"){ e.preventDefault(); saveEditHandler(); return; }
     if(e.key === "Escape"){ e.preventDefault(); closeModal(); return; }
+  }
+  if(state.activeModal === "signalInfo"){
+    if(e.key === "Escape"){ e.preventDefault(); dismissSignalInfo(); return; }
   }
   if(state.isAdmin && (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z"){
     e.preventDefault();
