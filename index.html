@@ -28,6 +28,7 @@ h1{margin:0;font-size:22px;display:flex;align-items:baseline;gap:10px;flex-wrap:
 
 .category-tabs{
   display:flex; flex-wrap:wrap; gap:8px;
+  margin-top:8px;
 }
 .category-tab{
   padding:7px 12px 8px; border-radius:9px;
@@ -40,16 +41,18 @@ h1{margin:0;font-size:22px;display:flex;align-items:baseline;gap:10px;flex-wrap:
     flex-wrap:nowrap; overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch;
     margin-left:-18px; margin-right:-18px;
     padding-left:18px; padding-right:18px;
+    margin-top:4px;
   }
   .category-tabs::-webkit-scrollbar{display:none}
   .category-tab{flex:0 0 auto}
 }
-.toolbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:10px}
+.toolbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
 .toolbar-left{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
 .toolbar-right{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-left:auto}
 button{padding:8px 12px 10px;color:var(--txt);background:#1b3355;border:1px solid var(--line);border-radius:10px;cursor:pointer;font:inherit;display:inline-flex;align-items:center;justify-content:center;line-height:1}
 #loginBtn{background:transparent;border:1px solid var(--line);color:var(--muted);padding:6px 10px 7px;font-size:13px}
 #loginBtn:hover{color:var(--txt);border-color:var(--accent)}
+#onlyFlaggedBtn.active{background:var(--accent);color:#0d1526;border-color:var(--accent)}
 main{position:relative;z-index:1;max-width:1220px;margin:0 auto;padding:12px 18px 48px}
 section{margin-bottom:28px;scroll-margin-top:108px;transition:opacity .15s}
 section.section-drag-source{opacity:.4}
@@ -129,6 +132,10 @@ input:-webkit-autofill:active{
   caret-color:var(--txt);
   transition:background-color 5000s ease-in-out 0s;
 }
+@keyframes onAutoFillStart{from{opacity:.9999}to{opacity:1}}
+@keyframes onAutoFillCancel{from{opacity:1}to{opacity:1}}
+#loginEmail:-webkit-autofill,#loginPassword:-webkit-autofill{animation-name:onAutoFillStart}
+#loginEmail:not(:-webkit-autofill),#loginPassword:not(:-webkit-autofill){animation-name:onAutoFillCancel}
 .modal-switch{width:64px;height:26px;border-radius:13px;padding:0 6px;display:flex;align-items:center;justify-content:space-between;gap:4px;cursor:pointer;border:0;font-size:11px;font-weight:500;letter-spacing:.02em;flex-shrink:0;transition:background .18s ease}
 .modal-switch.on{background:var(--accent);color:#0d1526;flex-direction:row}
 .modal-switch.off{background:var(--line);color:var(--muted);flex-direction:row-reverse}
@@ -153,6 +160,9 @@ body.editing-mode #addSectionBtn{display:inline-flex}
 #addSpacerToolbarBtn{display:none;width:36px;height:36px;padding:0;cursor:grab}
 #addSpacerToolbarBtn:active{cursor:grabbing}
 body.editing-mode #addSpacerToolbarBtn{display:inline-flex}
+.status-edit-time{margin:0 0 8px;font-size:12px;font-style:italic;color:var(--muted);display:none}
+
+body.no-scroll{overflow:hidden}
 
 /* Пояснение к отметкам "Поймал / Больше нет" — показывается один раз, до выбора карточки */
 .info-text{color:var(--txt);font-size:14px;line-height:1.5;margin:0 0 14px}
@@ -172,8 +182,9 @@ body.editing-mode #addSpacerToolbarBtn{display:inline-flex}
 .checkbox-box input:checked ~ .checkbox-check{opacity:1}
 .checkbox-box input:focus-visible ~ .checkbox-check,
 .checkbox-box:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
-.info-close-link{color:var(--muted);font-size:14px;cursor:pointer;padding:6px 2px;transition:color .15s ease}
+.info-close-link{color:var(--muted);font-size:14px;cursor:pointer;padding:6px 2px;text-decoration:underline;transition:color .15s ease}
 .info-close-link:hover{color:var(--txt)}
+.signal-info-actions{justify-content:center}
 
 /* Тост — крупный, контрастный, одна строка */
 .toast{
@@ -301,7 +312,6 @@ body:not(.is-admin) main{padding-bottom:104px}
     <button id="loginBtn" type="button">Вход</button>
   </div>
   <span id="syncStatus"></span>
-  <nav class="category-tabs" id="categoryTabs" aria-label="Категории"></nav>
   <div class="toolbar">
     <div class="toolbar-left">
       <button id="modeBtn" type="button" style="display:none">Редактировать</button>
@@ -313,9 +323,11 @@ body:not(.is-admin) main{padding-bottom:104px}
       </div>
     </div>
     <div class="toolbar-right">
+      <button id="onlyFlaggedBtn" type="button" style="display:none">Показать только отмеченные</button>
       <button id="clearAllStatusesBtn" type="button" style="display:none">Сбросить все статусы</button>
     </div>
   </div>
+  <nav class="category-tabs" id="categoryTabs" aria-label="Категории"></nav>
 </header>
 
 <main id="main"></main>
@@ -379,6 +391,7 @@ body:not(.is-admin) main{padding-bottom:104px}
         <span class="field-error" id="editHrefError">Заполните это поле</span>
       </div>
     </div>
+    <p class="status-edit-time" id="statusEditTime"></p>
     <div class="modal-actions" id="statusEditActions" style="display:none;justify-content:flex-start;margin-top:0">
       <button id="clearCardStatusBtn" type="button">Снять пометки с этой карточки</button>
     </div>
@@ -398,7 +411,7 @@ body:not(.is-admin) main{padding-bottom:104px}
     <div class="info-legend">
       <div class="legend-explain">
         <div class="legend-row"><span class="status-badge catch">Ниже шанс</span><span>предмет ловили сегодня</span></div>
-        <div class="legend-row"><span class="status-badge stop">!</span><span>нет предмета или условия изменились</span></div>
+        <div class="legend-row"><span class="status-badge stop">!</span><span>предмет закончился или поменялся</span></div>
       </div>
       <div class="legend-preview" id="legendPreview"></div>
     </div>
@@ -410,7 +423,7 @@ body:not(.is-admin) main{padding-bottom:104px}
       </span>
       <span>Всё понятно, больше не показывать</span>
     </label>
-    <div class="modal-actions">
+    <div class="modal-actions signal-info-actions">
       <span class="info-close-link" id="signalInfoClose" role="button" tabindex="0">Закрыть</span>
     </div>
   </div>
@@ -461,10 +474,52 @@ const seedData = {
 };
 
 const MONTHS_RU = ["Января","Февраля","Марта","Апреля","Мая","Июня","Июля","Августа","Сентября","Октября","Ноября","Декабря"];
+const MONTHS_RU_LOWER = MONTHS_RU.map(m => m.charAt(0).toLowerCase() + m.slice(1));
 function formatUpdateDate(ts){
   if(!ts) return "";
   const d = new Date(ts);
   return `Обновлено ${d.getDate()} ${MONTHS_RU[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+/* Относительное время отметки для админа: минуты -> часы -> сегодня/вчера/дата -> недели -> месяцы -> год */
+function formatRelativeTime(date){
+  const now = new Date();
+  const diffMs = now - date;
+  const diffMin = Math.floor(diffMs / 60000);
+  if(diffMin < 1) return "отмечено только что";
+  if(diffMin < 3) return "отмечено минуту назад";
+  if(diffMin < 8) return "отмечено 5 минут назад";
+  if(diffMin < 15) return "отмечено 10 минут назад";
+  if(diffMin < 25) return "отмечено 20 минут назад";
+  if(diffMin < 35) return "отмечено 30 минут назад";
+  if(diffMin < 45) return "отмечено 40 минут назад";
+  if(diffMin < 55) return "отмечено 50 минут назад";
+  if(diffMin < 90) return "отмечено 1 час назад";
+
+  const diffDays = Math.floor(diffMs / 86400000);
+  if(diffDays < 7){
+    const hh = String(date.getHours()).padStart(2,"0");
+    const mi = String(date.getMinutes()).padStart(2,"0");
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startOfDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const dayDiff = Math.round((startOfToday - startOfDate) / 86400000);
+    if(dayDiff === 0) return `отмечено сегодня в ${hh}:${mi}`;
+    if(dayDiff === 1) return `отмечено вчера в ${hh}:${mi}`;
+    const dd = date.getDate();
+    const monthGenitive = MONTHS_RU_LOWER[date.getMonth()];
+    const yearPart = date.getFullYear() !== now.getFullYear() ? ` ${date.getFullYear()}` : "";
+    return `отмечено ${dd} ${monthGenitive}${yearPart} в ${hh}:${mi}`;
+  }
+  if(diffDays < 14) return "отмечено неделю назад";
+  if(diffDays < 21) return "отмечено 2 недели назад";
+  if(diffDays < 28) return "отмечено 3 недели назад";
+  if(diffDays < 45) return "отмечено месяц назад";
+  if(diffDays < 75) return "отмечено 2 месяца назад";
+  if(diffDays < 105) return "отмечено 3 месяца назад";
+  if(diffDays < 135) return "отмечено 4 месяца назад";
+  if(diffDays < 165) return "отмечено 5 месяцев назад";
+  if(diffDays < 300) return "отмечено пол года назад";
+  return "отмечено год назад";
 }
 
 let data = {};
@@ -480,7 +535,8 @@ let pendingSignalMode = null; // режим, ожидающий закрытия
 
 const state = {
   editing:false, isAdmin:false, history:[], future:[],
-  pending:null, activeModal:null, drag:null, sectionDrag:null, hrefUnlocked:false, editEnabled:true
+  pending:null, activeModal:null, drag:null, sectionDrag:null, hrefUnlocked:false, editEnabled:true,
+  onlyFlagged:false
 };
 
 const categoryTabs = document.getElementById("categoryTabs");
@@ -493,6 +549,7 @@ const syncStatus = document.getElementById("syncStatus");
 const addSectionBtn = document.getElementById("addSectionBtn");
 const addSpacerToolbarBtn = document.getElementById("addSpacerToolbarBtn");
 const clearAllStatusesBtn = document.getElementById("clearAllStatusesBtn");
+const onlyFlaggedBtn = document.getElementById("onlyFlaggedBtn");
 const loginModal = document.getElementById("loginModal");
 const loginEmail = document.getElementById("loginEmail");
 const loginPassword = document.getElementById("loginPassword");
@@ -509,6 +566,7 @@ const editNickname = document.getElementById("editNickname");
 const editEnabledDot = document.getElementById("editEnabledDot");
 const editEnabledLabel = editEnabledDot.querySelector(".switch-label");
 const statusEditActions = document.getElementById("statusEditActions");
+const statusEditTime = document.getElementById("statusEditTime");
 const clearCardStatusBtn = document.getElementById("clearCardStatusBtn");
 
 const toast = document.getElementById("toast");
@@ -628,6 +686,11 @@ onAuthStateChanged(auth, (user)=>{
   undoBtn.style.display = state.isAdmin ? "inline-flex" : "none";
   redoBtn.style.display = state.isAdmin ? "inline-flex" : "none";
   clearAllStatusesBtn.style.display = state.isAdmin ? "inline-flex" : "none";
+  onlyFlaggedBtn.style.display = state.isAdmin ? "inline-flex" : "none";
+  if(!state.isAdmin){
+    state.onlyFlagged = false;
+    onlyFlaggedBtn.classList.remove("active");
+  }
   if(user) console.log("UID:", user.uid);
   if(!state.isAdmin) setEditing(false);
   cancelSignal();
@@ -635,9 +698,31 @@ onAuthStateChanged(auth, (user)=>{
   render();
 });
 
+/* Автовход при автозаполнении логина/пароля браузером (детект через CSS-анимацию autofill) */
+let emailAutofilled = false, passwordAutofilled = false;
+function tryAutoLogin(){
+  if(emailAutofilled && passwordAutofilled && loginModal.style.display === "flex" && loginEmail.value && loginPassword.value){
+    loginSubmit.click();
+  }
+}
+loginEmail.addEventListener("animationstart", e=>{
+  if(e.animationName === "onAutoFillStart") emailAutofilled = true;
+  if(e.animationName === "onAutoFillCancel") emailAutofilled = false;
+  tryAutoLogin();
+});
+loginPassword.addEventListener("animationstart", e=>{
+  if(e.animationName === "onAutoFillStart") passwordAutofilled = true;
+  if(e.animationName === "onAutoFillCancel") passwordAutofilled = false;
+  tryAutoLogin();
+});
+
 loginBtn.addEventListener("click", ()=>{
   if(state.isAdmin) signOut(auth);
-  else loginModal.style.display = "flex";
+  else{
+    emailAutofilled = false;
+    passwordAutofilled = false;
+    loginModal.style.display = "flex";
+  }
 });
 loginCancel.addEventListener("click", ()=>{ loginModal.style.display = "none"; });
 loginSubmit.addEventListener("click", async ()=>{
@@ -662,6 +747,12 @@ clearAllStatusesBtn.addEventListener("click", async ()=>{
     cardStatusMap.forEach((_, id)=> batch.delete(doc(db, "cardStatuses", id)));
     await batch.commit();
   }catch(e){ console.error(e); }
+});
+
+onlyFlaggedBtn.addEventListener("click", ()=>{
+  state.onlyFlagged = !state.onlyFlagged;
+  onlyFlaggedBtn.classList.toggle("active", state.onlyFlagged);
+  render();
 });
 
 /* ТАБЫ КАТЕГОРИЙ (без визуальной подсветки активного таба) */
@@ -718,11 +809,31 @@ function renderLegendPreview(){
   legendPreview.querySelector("small").textContent = getCardSubtitle(item);
 }
 
+/* Блокировка скролла страницы, пока открыто пояснение к отметкам */
+let lockedScrollY = 0;
+function lockPageScroll(){
+  lockedScrollY = window.scrollY;
+  document.body.classList.add("no-scroll");
+  document.body.style.position = "fixed";
+  document.body.style.top = `-${lockedScrollY}px`;
+  document.body.style.left = "0";
+  document.body.style.right = "0";
+}
+function unlockPageScroll(){
+  document.body.classList.remove("no-scroll");
+  document.body.style.position = "";
+  document.body.style.top = "";
+  document.body.style.left = "";
+  document.body.style.right = "";
+  window.scrollTo(0, lockedScrollY);
+}
+
 /* МЕХАНИКА "БОЛЬШЕ НЕТ / ПОЙМАЛ".
    При первом в этом браузере запуске сигнала (ещё до выбора карточки) показывается
    пояснение с затемнением фона — пока оно открыто, обе нижние кнопки недоступны,
-   т.к. модалка перекрывает всё. Закрывается ссылкой "Закрыть", после чего сигнал
-   стартует как обычно. Цвет кнопки "Подтвердить" совпадает с цветом нажатой кнопки. */
+   т.к. модалка перекрывает всё, а фон страницы заблокирован от скролла. Закрывается
+   ссылкой "Закрыть", после чего сигнал стартует как обычно. Цвет кнопки "Подтвердить"
+   совпадает с цветом нажатой кнопки. */
 async function handleUserSignal(item, mode){
   try{
     await setCardStatus(item, mode);
@@ -792,10 +903,12 @@ function openSignalInfoModal(){
   signalInfoDontShow.checked = false;
   renderLegendPreview();
   signalInfoModal.style.display = "flex";
+  lockPageScroll();
 }
 function closeSignalInfoModal(){
   state.activeModal = null;
   signalInfoModal.style.display = "none";
+  unlockPageScroll();
 }
 function dismissSignalInfo(){
   if(signalInfoDontShow.checked){
@@ -829,6 +942,7 @@ userStopDrop.addEventListener("click", ()=>{
 userCatchDrop.addEventListener("click", ()=>{
   if(signalMode !== null){
     if(signalStage === "confirming") confirmSignal();
+    else showToast("Сначала выберите карточку, которую нужно отметить");
   }else{
     requestSignal("catch");
   }
@@ -947,10 +1061,12 @@ function render(){
 
     sec.items.forEach((item, index)=>{
       if(isSpacer(item)){
+        if(state.isAdmin && state.onlyFlagged) return;
         grid.appendChild(createSpacerEl(id, index));
         return;
       }
       if(isInactive(item) && !state.isAdmin) return;
+      if(state.isAdmin && state.onlyFlagged && !hasAnyCardStatus(item)) return;
       grid.appendChild(createCard(id, index, item, isInactive(item)));
     });
 
@@ -1261,13 +1377,21 @@ function openEditor(sectionId, index, item){
   editName.closest(".form-row").classList.remove("has-error");
   editHref.closest(".form-row").classList.remove("has-error");
 
+  const statusDoc = item ? cardStatusMap.get(statusIdFor(item)) : null;
   const hasStatus = !!(item && hasAnyCardStatus(item));
   statusEditActions.style.display = hasStatus ? "flex" : "none";
+  if(hasStatus && statusDoc && statusDoc.updatedAt && statusDoc.updatedAt.toDate){
+    statusEditTime.textContent = formatRelativeTime(statusDoc.updatedAt.toDate());
+    statusEditTime.style.display = "block";
+  }else{
+    statusEditTime.style.display = "none";
+  }
   clearCardStatusBtn.onclick = async ()=>{
     if(!item || !hasAnyCardStatus(item)) return;
     try{
       await removeCardStatus(item);
       statusEditActions.style.display = "none";
+      statusEditTime.style.display = "none";
     }catch(err){ console.error(err); }
   };
 
