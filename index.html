@@ -45,6 +45,11 @@ h1{margin:0;font-size:22px;display:flex;align-items:baseline;gap:10px;flex-wrap:
   }
   .category-tabs::-webkit-scrollbar{display:none}
   .category-tab{flex:0 0 auto}
+  body.is-admin .category-tabs{
+    border-top:1px solid var(--line);
+    padding-top:10px;
+    margin-top:10px;
+  }
 }
 .toolbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
 .toolbar-left{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
@@ -160,7 +165,27 @@ body.editing-mode #addSectionBtn{display:inline-flex}
 #addSpacerToolbarBtn{display:none;width:36px;height:36px;padding:0;cursor:grab}
 #addSpacerToolbarBtn:active{cursor:grabbing}
 body.editing-mode #addSpacerToolbarBtn{display:inline-flex}
-.status-edit-time{margin:0 0 8px;font-size:12px;font-style:italic;color:var(--muted);display:none}
+
+/* Поле "Бейджи" в редакторе карточки — визуально как инпут: слева время последней отметки,
+   справа фишки поставленных бейджей с крестиком удаления у каждой. */
+.badges-field{
+  min-height:44px; padding:8px 12px;
+  background:#0e1727; border:1px solid var(--line); border-radius:10px;
+  display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+}
+.badges-field-time{font-size:12px;font-style:italic;color:var(--muted);white-space:nowrap}
+.badges-field-empty{font-size:13px;color:var(--muted)}
+.badges-field-chips{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-left:auto}
+.badge-chip{position:relative}
+.badge-chip .status-badge{position:static}
+.badge-remove{
+  position:absolute; top:-9px; right:-9px;
+  width:16px; height:16px; padding:0;
+  display:grid; place-items:center;
+  background:var(--bg); border:1px solid var(--line); border-radius:50%;
+  color:var(--muted); cursor:pointer; font-size:11px; line-height:1;
+}
+.badge-remove:hover{color:var(--danger);border-color:var(--danger)}
 
 body.no-scroll{overflow:hidden}
 
@@ -186,7 +211,8 @@ body.no-scroll{overflow:hidden}
 .info-close-link:hover{color:var(--txt)}
 .signal-info-actions{justify-content:center}
 
-/* Тост — крупный, контрастный, одна строка */
+/* Тост — крупный, контрастный, одна строка на десктопе; на мобильных переносится по ширине,
+   чтобы длинные сообщения не вылезали за экран. */
 .toast{
   position:fixed; top:50%; left:50%;
   transform:translate(-50%,-50%) scale(.95);
@@ -205,7 +231,11 @@ body.no-scroll{overflow:hidden}
 }
 .toast.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
 @media (max-width:620px){
-  .toast{font-size:15px;padding:14px 20px}
+  .toast{
+    font-size:15px;padding:14px 20px;
+    white-space:normal; text-align:center;
+    max-width:calc(100% - 32px);
+  }
 }
 
 /* Статусы карточки — дизайн в стиле кнопок сигналов: полупрозрачная подложка + яркая рамка + цветной текст.
@@ -323,8 +353,8 @@ body:not(.is-admin) main{padding-bottom:104px}
       </div>
     </div>
     <div class="toolbar-right">
+      <button id="clearAllStatusesBtn" type="button" style="display:none">Снять все бейджи</button>
       <button id="onlyFlaggedBtn" type="button" style="display:none">Показать только отмеченные</button>
-      <button id="clearAllStatusesBtn" type="button" style="display:none">Сбросить все статусы</button>
     </div>
   </div>
   <nav class="category-tabs" id="categoryTabs" aria-label="Категории"></nav>
@@ -391,9 +421,12 @@ body:not(.is-admin) main{padding-bottom:104px}
         <span class="field-error" id="editHrefError">Заполните это поле</span>
       </div>
     </div>
-    <p class="status-edit-time" id="statusEditTime"></p>
-    <div class="modal-actions" id="statusEditActions" style="display:none;justify-content:flex-start;margin-top:0">
-      <button id="clearCardStatusBtn" type="button">Снять пометки с этой карточки</button>
+    <div class="form-row" id="badgesRow">
+      <label>Бейджи</label>
+      <div class="badges-field" id="badgesField">
+        <span class="badges-field-time" id="badgesFieldTime"></span>
+        <div class="badges-field-chips" id="badgesFieldChips"></div>
+      </div>
     </div>
     <div class="modal-actions">
       <button id="cancelEdit" type="button">Отмена</button>
@@ -525,7 +558,7 @@ function formatRelativeTime(date){
 let data = {};
 let order = [];
 let lastUpdatedAt = null;
-let cardStatusMap = new Map(); // statusId -> { catch?:true, stop?:true, updatedAt }
+let cardStatusMap = new Map(); // statusId -> { catch?:bool, stop?:bool, updatedAt }
 let cardStatusesUnsub = null;
 
 let signalMode = null;        // "catch" | "stop" | null
@@ -565,9 +598,9 @@ const editImg = document.getElementById("editImg");
 const editNickname = document.getElementById("editNickname");
 const editEnabledDot = document.getElementById("editEnabledDot");
 const editEnabledLabel = editEnabledDot.querySelector(".switch-label");
-const statusEditActions = document.getElementById("statusEditActions");
-const statusEditTime = document.getElementById("statusEditTime");
-const clearCardStatusBtn = document.getElementById("clearCardStatusBtn");
+const badgesRow = document.getElementById("badgesRow");
+const badgesFieldTime = document.getElementById("badgesFieldTime");
+const badgesFieldChips = document.getElementById("badgesFieldChips");
 
 const toast = document.getElementById("toast");
 const userDropZones = document.getElementById("userDropZones");
@@ -675,7 +708,20 @@ async function setCardStatus(item, type){
 async function removeCardStatus(item){
   await deleteDoc(doc(db, "cardStatuses", statusIdFor(item)));
 }
+async function removeSingleBadge(item, type){
+  const status = getCardStatus(item);
+  const other = type === "catch" ? "stop" : "catch";
+  if(status[other]){
+    await setDoc(doc(db, "cardStatuses", statusIdFor(item)), { [type]: false }, { merge: true });
+  }else{
+    await removeCardStatus(item);
+  }
+}
 subscribeCardStatuses();
+
+function updateClearBtnVisibility(){
+  clearAllStatusesBtn.style.display = (state.isAdmin && state.onlyFlagged) ? "inline-flex" : "none";
+}
 
 onAuthStateChanged(auth, (user)=>{
   state.isAdmin = !!user && user.uid === ADMIN_UID;
@@ -685,12 +731,12 @@ onAuthStateChanged(auth, (user)=>{
   modeBtn.style.display = state.isAdmin ? "inline-flex" : "none";
   undoBtn.style.display = state.isAdmin ? "inline-flex" : "none";
   redoBtn.style.display = state.isAdmin ? "inline-flex" : "none";
-  clearAllStatusesBtn.style.display = state.isAdmin ? "inline-flex" : "none";
   onlyFlaggedBtn.style.display = state.isAdmin ? "inline-flex" : "none";
   if(!state.isAdmin){
     state.onlyFlagged = false;
     onlyFlaggedBtn.classList.remove("active");
   }
+  updateClearBtnVisibility();
   if(user) console.log("UID:", user.uid);
   if(!state.isAdmin) setEditing(false);
   cancelSignal();
@@ -741,7 +787,7 @@ addSpacerToolbarBtn.addEventListener("dragend", ()=>{ state.drag = null; });
 
 clearAllStatusesBtn.addEventListener("click", async ()=>{
   if(!cardStatusMap.size) return;
-  if(!confirm("Снять все пометки со всех карточек?")) return;
+  if(!confirm("Снять все бейджи со всех карточек?")) return;
   try{
     const batch = writeBatch(db);
     cardStatusMap.forEach((_, id)=> batch.delete(doc(db, "cardStatuses", id)));
@@ -752,6 +798,7 @@ clearAllStatusesBtn.addEventListener("click", async ()=>{
 onlyFlaggedBtn.addEventListener("click", ()=>{
   state.onlyFlagged = !state.onlyFlagged;
   onlyFlaggedBtn.classList.toggle("active", state.onlyFlagged);
+  updateClearBtnVisibility();
   render();
 });
 
@@ -1362,6 +1409,52 @@ function setEditEnabled(val){
 }
 editEnabledDot.addEventListener("click", ()=>{ setEditEnabled(!state.editEnabled); });
 
+/* Поле "Бейджи" в редакторе карточки: слева время последней отметки, справа — фишки
+   поставленных бейджей, у каждой свой крестик для точечного удаления. */
+function createBadgeChip(item, type, label){
+  const wrap = document.createElement("span");
+  wrap.className = "badge-chip";
+  const badge = document.createElement("span");
+  badge.className = "status-badge " + type;
+  badge.textContent = label;
+  const removeBtn = document.createElement("button");
+  removeBtn.type = "button";
+  removeBtn.className = "badge-remove";
+  removeBtn.title = "Убрать бейдж";
+  removeBtn.textContent = "×";
+  removeBtn.addEventListener("click", async ()=>{
+    try{
+      await removeSingleBadge(item, type);
+      renderBadgesField(item);
+    }catch(err){ console.error(err); }
+  });
+  wrap.append(badge, removeBtn);
+  return wrap;
+}
+function renderBadgesField(item){
+  const status = item ? getCardStatus(item) : { catch:false, stop:false };
+  const hasAny = status.catch || status.stop;
+  const statusDoc = item ? cardStatusMap.get(statusIdFor(item)) : null;
+
+  if(hasAny && statusDoc && statusDoc.updatedAt && statusDoc.updatedAt.toDate){
+    badgesFieldTime.textContent = formatRelativeTime(statusDoc.updatedAt.toDate());
+    badgesFieldTime.style.display = "inline";
+  }else{
+    badgesFieldTime.style.display = "none";
+  }
+
+  badgesFieldChips.innerHTML = "";
+  if(!hasAny){
+    const empty = document.createElement("span");
+    empty.className = "badges-field-empty";
+    empty.textContent = "Бейджей нет";
+    badgesFieldChips.appendChild(empty);
+    return;
+  }
+  if(status.stop) badgesFieldChips.appendChild(createBadgeChip(item, "stop", "!"));
+  if(status.catch) badgesFieldChips.appendChild(createBadgeChip(item, "catch", "Ниже шанс"));
+}
+
 function openEditor(sectionId, index, item){
   state.pending = { section: sectionId, index };
   state.activeModal = "card";
@@ -1377,23 +1470,8 @@ function openEditor(sectionId, index, item){
   editName.closest(".form-row").classList.remove("has-error");
   editHref.closest(".form-row").classList.remove("has-error");
 
-  const statusDoc = item ? cardStatusMap.get(statusIdFor(item)) : null;
-  const hasStatus = !!(item && hasAnyCardStatus(item));
-  statusEditActions.style.display = hasStatus ? "flex" : "none";
-  if(hasStatus && statusDoc && statusDoc.updatedAt && statusDoc.updatedAt.toDate){
-    statusEditTime.textContent = formatRelativeTime(statusDoc.updatedAt.toDate());
-    statusEditTime.style.display = "block";
-  }else{
-    statusEditTime.style.display = "none";
-  }
-  clearCardStatusBtn.onclick = async ()=>{
-    if(!item || !hasAnyCardStatus(item)) return;
-    try{
-      await removeCardStatus(item);
-      statusEditActions.style.display = "none";
-      statusEditTime.style.display = "none";
-    }catch(err){ console.error(err); }
-  };
+  badgesRow.style.display = item ? "" : "none";
+  if(item) renderBadgesField(item);
 
   modalBackdrop.style.display = "flex";
 }
