@@ -206,6 +206,7 @@ dialog::backdrop{background:#060a12b8}
 #reviewText{white-space:pre-wrap;overflow-wrap:anywhere;font:13px/1.5 system-ui}
 .form-row.has-error select{border-color:var(--danger)}
 .toast{max-width:calc(100vw - 32px);white-space:normal;text-align:center}
+body.saving-cloud::after{content:"Сохранение…";position:fixed;inset:0;z-index:10000;display:grid;place-items:center;background:#060a1290;color:white;font-size:20px;cursor:wait}
 </style>
 </head>
 <body>
@@ -286,7 +287,7 @@ dialog::backdrop{background:#060a12b8}
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-analytics.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc, onSnapshot, collection, runTransaction, getDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyAjIY9iH0gZT9WalyKTUh6zNinBNvt9aqQ",
@@ -396,19 +397,56 @@ function updateSyncStatusDisplay(){
   }
 }
 
-/* save */
+/* Сохранение с проверкой актуальности доски */
+const writerSession = 'editor-' + crypto.randomUUID();
 let saveTimer = null;
+let saveInFlight = false;
 async function saveToCloud(){
   if(!state.isAdmin) return;
-  if(boardVersion!==2){showToast("Ожидалась перенесённая доска schemaVersion: 2. Сохранение заблокировано.");return;}
-  if(state.isAdmin) syncStatus.textContent = "Сохранение…";
+  if(boardVersion!==2){showToast('Ожидалась доска schemaVersion: 2');return;}
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(async ()=>{
-    try{
-      await setDoc(boardRef, { data, order, updatedAt: Date.now() }, {merge:true});
-      if(state.isAdmin) syncStatus.textContent = "Сохранено";
-    }catch(e){ console.error(e); if(state.isAdmin) syncStatus.textContent = "Ошибка сохранения"; }
-  }, 400);
+  const expectedVersion = lastUpdatedAt;
+  const payload = JSON.parse(JSON.stringify({data,order}));
+  syncStatus.textContent='Сохранение…';
+  saveTimer=setTimeout(async()=>{
+    saveTimer=null;
+    saveInFlight=true;
+    document.body.classList.add('saving-cloud');
+    try {
+      await runTransaction(db,async transaction=>{
+        const snap=await transaction.get(boardRef);
+        const remote=snap.data();
+        if(!snap.exists() || remote.schemaVersion!==2 || (remote.updatedAt||null)!==expectedVersion){
+          throw new Error('Доска уже обновлена. Ваши изменения не записаны: повторите их на новой версии.');
+        }
+        transaction.update(boardRef,{
+          ...payload,
+          updatedAt:Math.max(Date.now(),Number(remote.updatedAt||0)+1),
+          lastWriter:writerSession,
+          syncProtocolVersion:1
+        });
+      });
+      syncStatus.textContent='Сохранено';
+    } catch(e) {
+      console.error(e);
+      showToast(e.message);
+      try {
+        const fresh=await getDoc(boardRef);
+        if(fresh.exists()){
+          const r=fresh.data();
+          data=r.data||{};order=r.order||Object.keys(data);
+          lastUpdatedAt=r.updatedAt||null;boardVersion=r.schemaVersion||0;
+          state.history=[];state.future=[];
+          if(state.activeModal==='card')closeModal();
+          render();
+        }
+      } catch(reloadError){console.error(reloadError);}
+      syncStatus.textContent='Сохранение не выполнено';
+    } finally {
+      saveInFlight=false;
+      document.body.classList.remove('saving-cloud');
+    }
+  },400);
 }
 
 let applyingRemote = false;
@@ -419,6 +457,15 @@ onSnapshot(boardRef, (snap)=>{
       return;
     }
     const remote = snap.data();
+    const externalChange = lastUpdatedAt !== null &&
+      (remote.updatedAt||null)!==lastUpdatedAt &&
+      remote.lastWriter!==writerSession;
+    if(externalChange){
+      clearTimeout(saveTimer);saveTimer=null;
+      state.history=[];state.future=[];
+      if(state.activeModal==='card')closeModal();
+      if(state.editing)showToast('Доска обновлена извне. Несохранённые правки отменены; повторите их при необходимости.');
+    }
     boardVersion=remote.schemaVersion||0;
     applyingRemote = true;
     data = remote.data || {};
