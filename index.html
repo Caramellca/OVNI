@@ -294,14 +294,11 @@ import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from
 import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection, writeBatch, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyAjIY9iH0gZT9WalyKTUh6zNinBNvt9aqQ",
+// Замените весь объект конфигурацией Firebase из вашей рабочей страницы.
+    apiKey: "ВСТАВЬТЕ_API_KEY",
     authDomain: "ovni-b5823.firebaseapp.com",
-    databaseURL: "https://ovni-b5823-default-rtdb.europe-west1.firebasedatabase.app",
     projectId: "ovni-b5823",
-    storageBucket: "ovni-b5823.firebasestorage.app",
-    messagingSenderId: "916848124747",
-    appId: "1:916848124747:web:7fa20edb5701619498fece",
-    measurementId: "G-ZCKKVMYFVN"
+    appId: "ВСТАВЬТЕ_APP_ID"
 };
 
 const ADMIN_UID = "xOqvdkpV57U8BSfnjePCRJRiaOi2";
@@ -972,86 +969,87 @@ document.addEventListener("keydown", e=>{
 });
 
 
-function imageIdentifier(src){
-  try { const u = new URL(src); const name = decodeURIComponent(u.pathname.split('/').pop());
-    return /\.png$/i.test(name) ? name.replace(/\.png$/i,'') : null;
-  } catch { return null; }
-}
 function populateItemSelect(item){
-  editItem.replaceChildren();
-  const placeholder = new Option('Выберите предмет', '');
-  editItem.add(placeholder);
+  editItem.replaceChildren(new Option('Выберите предмет', ''));
   [...catalog.entries()].sort((a,b)=>a[1].name.localeCompare(b[1].name,'ru')).forEach(([id,v])=>editItem.add(new Option(v.name,id)));
-  const id = item && (item.itemId || imageIdentifier(item.img));
+  const id=item && (item.itemId || imageIdentifier(item.img));
   if(id && catalog.has(id)) editItem.value=id;
-  else if(item){ const o = new Option('Не сопоставлен: '+(item.name || item.itemId || 'без названия'), ''); editItem.add(o); editItem.selectedIndex=editItem.options.length-1; }
+  else if(item){editItem.add(new Option('Не сопоставлен: '+(item.name || item.itemId || 'без названия'),''));editItem.selectedIndex=editItem.options.length-1;}
 }
-onSnapshot(catalogCol, snap=>{
-  catalog=new Map(snap.docs.map(d=>[d.id,d.data()])); state.catalogReady=true;
-  render();
+onSnapshot(catalogCol,snap=>{
+  catalog=new Map(snap.docs.map(d=>[d.id,d.data()]));state.catalogReady=true;render();
   if(state.activeModal==='card'){
-    const selected=editItem.value;
-    const p=state.pending;
+    const selected=editItem.value,p=state.pending;
     populateItemSelect(p.index>=0 ? data[p.section]?.items[p.index] : null);
     if(catalog.has(selected)) editItem.value=selected;
   }
-},err=>{console.error(err); showToast('Нет доступа к справочнику. Проверьте правила Firestore.');});
-
+},err=>{console.error(err);showToast('Нет доступа к справочнику. Проверьте правила Firestore.');});
 const importBtn=document.getElementById('importCatalogBtn');
 const migrateBtn=document.getElementById('migrateCardsBtn');
-onAuthStateChanged(auth, user=>{
+onAuthStateChanged(auth,user=>{
   const admin=!!user && user.uid===ADMIN_UID;
-  importBtn.hidden=!admin; migrateBtn.hidden=!admin;
+  importBtn.hidden=!admin;migrateBtn.hidden=!admin;
 });
 const review=document.getElementById('catalogReview');
 let pendingCatalogAction=null;
-function showReview(title, text, action){
+function showReview(title,text,action){
   document.getElementById('reviewTitle').textContent=title;
   document.getElementById('reviewText').textContent=text;
-  pendingCatalogAction=action; review.showModal();
+  pendingCatalogAction=action;review.showModal();
 }
-document.getElementById('reviewCancel').onclick=()=>{pendingCatalogAction=null; review.close();};
+document.getElementById('reviewCancel').onclick=()=>{pendingCatalogAction=null;review.close();};
 document.getElementById('reviewApply').onclick=async()=>{
-  const action=pendingCatalogAction; if(!action || !state.isAdmin) return;
-  const btn=document.getElementById('reviewApply'); btn.disabled=true;
-  try{await action(); pendingCatalogAction=null; review.close(); showToast('Готово');}
-  catch(e){console.error(e); alert('Не удалось завершить: '+e.message);}
+  const action=pendingCatalogAction;if(!action || !state.isAdmin) return;
+  const btn=document.getElementById('reviewApply');btn.disabled=true;
+  try{await action();pendingCatalogAction=null;review.close();showToast('Готово');}
+  catch(e){console.error(e);alert('Не удалось завершить: '+e.message);}
   finally{btn.disabled=false;}
 };
+
+function cleanImageUrl(src){
+  try{const u=new URL(src);u.pathname=u.pathname.replace(/_v\d+(?=\.png$)/i,'');return u.href;}catch{return '';}
+}
+function imageIdentifier(src){
+  try{const n=decodeURIComponent(new URL(cleanImageUrl(src)).pathname.split('/').pop());return /\.png$/i.test(n)?n.replace(/\.png$/i,''):null;}catch{return null;}
+}
+function normalizedItemName(n){return String(n||'').normalize('NFC').trim().replace(/\s+/g,' ').toLocaleLowerCase('ru').replace(/ё/g,'е');}
 importBtn.onclick=()=>{
   if(!state.isAdmin || !state.catalogReady) return;
-  const candidates=new Map(), conflicts=new Set(), issues=[];
-  Object.values(data).forEach(sec=>(sec.items||[]).forEach(it=>{
-    if(isSpacer(it) || it.itemId && catalog.has(it.itemId)) return;
+  const candidates=new Map(),conflicts=new Set(),issues=[],origins=new Map();
+  Object.entries(data).forEach(([sid,sec])=>(sec.items||[]).forEach(it=>{
+    if(isSpacer(it) || it.itemId && catalog.has(it.itemId) && !it.img) return;
     const id=imageIdentifier(it.img);
-    if(!id || !it.name?.trim()){issues.push('Пропущено: '+(it.name||it.href||'без названия')); return;}
-    const entry={name:it.name.trim(),identifier:id,img:it.img};
-    const prev=candidates.get(id) || catalog.get(id);
-    if(prev && (prev.name!==entry.name || imageIdentifier(prev.img)!==id)) conflicts.add(id);
-    if(!candidates.has(id)) candidates.set(id,entry);
+    if(!id || !String(it.name||'').trim()){issues.push('Пропущено: '+(it.name||it.href||'без названия'));return;}
+    const entry={name:it.name.trim(),identifier:id,img:cleanImageUrl(it.img)};
+    if(!origins.has(id)) origins.set(id,[]);
+    origins.get(id).push(`${entry.name}\nКартинка: ${entry.img}\nРаздел: ${sec.title||sid}`);
+    const prev=candidates.get(id);
+    if(prev){
+      if(normalizedItemName(prev.name)!==normalizedItemName(entry.name)) conflicts.add(id);
+      else if(/ё/i.test(entry.name) && !/ё/i.test(prev.name)) prev.name=entry.name;
+    }else candidates.set(id,entry);
+    const existing=catalog.get(id);
+    if(existing && normalizedItemName(existing.name)!==normalizedItemName(entry.name)) conflicts.add(id);
   }));
   const additions=[...candidates].filter(([id])=>!catalog.has(id) && !conflicts.has(id));
-  showReview('Импорт справочника',
-    `Новых предметов: ${additions.length}\nСуществующие записи не будут перезаписаны.\n\n`+
-    additions.map(([id,v])=>`${v.name} — ${id}`).join('\n')+
-    '\n\nКонфликты (не импортируются):\n'+[...conflicts].join('\n')+'\n\n'+issues.join('\n'), async()=>{
-      for(let i=0;i<additions.length;i+=400){
-        const batch=writeBatch(db);
-        additions.slice(i,i+400).forEach(([id,v])=>batch.set(doc(db,'itemCatalog',id),v));
-        await batch.commit();
-      }
-    });
+  const conflictText=[...conflicts].map(id=>`${id}\n${catalog.has(id)?'В справочнике: '+catalog.get(id).name+'\n':''}${origins.get(id).join('\n---\n')}`).join('\n\n');
+  showReview('Импорт справочника',`Новых предметов: ${additions.length}\nСуществующие записи не будут перезаписаны.\nЕ/ё считаются одной буквой. Суффиксы версии удалены из идентификаторов и URL.\n\n`+
+    additions.map(([id,v])=>`${v.name}\nИдентификатор: ${id}\nКартинка: ${v.img}`).join('\n\n')+
+    '\n\nКонфликты (не импортируются):\n'+(conflictText||'Нет')+'\n\n'+issues.join('\n'),async()=>{
+    for(let i=0;i<additions.length;i+=400){const batch=writeBatch(db);additions.slice(i,i+400).forEach(([id,v])=>batch.set(doc(db,'itemCatalog',id),v));await batch.commit();}
+  });
 };
+
 migrateBtn.onclick=()=>{
   if(!state.isAdmin || !state.catalogReady) return;
   const snapshot=JSON.stringify({data,order});
-  const next=JSON.parse(JSON.stringify(data)); let count=0; const skipped=[];
+  const next=JSON.parse(JSON.stringify(data));let count=0;const skipped=[];
   Object.values(next).forEach(sec=>(sec.items||[]).forEach(it=>{
     if(isSpacer(it)) return;
     const id=it.itemId || imageIdentifier(it.img);
     if(!catalog.has(id)){skipped.push(it.name||it.href||'Без названия');return;}
     if(it.itemId===id && !('name' in it) && !('img' in it)) return;
-    it.itemId=id; delete it.name; delete it.img; count++;
+    it.itemId=id;delete it.name;delete it.img;count++;
   }));
   showReview('Привязка карточек',`Будут переведены: ${count}\nСсылки, разделы и активность сохраняются.\nНесопоставленные останутся как есть:\n${skipped.join('\n')}`,async()=>{
     if(snapshot!==JSON.stringify({data,order})) throw new Error('Доска изменилась. Откройте предпросмотр заново.');
