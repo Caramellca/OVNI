@@ -194,6 +194,16 @@ body.saving-cloud::after{content:"Сохранение…";position:fixed;inset:
 .auto-block + .auto-block{margin-top:28px}
 .add-card-row{margin-bottom:12px}
 .card img,.noicon{min-width:0}
+#reportInfo{display:flex;align-items:baseline;flex-wrap:wrap;gap:8px 14px;margin:-5px 0 10px;color:var(--muted);font-size:12px;font-style:italic}
+#lastReportButton{display:inline;padding:0;border:0;border-radius:0;background:none;color:var(--muted);font:inherit;text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+#lastReportButton:hover{color:var(--txt)}
+#lastReportDialog{width:min(680px,calc(100% - 32px));max-height:80vh;overflow:auto;padding:20px;background:var(--panel);color:var(--txt);border:1px solid var(--line);border-radius:14px}
+#lastReportDialog::backdrop{background:#060a12b8}
+.report-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
+.report-heading h3{margin:0;font-size:18px}
+#closeLastReport{padding:3px 9px;background:none;border:0;color:var(--muted);font-size:24px}
+#reportDialogDate,#lastReportNote{color:var(--muted);font-size:12px;font-style:italic}
+#lastReportText{white-space:pre-wrap;overflow-wrap:anywhere;margin:16px 0;font-size:14px;line-height:1.6}
 </style>
 </head>
 <body>
@@ -203,6 +213,10 @@ body.saving-cloud::after{content:"Сохранение…";position:fixed;inset:
 <button id="loginBtn" type="button">Вход</button>
 </div>
 <span id="syncStatus"></span>
+<div id="reportInfo" hidden>
+<button id="lastReportButton" type="button">См. последний отчёт</button>
+<span id="lastReportDate"></span>
+</div>
 <div class="toolbar">
 <div class="toolbar-left">
 <button id="modeBtn" style="display:none" type="button">Редактировать</button>
@@ -268,6 +282,12 @@ body.saving-cloud::after{content:"Сохранение…";position:fixed;inset:
 </div>
 
 <div class="toast" id="toast"></div>
+<dialog id="lastReportDialog">
+<div class="report-heading"><h3>Последний отчёт</h3><button id="closeLastReport" type="button" aria-label="Закрыть">×</button></div>
+<div id="reportDialogDate"></div>
+<div id="lastReportText"></div>
+<div id="lastReportNote" hidden></div>
+</dialog>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-analytics.js";
@@ -923,6 +943,7 @@ function showToast(text){
 }
 
 document.addEventListener("keydown", e=>{
+  if(document.getElementById("lastReportDialog").open)return;
   if(state.activeModal === "card"){
     if(e.key === "Enter"){ e.preventDefault(); saveEditHandler(); return; }
     if(e.key === "Escape"){ e.preventDefault(); closeModal(); return; }
@@ -956,6 +977,59 @@ function imageIdentifier(src){try{const name=decodeURIComponent(new URL(src).pat
 const inactiveBtn=document.getElementById('inactiveViewBtn');
 onAuthStateChanged(auth,user=>{inactiveBtn.hidden=user?.uid!==ADMIN_UID;});
 inactiveBtn.onclick=()=>{showInactive=!showInactive;inactiveBtn.textContent=showInactive?'Неактивные: показаны':'Неактивные: скрыты';render();};
+
+const latestReportRef=doc(db,'syncReports','latest');
+const reportInfo=document.getElementById('reportInfo');
+const reportButton=document.getElementById('lastReportButton');
+const reportDate=document.getElementById('lastReportDate');
+const reportDialog=document.getElementById('lastReportDialog');
+const reportDialogDate=document.getElementById('reportDialogDate');
+const reportText=document.getElementById('lastReportText');
+const reportNote=document.getElementById('lastReportNote');
+let reportUnsubscribe=null;
+let reportLoadError=false;
+let lastReport=null;
+function formatReportDate(value){
+ const timestamp=Number(value);
+ if(!Number.isFinite(timestamp)||timestamp<=0)return '';
+ const date=new Date(timestamp);
+ const parts=new Intl.DateTimeFormat('ru-RU',{
+  timeZone:'Europe/Madrid',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit',hourCycle:'h23'
+ }).formatToParts(date);
+ const part=type=>parts.find(p=>p.type===type)?.value||'';
+ const zone=new Intl.DateTimeFormat('en-GB',{
+  timeZone:'Europe/Madrid',timeZoneName:'shortOffset'
+ }).formatToParts(date).find(p=>p.type==='timeZoneName')?.value;
+ const abbreviation=zone==='GMT+2'?'CEST':zone==='GMT+1'?'CET':zone||'';
+ return `${part('day')} ${part('month')} ${part('hour')}:${part('minute')} ${abbreviation}`;
+}
+function refreshReport(){
+ const date=lastReport?formatReportDate(lastReport.checkedAt):'';
+ reportDate.textContent=date;
+ reportDialogDate.textContent=date;
+ reportText.textContent=reportLoadError?'Не удалось загрузить отчёт.':
+  !lastReport?'Отчёт появится после следующей проверки с записью.':
+  String(lastReport.text||'').trim()||'Изменений нет.';
+ const unverified=Number(lastReport?.unverified||0);
+ reportNote.textContent=unverified>0?`Не подтверждено карточек: ${unverified}.`:'';
+ reportNote.hidden=unverified===0;
+}
+onAuthStateChanged(auth,user=>{
+ if(reportUnsubscribe){reportUnsubscribe();reportUnsubscribe=null;}
+ const admin=user?.uid===ADMIN_UID;
+ reportInfo.hidden=!admin;
+ lastReport=null;reportLoadError=false;refreshReport();
+ if(!admin){if(reportDialog.open)reportDialog.close();return;}
+ reportUnsubscribe=onSnapshot(latestReportRef,snapshot=>{
+  lastReport=snapshot.exists()?snapshot.data():null;reportLoadError=false;refreshReport();
+ },()=>{reportLoadError=true;refreshReport();});
+});
+reportButton.addEventListener('click',()=>{
+ if(!state.isAdmin)return;
+ refreshReport();if(!reportDialog.open)reportDialog.showModal();
+});
+document.getElementById('closeLastReport').addEventListener('click',()=>reportDialog.close());
+
 </script>
 </body>
 </html>
