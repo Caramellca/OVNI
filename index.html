@@ -208,6 +208,8 @@ dialog::backdrop{background:#060a12b8}
 #reviewText{white-space:pre-wrap;overflow-wrap:anywhere;font:13px/1.5 system-ui}
 .form-row.has-error select{border-color:var(--danger)}
 .toast{max-width:calc(100vw - 32px);white-space:normal;text-align:center}
+
+#transferDialog{width:min(900px,calc(100% - 24px))}#transferStatus{white-space:pre-wrap;overflow-wrap:anywhere;border:1px solid var(--accent);border-radius:10px;padding:14px;font:14px/1.5 system-ui}#transferStatus.error{border-color:#ff7979;color:#ffb8b8}.divider-row{padding:10px 0;border-bottom:1px solid var(--line)}.divider-row small{display:block;margin-bottom:6px}#transferDialog button:disabled{opacity:.45;cursor:default}#configWarning{background:#532d23;padding:16px;border:1px solid #ffad85;margin:12px;border-radius:10px}
 </style>
 </head>
 <body>
@@ -230,11 +232,11 @@ dialog::backdrop{background:#060a12b8}
 <div class="toolbar-right">
 
 
-<button hidden="" id="importCatalogBtn" type="button">Импорт предметов</button><button hidden="" id="migrateCardsBtn" type="button">Привязать карточки</button></div>
+<button hidden id="transferBoardBtn" type="button">Шаг 3: новые разделы</button><button hidden id="inactiveViewBtn" type="button">Неактивные: показаны</button><button hidden="" id="importCatalogBtn" type="button">Импорт предметов</button><button hidden="" id="migrateCardsBtn" type="button">Привязать карточки</button></div>
 </div>
 <nav aria-label="Категории" class="category-tabs" id="categoryTabs"></nav>
 </header>
-<main id="main"></main>
+<div hidden id="configWarning"></div><main id="main"></main>
 
 <div class="modal-backdrop" id="loginModal">
 <div class="modal">
@@ -287,11 +289,12 @@ dialog::backdrop{background:#060a12b8}
 </div>
 
 <div class="toast" id="toast"></div>
+<dialog id="transferDialog"><h3>Шаг 3: перестройка разделов доски</h3><p>Группы читаются из текущего itemCatalog. Изменяется только cards/board. Справочник и checkerState не изменяются.</p><p>Сначала выйдите из режима редактирования, дождитесь сохранения, закройте другие вкладки редактора и остановите чекер. Старые страницы после переноса не используйте для редактирования.</p><p>Все карточки сохраняются. Порядок: по старому order, затем по позиции внутри раздела — без сортировки по именам. Для девайдеров предложена группа следующей карточки (либо предыдущей в конце раздела); её можно изменить ниже. Разделение смешанной категории не сохраняет соседство карточек разных групп.</p><p>Чек-лист остаётся скрытым, остальные группы становятся видимыми. Активные карточки ранее скрытых разделов будут видны посетителям. Индивидуальная активность не меняется.</p><pre id="transferStatus" role="status">Нажмите «Подготовить предпросмотр». До подтверждения записи нет.</pre><div id="dividerChoices"></div><p><label><input style="width:auto" type="checkbox" id="transferConsent">Я сохранила скачанную копию и согласна с новой группировкой и видимостью разделов</label></p><div class="modal-actions" style="flex-wrap:wrap"><button id="transferPreview" type="button">Подготовить предпросмотр</button><button id="transferBackup" type="button" disabled>Скачать текущую копию</button><button id="transferApply" type="button" disabled>Записать новые разделы</button><button id="transferClose" type="button">Закрыть</button></div></dialog>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-analytics.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection, writeBatch, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection, writeBatch, serverTimestamp, getDocFromServer, getDocsFromServer, runTransaction } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyAjIY9iH0gZT9WalyKTUh6zNinBNvt9aqQ",
@@ -304,6 +307,8 @@ const firebaseConfig = {
     measurementId: "G-ZCKKVMYFVN"
 };
 
+const configIncomplete=/ВСТАВЬТЕ/.test(firebaseConfig.apiKey+firebaseConfig.appId);
+if(configIncomplete){const el=document.getElementById('configWarning');el.hidden=false;el.textContent='Замените заглушки apiKey и appId в firebaseConfig рабочими значениями перед подключением.';}
 const ADMIN_UID = "xOqvdkpV57U8BSfnjePCRJRiaOi2";
 const DOC_PATH = ["cards","board"];
 
@@ -339,6 +344,9 @@ function formatUpdateDate(ts){
 let data = {};
 let order = [];
 let lastUpdatedAt = null;
+let boardVersion=0;
+let transferBusy=false;
+let showInactive=true;
 
 
 const state = {
@@ -405,7 +413,7 @@ async function saveToCloud(){
   clearTimeout(saveTimer);
   saveTimer = setTimeout(async ()=>{
     try{
-      await setDoc(boardRef, { data, order, updatedAt: Date.now() });
+      await setDoc(boardRef, { data, order, updatedAt: Date.now() }, {merge:true});
       if(state.isAdmin) syncStatus.textContent = "Сохранено";
     }catch(e){ console.error(e); if(state.isAdmin) syncStatus.textContent = "Ошибка сохранения"; }
   }, 400);
@@ -419,6 +427,7 @@ onSnapshot(boardRef, (snap)=>{
       return;
     }
     const remote = snap.data();
+    boardVersion=remote.schemaVersion||0;
     applyingRemote = true;
     data = remote.data || {};
     order = remote.order || Object.keys(data);
@@ -515,6 +524,8 @@ function scrollToSection(id){
    с обоими бейджами сразу, чтобы наглядно показать, как они выглядят. */
 /* RENDER */
 function render(){
+  addSectionBtn.hidden=boardVersion===2;
+  document.getElementById("migrateCardsBtn").hidden=!state.isAdmin||boardVersion===2;
   main.innerHTML = "";
   order.forEach(id=>{
     if(!data[id]) return;
@@ -528,13 +539,13 @@ function render(){
     const h2 = document.createElement("h2");
     const titleSpan = document.createElement("span");
     titleSpan.className = "section-title-text";
-    titleSpan.contentEditable = state.editing ? "true" : "false";
+    titleSpan.contentEditable = state.editing && boardVersion!==2 ? "true" : "false";
     titleSpan.spellcheck = false;
     titleSpan.textContent = sec.title;
     if(state.editing){
       titleSpan.addEventListener("blur", ()=>{
         const newTitle = titleSpan.textContent.trim();
-        if(newTitle && newTitle !== sec.title){
+        if(boardVersion!==2 && newTitle && newTitle !== sec.title){
           pushHistory();
           data[id].title = newTitle;
           saveToCloud();
@@ -543,7 +554,7 @@ function render(){
       titleSpan.addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); titleSpan.blur(); } });
     }
 
-    const visibleCount = sec.items.filter(it=>!isSpacer(it) && (state.isAdmin || !isInactive(it))).length;
+    const visibleCount = sec.items.filter(it=>!isSpacer(it) && ((state.isAdmin && showInactive) || !isInactive(it))).length;
     const countEm = document.createElement("em");
     countEm.textContent = visibleCount;
 
@@ -584,6 +595,7 @@ function render(){
       delBtn.title = "Удалить категорию";
       delBtn.innerHTML = ICON_X;
       delBtn.addEventListener("click", ()=>{
+        if(boardVersion===2)return;
         if(!confirm(`Удалить категорию "${sec.title}"?`)) return;
         pushHistory();
         delete data[id];
@@ -591,7 +603,8 @@ function render(){
         commit();
       });
 
-      sectionControls.append(eyeBtn, dragBtn, delBtn);
+      sectionControls.append(eyeBtn, dragBtn);
+      if(boardVersion!==2)sectionControls.append(delBtn);
     }
 
     h2.append(titleSpan, countEm, sectionControls);
@@ -629,7 +642,7 @@ function render(){
         grid.appendChild(createSpacerEl(id, index));
         return;
       }
-      if(isInactive(item) && !state.isAdmin) return;
+      if(isInactive(item) && (!state.isAdmin || !showInactive)) return;
       grid.appendChild(createCard(id, index, item, isInactive(item)));
     });
 
@@ -796,6 +809,7 @@ function bindGridDropZone(grid){
 
 function moveItemPrecise(fromSection, fromIndex, toSection, toIndex, before){
   if(fromSection === toSection && fromIndex === toIndex) return;
+  if(!allowedCardMove(fromSection,fromIndex,toSection))return;
   pushHistory();
   const item = data[fromSection].items.splice(fromIndex, 1)[0];
   let adjustedTo = toIndex;
@@ -806,6 +820,7 @@ function moveItemPrecise(fromSection, fromIndex, toSection, toIndex, before){
 }
 
 function moveItemAppend(fromSection, fromIndex, toSection){
+  if(!allowedCardMove(fromSection,fromIndex,toSection))return;
   pushHistory();
   const item = data[fromSection].items.splice(fromIndex, 1)[0];
   data[toSection].items.push(item);
@@ -839,9 +854,10 @@ redoBtn.addEventListener("click", ()=>{
   state.history.push(JSON.stringify({ data, order }));
   restoreFrom(state.future.pop());
 });
-function commit(){ render(); saveToCloud(); }
+function commit(){ if(transferBusy)return; render(); saveToCloud(); }
 
 function setEditing(enabled){
+  if(transferBusy)return;
   state.editing = enabled && state.isAdmin;
   document.body.classList.toggle("editing-mode", state.editing);
   modeBtn.classList.toggle("save-mode", state.editing);
@@ -851,6 +867,7 @@ function setEditing(enabled){
 modeBtn.addEventListener("click", ()=>setEditing(!state.editing));
 
 addSectionBtn.addEventListener("click", ()=>{
+  if(boardVersion===2 || transferBusy)return;
   const title = prompt("Название новой категории:");
   if(!title || !title.trim()) return;
   const id = "sec-" + Date.now();
@@ -860,6 +877,11 @@ addSectionBtn.addEventListener("click", ()=>{
   commit();
 });
 
+function allowedCardMove(fromSection,index,toSection){
+ const it=data[fromSection]?.items[index];
+ if(boardVersion===2 && it && !isSpacer(it) && catalog.get(it.itemId)?.groupId!==toSection){showToast("Карточку можно перемещать только внутри группы её предмета");return false;}
+ return true;
+}
 function populateSectionSelect(){
   const prevValue = editSection.value;
   editSection.innerHTML = "";
@@ -917,7 +939,7 @@ document.getElementById("cancelEdit").addEventListener("click", closeModal);
 document.getElementById("saveEdit").addEventListener("click", saveEditHandler);
 function saveEditHandler(){
   const { section, index } = state.pending;
-  const newSection = editSection.value;
+  let newSection = editSection.value;
   const itemId = editItem.value;
   const href = editHref.value.trim();
 
@@ -929,6 +951,7 @@ function saveEditHandler(){
   nameRow.classList.toggle("has-error", !catalog.has(itemId));
   hrefRow.classList.toggle("has-error", !href);
   if(!catalog.has(itemId) || !href) return;
+  if(boardVersion===2){newSection=catalog.get(itemId).groupId;if(!data[newSection]){showToast("У предмета нет допустимой группы в справочнике");return;}}
 
   pushHistory();
   let item = { ...(index >= 0 ? data[section].items[index] : {}), itemId, href };
@@ -972,37 +995,18 @@ document.addEventListener("keydown", e=>{
 });
 
 
-const ITEM_GROUP_LABELS = [
-  ['black-market','Черный рынок'],
-  ['upgrades','Улучшения'],
-  ['bonuses','Бонусы'],
-  ['equipment','Снаряжение'],
-  ['agriculture','Сельское хозяйство'],
-  ['aging-points','Очки роста'],
-  ['check-list','Чек-лист']
-];
+const ITEM_GROUP_LABELS=[['black-market','Черный рынок'],['upgrades','Улучшения'],['bonuses','Бонусы'],['equipment','Снаряжение'],['agriculture','Сельское хозяйство'],['aging-points','Очки роста'],['check-list','Чек-лист']];
 function populateItemSelect(item){
-  editItem.replaceChildren(new Option('Выберите предмет', ''));
-  const buckets=new Map(ITEM_GROUP_LABELS.map(([id])=>[id,[]]));
-  const other=[];
-  for(const [id,value] of catalog){
-    const target=buckets.get(value.groupId)||other;
-    target.push([id,value]);
-  }
-  function appendGroup(label,entries){
-    if(!entries.length)return;
-    const group=document.createElement('optgroup');
-    group.label=label;
-    entries.sort((a,b)=>String(a[1].name||a[0]).localeCompare(String(b[1].name||b[0]),'ru'));
-    for(const [id,value] of entries)group.appendChild(new Option(value.name||id,id));
-    editItem.appendChild(group);
-  }
-  for(const [id,label] of ITEM_GROUP_LABELS)appendGroup(label,buckets.get(id));
-  appendGroup('Без группы',other);
-  const id=item && (item.itemId || imageIdentifier(item.img));
-  if(id && catalog.has(id)) editItem.value=id;
-  else if(item){editItem.add(new Option('Не сопоставлен: '+(item.name || item.itemId || 'без названия'),''));editItem.selectedIndex=editItem.options.length-1;}
+ editItem.replaceChildren(new Option('Выберите предмет',''));
+ const buckets=new Map(ITEM_GROUP_LABELS.map(([g])=>[g,[]])),other=[];
+ for(const [id,v]of catalog)(buckets.get(v.groupId)||other).push([id,v]);
+ function add(label,entries){if(!entries.length)return;const g=document.createElement('optgroup');g.label=label;entries.sort((a,b)=>String(a[1].name||a[0]).localeCompare(String(b[1].name||b[0]),'ru'));for(const [id,v]of entries)g.appendChild(new Option(v.name||id,id));editItem.appendChild(g);}
+ for(const [id,label]of ITEM_GROUP_LABELS)add(label,buckets.get(id));add('Без группы',other);
+ const id=item&&(item.itemId||imageIdentifier(item.img));if(id&&catalog.has(id))editItem.value=id;else if(item){editItem.add(new Option('Не сопоставлен: '+(item.name||item.itemId||'без названия'),''));editItem.selectedIndex=editItem.options.length-1;}
+ updateFixedSection();
 }
+function updateFixedSection(){editSection.disabled=boardVersion===2;if(boardVersion===2){const group=catalog.get(editItem.value)?.groupId;if(data[group])editSection.value=group;}}
+editItem.addEventListener('change',updateFixedSection);
 onSnapshot(catalogCol,snap=>{
   catalog=new Map(snap.docs.map(d=>[d.id,d.data()]));state.catalogReady=true;render();
   if(state.activeModal==='card'){
@@ -1015,7 +1019,7 @@ const importBtn=document.getElementById('importCatalogBtn');
 const migrateBtn=document.getElementById('migrateCardsBtn');
 onAuthStateChanged(auth,user=>{
   const admin=!!user && user.uid===ADMIN_UID;
-  importBtn.hidden=!admin;migrateBtn.hidden=!admin;
+  importBtn.hidden=!admin;migrateBtn.hidden=!admin||boardVersion===2;
 });
 const review=document.getElementById('catalogReview');
 let pendingCatalogAction=null;
@@ -1068,6 +1072,7 @@ importBtn.onclick=()=>{
 };
 
 migrateBtn.onclick=()=>{
+  if(boardVersion===2){showToast("Повторная привязка после переноса не требуется");return;}
   if(!state.isAdmin || !state.catalogReady) return;
   const snapshot=JSON.stringify({data,order});
   const next=JSON.parse(JSON.stringify(data));let count=0;const skipped=[];
@@ -1085,6 +1090,60 @@ migrateBtn.onclick=()=>{
     await setDoc(boardRef,{data:next,order,updatedAt:Date.now()});
   });
 };
+
+const transferBtn=document.getElementById('transferBoardBtn'),inactiveBtn=document.getElementById('inactiveViewBtn'),transferDialog=document.getElementById('transferDialog');
+let transferPlan=null,transferBackupDownloaded=false;
+function stable(v){if(Array.isArray(v))return '['+v.map(stable).join(',')+']';if(v&&typeof v==='object')return '{'+Object.keys(v).sort().map(k=>JSON.stringify(k)+':'+stable(v[k])).join(',')+'}';return JSON.stringify(v);}
+function transferMessage(text,error=false){const el=document.getElementById('transferStatus');el.textContent=text;el.classList.toggle('error',error);}
+function transferControls(){document.getElementById('transferPreview').disabled=transferBusy;document.getElementById('transferBackup').disabled=transferBusy||!transferPlan;document.getElementById('transferApply').disabled=transferBusy||!transferPlan||!transferBackupDownloaded||!document.getElementById('transferConsent').checked;document.getElementById('transferClose').disabled=transferBusy;for(const el of document.querySelectorAll('#dividerChoices select'))el.disabled=transferBusy;modeBtn.disabled=transferBusy;undoBtn.disabled=transferBusy;redoBtn.disabled=transferBusy;}
+onAuthStateChanged(auth,u=>{transferBtn.hidden=u?.uid!==ADMIN_UID;inactiveBtn.hidden=u?.uid!==ADMIN_UID;});
+inactiveBtn.onclick=()=>{showInactive=!showInactive;inactiveBtn.textContent=showInactive?'Неактивные: показаны':'Неактивные: скрыты';render();};
+transferBtn.onclick=()=>{transferDialog.showModal();transferControls();};
+document.getElementById('transferClose').onclick=()=>transferDialog.close();transferDialog.addEventListener('cancel',e=>{if(transferBusy)e.preventDefault();});
+document.getElementById('transferConsent').onchange=transferControls;
+function prepareBoardPlan(board,cat){
+ if(board.schemaVersion===2)throw Error('Доска уже переведена. Повторный перенос не нужен.');
+ if(!board.data||!Array.isArray(board.order))throw Error('Некорректная структура доски.');
+ const sourceOrder=[...board.order];if(new Set(sourceOrder).size!==sourceOrder.length)throw Error('В order повторяются разделы.');
+ for(const id of Object.keys(board.data))if(!sourceOrder.includes(id))sourceOrder.push(id);
+ const valid=new Set(ITEM_GROUP_LABELS.map(([g])=>g)),refs=[],dividers=[];let cards=0;
+ for(const sid of sourceOrder){const sec=board.data[sid];if(!sec||!Array.isArray(sec.items))throw Error('Неверный раздел '+sid);
+ for(let index=0;index<sec.items.length;index++){
+ const it=sec.items[index];if(!it||typeof it!=='object')throw Error('Неверный элемент '+sid+':'+index);
+ if(isSpacer(it)){refs.push({sid,index,item:it,divider:true});continue;}
+ const id=it.itemId,g=cat.get(id)?.groupId;if(!id||!valid.has(g))throw Error('У карточки '+(it.nickname||it.href||index)+' нет допустимого groupId в справочнике ('+id+'). Перенос заблокирован.');
+ refs.push({sid,index,item:it,group:g});cards++;
+ }}
+ for(let n=0;n<refs.length;n++){const ref=refs[n];if(!ref.divider)continue;
+ const following=refs.slice(n+1).find(r=>r.sid===ref.sid&&!r.divider),preceding=refs.slice(0,n).reverse().find(r=>r.sid===ref.sid&&!r.divider);
+ ref.group=following?.group||preceding?.group||'check-list';ref.neighbor=following||preceding;dividers.push(ref);}
+ const allIds=refs.filter(r=>!r.divider).map(r=>r.item.itemId),catalogGroups=Object.fromEntries([...new Set(allIds)].map(id=>[id,cat.get(id).groupId]));
+ const usedUids=new Set();for(const r of refs){if(r.item.uid){if(usedUids.has(r.item.uid))throw Error('Повторяющийся uid. Нужна отдельная проверка.');usedUids.add(r.item.uid);r.uid=r.item.uid;}else{let id;do{id='ovni-'+crypto.randomUUID();}while(usedUids.has(id));usedUids.add(id);r.uid=id;}}
+ return {board,refs,dividers,cards,catalogGroups};
+}
+function materializePlan(plan){const next={...plan.board,schemaVersion:2,order:ITEM_GROUP_LABELS.map(([g])=>g),data:{}};for(const [g,title]of ITEM_GROUP_LABELS)next.data[g]={title,hidden:g==='check-list',items:[]};for(const r of plan.refs)next.data[r.group].items.push({...r.item,uid:r.uid});return next;}
+function summarizePlan(){const p=transferPlan,next=materializePlan(p);let text='Предпросмотр: '+p.cards+' карточек, '+p.dividers.length+' девайдеров.\n';for(const [g,title]of ITEM_GROUP_LABELS){const items=next.data[g].items;text+=title+': '+items.filter(it=>!isSpacer(it)&&!isInactive(it)).length+' активных, '+items.filter(it=>!isSpacer(it)&&isInactive(it)).length+' неактивных, '+items.filter(isSpacer).length+' девайдеров.\n';}text+='\nВнутри групп относительный порядок сохраняется. Проверьте назначения девайдеров и скачайте копию.';transferMessage(text);}
+document.getElementById('transferPreview').onclick=async()=>{transferPlan=null;transferBackupDownloaded=false;document.getElementById('transferConsent').checked=false;document.getElementById('dividerChoices').replaceChildren();try{
+ if(configIncomplete)throw Error('Не заполнен firebaseConfig.');if(!state.isAdmin)throw Error('Нужен вход администратора.');if(state.editing)throw Error('Сначала нажмите «Готово» и дождитесь сохранения.');
+ transferBusy=true;transferControls();transferMessage('Читаю текущую доску и справочник с сервера…');
+ const [bs,cs]=await Promise.all([getDocFromServer(boardRef),getDocsFromServer(catalogCol)]);if(!bs.exists())throw Error('cards/board не найден.');
+ transferPlan=prepareBoardPlan(bs.data(),new Map(cs.docs.map(d=>[d.id,d.data()])));
+ for(const r of transferPlan.dividers){const row=document.createElement('div');row.className='divider-row';const label=document.createElement('small');const neighbor=r.neighbor?.item;label.textContent='Девайдер: '+(transferPlan.board.data[r.sid].title||r.sid)+', позиция '+(r.index+1)+(neighbor?' · рядом: '+(neighbor.nickname||neighbor.href||neighbor.itemId):' · нет соседних карточек');const select=document.createElement('select');for(const [g,title]of ITEM_GROUP_LABELS)select.add(new Option(title,g));select.value=r.group;select.onchange=()=>{r.group=select.value;summarizePlan();};row.append(label,select);document.getElementById('dividerChoices').append(row);}
+ summarizePlan();
+ }catch(e){console.error(e);transferPlan=null;transferMessage((e.code?e.code+'\n':'')+e.message,true);}finally{transferBusy=false;transferControls();}};
+document.getElementById('transferBackup').onclick=()=>{if(!transferPlan)return;const url=URL.createObjectURL(new Blob([JSON.stringify({board:transferPlan.board,catalogGroups:transferPlan.catalogGroups},null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='ovni-current-before-board-transfer.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);transferBackupDownloaded=true;transferControls();};
+document.getElementById('transferApply').onclick=async()=>{
+ if(document.getElementById('transferApply').disabled)return;if(!confirm('Перестроить cards/board по предпросмотру? Чек-лист скрыт, остальные группы публичны.'))return;
+ const plan=transferPlan,next=materializePlan(plan);let committed=false;transferBusy=true;transferControls();transferMessage('Проверяю, не изменилась ли доска, и записываю новые разделы…');
+ try{if(auth.currentUser?.uid!==ADMIN_UID)throw Error('Нужен вход администратора.');
+ await runTransaction(db,async tx=>{const bs=await tx.get(boardRef);if(!bs.exists()||stable(bs.data())!==stable(plan.board))throw Error('Доска изменилась. Ничего не записано. Подготовьте свежий предпросмотр.');
+ for(const [id,g]of Object.entries(plan.catalogGroups)){const snap=await tx.get(doc(db,'itemCatalog',id));if(!snap.exists()||snap.data().groupId!==g)throw Error('Изменилась группа '+id+'. Подготовьте свежий предпросмотр.');}
+ tx.set(boardRef,{...next,updatedAt:Date.now()});});committed=true;
+ transferMessage('Запись подтверждена. Читаю cards/board с сервера…');const check=await getDocFromServer(boardRef);if(!check.exists()||check.data().schemaVersion!==2||stable(check.data().data)!==stable(next.data)||stable(check.data().order)!==stable(next.order))throw Error('Контрольное чтение не совпало. Не повторяйте перенос вслепую.');
+ data=check.data().data;order=check.data().order;boardVersion=2;lastUpdatedAt=check.data().updatedAt;state.history=[];state.future=[];render();transferPlan=null;transferMessage('Готово. Новые разделы и все элементы подтверждены чтением с сервера. Справочник и checkerState не изменены. Закройте окно и проверьте доску. Для редактирования используйте только эту новую версию.');
+ }catch(e){console.error(e);transferPlan=null;transferMessage((committed?'Запись уже подтверждена, но проверка не завершилась. Не повторяйте перенос без проверки базы.\n':'Успех не подтверждён.\n')+(e.code?e.code+'\n':'')+e.message,true);}finally{transferBusy=false;transferControls();}
+};
+
 </script>
 <dialog id="catalogReview"><h3 id="reviewTitle"></h3><pre id="reviewText"></pre><div class="modal-actions"><button id="reviewCancel" type="button">Отмена</button><button id="reviewApply" type="button">Применить</button></div></dialog></body>
 </html>
