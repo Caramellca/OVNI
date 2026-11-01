@@ -208,12 +208,6 @@ dialog::backdrop{background:#060a12b8}
 #reviewText{white-space:pre-wrap;overflow-wrap:anywhere;font:13px/1.5 system-ui}
 .form-row.has-error select{border-color:var(--danger)}
 .toast{max-width:calc(100vw - 32px);white-space:normal;text-align:center}
-
-#groupSetupBtn{border-color:var(--accent)}
-#groupSetupStatus{white-space:pre-wrap;overflow-wrap:anywhere;padding:14px;border:1px solid var(--accent);border-radius:10px;font:14px/1.5 system-ui}
-#groupSetupStatus.error{border-color:#ff7979;color:#ffb8b8}
-#groupSetupDialog button:disabled{opacity:.45;cursor:default}
-#configWarning{padding:16px;background:#532d23;color:#fff;border:1px solid #ffad85;margin:12px;border-radius:10px}
 </style>
 </head>
 <body>
@@ -236,11 +230,11 @@ dialog::backdrop{background:#060a12b8}
 <div class="toolbar-right">
 
 
-<button hidden id="groupSetupBtn" type="button">Группы предметов — шаг 1</button><button hidden="" id="importCatalogBtn" type="button">Импорт предметов</button><button hidden="" id="migrateCardsBtn" type="button">Привязать карточки</button></div>
+<button hidden="" id="importCatalogBtn" type="button">Импорт предметов</button><button hidden="" id="migrateCardsBtn" type="button">Привязать карточки</button></div>
 </div>
 <nav aria-label="Категории" class="category-tabs" id="categoryTabs"></nav>
 </header>
-<div hidden id="configWarning"></div><main id="main"></main>
+<main id="main"></main>
 
 <div class="modal-backdrop" id="loginModal">
 <div class="modal">
@@ -293,12 +287,11 @@ dialog::backdrop{background:#060a12b8}
 </div>
 
 <div class="toast" id="toast"></div>
-<dialog id="groupSetupDialog"><h3>Шаг 1: только группы справочника</h3><p>Карточки, разделы и checkerState не изменяются. Записывается только groupId в существующие документы itemCatalog.</p><p>Назначения взяты из вашей резервной копии. Сначала проверьте один предмет — «Автопоилка» (abreuvoir), группа «Улучшения». Затем можно сохранить остальные.</p><p>После проверки первого предмета можно увидеть поле groupId: upgrades в консоли Firebase → itemCatalog → abreuvoir.</p><pre id="groupSetupStatus" role="status">Ожидание проверки.</pre><div class="modal-actions" style="flex-wrap:wrap"><button id="groupTest" type="button">1. Записать и проверить Автопоилку</button><button id="groupAll" type="button" disabled>2. Записать остальные группы</button><button id="groupClose" type="button">Закрыть</button></div></dialog>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-analytics.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection, writeBatch, serverTimestamp, runTransaction, getDocFromServer } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection, writeBatch, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyAjIY9iH0gZT9WalyKTUh6zNinBNvt9aqQ",
@@ -310,9 +303,6 @@ const firebaseConfig = {
     appId: "1:916848124747:web:7fa20edb5701619498fece",
     measurementId: "G-ZCKKVMYFVN"
 };
-
-const configIncomplete = !firebaseConfig.apiKey || !firebaseConfig.appId || /ВСТАВЬТЕ/.test(firebaseConfig.apiKey+firebaseConfig.appId);
-if(configIncomplete){const warning=document.getElementById('configWarning');warning.hidden=false;warning.textContent='Firebase не настроен: замените apiKey и appId в firebaseConfig значениями из вашей рабочей страницы. Пока здесь заглушки, проверить запись невозможно.';}
 
 const ADMIN_UID = "xOqvdkpV57U8BSfnjePCRJRiaOi2";
 const DOC_PATH = ["cards","board"];
@@ -982,9 +972,33 @@ document.addEventListener("keydown", e=>{
 });
 
 
+const ITEM_GROUP_LABELS = [
+  ['black-market','Черный рынок'],
+  ['upgrades','Улучшения'],
+  ['bonuses','Бонусы'],
+  ['equipment','Снаряжение'],
+  ['agriculture','Сельское хозяйство'],
+  ['aging-points','Очки роста'],
+  ['check-list','Чек-лист']
+];
 function populateItemSelect(item){
   editItem.replaceChildren(new Option('Выберите предмет', ''));
-  [...catalog.entries()].sort((a,b)=>a[1].name.localeCompare(b[1].name,'ru')).forEach(([id,v])=>editItem.add(new Option(v.name,id)));
+  const buckets=new Map(ITEM_GROUP_LABELS.map(([id])=>[id,[]]));
+  const other=[];
+  for(const [id,value] of catalog){
+    const target=buckets.get(value.groupId)||other;
+    target.push([id,value]);
+  }
+  function appendGroup(label,entries){
+    if(!entries.length)return;
+    const group=document.createElement('optgroup');
+    group.label=label;
+    entries.sort((a,b)=>String(a[1].name||a[0]).localeCompare(String(b[1].name||b[0]),'ru'));
+    for(const [id,value] of entries)group.appendChild(new Option(value.name||id,id));
+    editItem.appendChild(group);
+  }
+  for(const [id,label] of ITEM_GROUP_LABELS)appendGroup(label,buckets.get(id));
+  appendGroup('Без группы',other);
   const id=item && (item.itemId || imageIdentifier(item.img));
   if(id && catalog.has(id)) editItem.value=id;
   else if(item){editItem.add(new Option('Не сопоставлен: '+(item.name || item.itemId || 'без названия'),''));editItem.selectedIndex=editItem.options.length-1;}
@@ -1071,50 +1085,6 @@ migrateBtn.onclick=()=>{
     await setDoc(boardRef,{data:next,order,updatedAt:Date.now()});
   });
 };
-
-// Isolated catalog-only operation. No board writes or local board changes.
-const savedGroupAssignments={"5th-element": "black-market", "abreuvoir": "upgrades", "talon-achille": "black-market", "bonnet-2x-vert-blanc": "equipment", "tapis-classique-2x-bleu-blanc": "equipment", "bonnet-2x-violet-blanc": "equipment", "bande-2x-blanc": "equipment", "bande-1x": "equipment", "pactole-cresus": "bonuses", "pack-bonus": "bonuses", "pomme-vintage": "black-market", "bras-morphee": "black-market", "ressource-bois": "agriculture", "douche": "upgrades", "ressource-fer": "agriculture", "eau-jouvence": "black-market", "bande-2x-vert": "equipment", "pomme-or": "black-market", "bride-classique-1x": "equipment", "selle-classique-3x": "equipment", "ressource-cuir": "agriculture", "mash": "agriculture", "longe": "bonuses", "bonnet-2x-rouge-blanc": "equipment", "bonnet-2x-rouge-bleu": "equipment", "sang-meduse": "black-market", "fragment-nuage": "black-market", "caresse-philotes": "black-market", "ressource-lin": "agriculture", "lyre-apollon": "black-market", "rayon-helios": "black-market", "eclair-zeus": "black-market", "carotte": "agriculture", "pack-harmonie": "black-market", "pack-hera": "black-market", "pack-nyx": "black-market", "pack-poseidon": "black-market", "engrais-fumier": "agriculture", "bonnet-1x": "equipment", "none": "check-list", "cloches": "bonuses", "avoine": "agriculture", "couverture-hypnos": "black-market", "vieillissement": "aging-points", "parchemin-ploutos": "black-market", "baton-fertilite": "black-market", "cadeau": "check-list", "son-ble": "agriculture", "corne-abondance": "black-market", "bande-2x-rose": "equipment", "selle-western-3x": "equipment", "graines-luzerne": "agriculture", "graines-pass": "agriculture", "graines-pomme": "agriculture", "bonnet-2x-vert-bleu": "equipment", "bande-2x-bleu": "equipment", "tapis-western-2x-bleu": "equipment", "larmes-aphrodite": "black-market", "ressource-paille": "agriculture", "fleche-artemis": "black-market", "tracteur": "bonuses", "engrais-k": "agriculture", "pierre-philosophale": "black-market", "bande-2x-violet": "equipment", "fourrage": "agriculture", "cravache": "bonuses", "sablier-chronos": "black-market", "orchidee-noire": "black-market", "bonnet-2x-noir-blanc": "equipment", "tapis-western-2x-noir-rose": "equipment", "bonnet-2x-noir-rose": "equipment", "tapis-classique-2x-noir": "equipment", "crampons": "bonuses", "eperons": "bonuses", "crottin": "agriculture", "pomme": "agriculture", "boite-pandore": "black-market"};
-const groupSetupBtn=document.getElementById('groupSetupBtn');
-const groupDialog=document.getElementById('groupSetupDialog');
-const groupStatus=document.getElementById('groupSetupStatus');
-const testGroupBtn=document.getElementById('groupTest');
-const allGroupBtn=document.getElementById('groupAll');
-let groupTestPassed=false,groupBusy=false;
-function groupMessage(text,error=false){groupStatus.textContent=text;groupStatus.classList.toggle('error',error);}
-function groupControls(){testGroupBtn.disabled=groupBusy||configIncomplete||!state.isAdmin;allGroupBtn.disabled=groupBusy||!groupTestPassed||configIncomplete||!state.isAdmin;document.getElementById('groupClose').disabled=groupBusy;}
-onAuthStateChanged(auth,user=>{groupSetupBtn.hidden=user?.uid!==ADMIN_UID;groupTestPassed=false;groupControls();});
-groupSetupBtn.onclick=()=>{groupControls();groupDialog.showModal();};
-document.getElementById('groupClose').onclick=()=>groupDialog.close();
-groupDialog.addEventListener('cancel',e=>{if(groupBusy)e.preventDefault();});
-function groupBackup(rows){const blob=new Blob([JSON.stringify({projectId:firebaseConfig.projectId,createdAt:new Date().toISOString(),itemCatalog:Object.fromEntries(rows)},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='ovni-catalog-before-group-write.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);}
-async function applyCatalogGroups(ids){
- if(configIncomplete)throw Error('Не заполнен firebaseConfig.');
- if(auth.currentUser?.uid!==ADMIN_UID)throw Error('Требуется вход администратором.');
- groupMessage('Читаю текущее состояние с сервера…');
- const before=[];
- for(const id of ids){const s=await getDocFromServer(doc(db,'itemCatalog',id));if(!s.exists())throw Error('Документ itemCatalog/'+id+' отсутствует. Ничего не записано.');const v=s.data();if(v.groupId!=null && v.groupId!==savedGroupAssignments[id])throw Error('У '+id+' уже другая группа: '+v.groupId+'. Ничего не записано.');before.push([id,v]);}
- groupBackup(before);
- const changed=before.filter(([id,v])=>v.groupId!==savedGroupAssignments[id]);
- if(changed.length){groupMessage('Отправляю запись '+changed.length+' групп…');
- await runTransaction(db,async tx=>{
- const reads=[];
- for(const [id]of changed){reads.push([id,await tx.get(doc(db,'itemCatalog',id))]);}
- for(const [id,s]of reads){if(!s.exists())throw Error('Исчез документ '+id);if(s.data().groupId!=null && s.data().groupId!==savedGroupAssignments[id])throw Error('Группа '+id+' изменилась во время операции.');}
- for(const [id]of reads)tx.update(doc(db,'itemCatalog',id),{groupId:savedGroupAssignments[id]});
- });}
- groupMessage('Запись подтверждена. Повторно читаю '+ids.length+' документов с сервера…');
- for(const id of ids){const s=await getDocFromServer(doc(db,'itemCatalog',id));if(!s.exists()||s.data().groupId!==savedGroupAssignments[id])throw Error('Запись могла выполниться, но проверка '+id+' не совпала. Проверьте Firebase; успех не подтверждён.');}
- return changed.length;
-}
-async function runGroupStep(ids,test){
- groupBusy=true;groupControls();
- try{const changed=await applyCatalogGroups(ids);if(test){groupTestPassed=true;groupMessage('Проверено на сервере: itemCatalog/abreuvoir → groupId: upgrades.\nМожно проверить поле в консоли и перейти ко второму шагу. cards/board не изменялся.');}else{groupMessage('Готово: все 77 назначений проверены чтением с сервера. Изменено в этой операции: '+changed+'.\ncards/board и checkerState не изменялись. Старые табы пока остаются — это ожидаемо на шаге 1.');}}
- catch(e){console.error('Catalog groups',e);groupTestPassed=false;groupMessage('Операция не подтверждена.\nКод: '+(e.code||'нет')+'\n'+e.message+'\nЕсли ошибка возникла при контрольном чтении, запись уже могла состояться. Не меняйте правила доступа вслепую.',true);}
- finally{groupBusy=false;groupControls();}
-}
-testGroupBtn.onclick=()=>{if(confirm('Добавить только groupId: upgrades предмету abreuvoir в Firebase?'))runGroupStep(['abreuvoir'],true);};
-allGroupBtn.onclick=()=>{if(confirm('Сохранить назначения groupId для 77 предметов? Карточки и разделы останутся без изменений.'))runGroupStep(Object.keys(savedGroupAssignments),false);};
-
 </script>
 <dialog id="catalogReview"><h3 id="reviewTitle"></h3><pre id="reviewText"></pre><div class="modal-actions"><button id="reviewCancel" type="button">Отмена</button><button id="reviewApply" type="button">Применить</button></div></dialog></body>
 </html>
