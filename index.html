@@ -10,13 +10,11 @@
 :root{
   --bg:#0d1526; --panel:#172338; --line:#2d3e5a; --accent:#7db6ff;
   --txt:#eef5ff; --muted:#a7b4c8; --edit:#ffcc66; --danger:#d94848;
-  --stop-color:#d9a13e;
 }
 *{box-sizing:border-box}
 svg{width:16px;height:16px;display:block;flex-shrink:0}
 body{margin:0;background:var(--bg);color:var(--txt);font:16px system-ui,-apple-system,"Segoe UI",Arial,sans-serif;overflow-x:hidden}
 
-/* Единая шапка — никогда не прячется. Панель редактирования теперь внутри неё и всегда доступна. */
 header{
   position:sticky; top:0; z-index:1001; isolation:isolate;
   padding:16px max(18px,calc(50% - 610px)) 14px;
@@ -73,7 +71,6 @@ body.is-admin section.section-hidden-user{display:block;opacity:.55}
 .card.drag-source{opacity:.4}
 .card.drag-over-before{box-shadow:-3px 0 0 0 var(--edit),inset 3px 0 0 0 var(--edit)}
 .card.drag-over-after{box-shadow:3px 0 0 0 var(--edit),inset -3px 0 0 0 var(--edit)}
-.card.dragover,.grid.dragover{border-color:var(--edit);box-shadow:0 0 0 2px rgba(255,204,102,.25) inset}
 .card img,.noicon{grid-row:1/3;width:56px;height:56px;object-fit:contain}
 .noicon{display:grid;place-items:center;color:var(--accent);font-size:24px}
 .name{font-weight:650;line-height:1.16}
@@ -155,8 +152,6 @@ input:-webkit-autofill:active{
 #modeBtn.save-mode{color:#111;background:var(--edit);border-color:var(--edit)}
 #loginBtn.logged-in{color:#7ee0a0;border-color:#2c7a45}
 
-/* Тост — крупный, контрастный, одна строка на десктопе; на мобильных переносится по ширине,
-   чтобы длинные сообщения не вылезали за экран. */
 .toast{
   position:fixed; top:50%; left:50%;
   transform:translate(-50%,-50%) scale(.95);
@@ -193,9 +188,6 @@ input:-webkit-autofill:active{
 }
 
 [hidden]{display:none!important}
-dialog{width:min(760px,calc(100% - 32px));max-height:85vh;overflow:auto;background:var(--panel);color:var(--txt);border:1px solid var(--line);border-radius:14px;padding:20px}
-dialog::backdrop{background:#060a12b8}
-#reviewText{white-space:pre-wrap;overflow-wrap:anywhere;font:13px/1.5 system-ui}
 .form-row.has-error select{border-color:var(--danger)}
 .toast{max-width:calc(100vw - 32px);white-space:normal;text-align:center}
 body.saving-cloud::after{content:"Сохранение…";position:fixed;inset:0;z-index:10000;display:grid;place-items:center;background:#060a1290;color:white;font-size:20px;cursor:wait}
@@ -221,7 +213,6 @@ body.saving-cloud::after{content:"Сохранение…";position:fixed;inset:
 </div>
 </div>
 <div class="toolbar-right">
-
 
 <button hidden id="inactiveViewBtn" type="button">Неактивные: показаны</button></div>
 </div>
@@ -294,8 +285,6 @@ const firebaseConfig = {
     measurementId: "G-ZCKKVMYFVN"
 };
 
-const configIncomplete=/ВСТАВЬТЕ/.test(firebaseConfig.apiKey+firebaseConfig.appId);
-if(configIncomplete){const warning=document.createElement('div');warning.style.cssText='padding:16px;margin:12px;background:#532d23;color:white;border:1px solid #ffad85;border-radius:10px';warning.textContent='Вставьте рабочую конфигурацию firebaseConfig: apiKey и appId пока содержат заглушки.';document.querySelector('header').after(warning);}
 const ADMIN_UID = "xOqvdkpV57U8BSfnjePCRJRiaOi2";
 const DOC_PATH = ["cards","board"];
 
@@ -309,23 +298,18 @@ const catalogCol = collection(db, "itemCatalog");
 let catalog = new Map();
 const editItem = document.getElementById("editItem");
 
-
 const MONTHS_RU = ["Января","Февраля","Марта","Апреля","Мая","Июня","Июля","Августа","Сентября","Октября","Ноября","Декабря"];
-const MONTHS_RU_LOWER = MONTHS_RU.map(m => m.charAt(0).toLowerCase() + m.slice(1));
 function formatUpdateDate(ts){
   if(!ts) return "";
   const d = new Date(ts);
   return `Обновлено ${d.getDate()} ${MONTHS_RU[d.getMonth()]} ${d.getFullYear()}`;
 }
 
-/* Относительное время отметки для админа: минуты -> часы -> сегодня/вчера/дата -> недели -> месяцы -> год */
-
 let data = {};
 let order = [];
 let lastUpdatedAt = null;
 let boardVersion=0;
 let showInactive=true;
-
 
 const state = {
   editing:false, isAdmin:false, history:[], future:[],
@@ -347,7 +331,6 @@ const loginPassword = document.getElementById("loginPassword");
 const loginSubmit = document.getElementById("loginSubmit");
 const loginCancel = document.getElementById("loginCancel");
 const modalBackdrop = document.getElementById("modalBackdrop");
-const modalTitle = document.getElementById("modalTitle");
 
 const editHref = document.getElementById("editHref");
 const editHrefUnlock = document.getElementById("editHrefUnlock");
@@ -357,134 +340,103 @@ const editEnabledLabel = editEnabledDot.querySelector(".switch-label");
 
 const toast = document.getElementById("toast");
 
-
 const ICON_EYE_OPEN = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>`;
 const ICON_EYE_CLOSED = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88"/></svg>`;
 const ICON_X = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>`;
 const ICON_DRAG = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" d="M4 9h16M4 15h16"/></svg>`;
 
-// Pure layout and name rules; shared verbatim by the page and synchronizer.
-const BLACK_MARKET_ORDER = [
-  'defi-titans','pack-nyx','pack-harmonie','pack-hera','boite-pandore',
-  'pomme-or','toison-or','tyche-crown','5th-element','pierre-philosophale',
-  'bras-morphee','sablier-chronos','fragment-nuage','baton-fertilite',
-  'eclair-zeus','corne-abondance','sang-meduse','rayon-helios',
-  'larmes-aphrodite','eau-jouvence','pomme-vintage','orchidee-noire',
-  'talon-achille','caresse-philotes','lyre-apollon','fleche-artemis',
-  'parchemin-ploutos','couverture-hypnos'
-];
-const itemKey = (item,catalog) => String(catalog.get(item.itemId)?.identifier || item.itemId || '').toLowerCase();
-const heliosFamily = key => key === 'rayon-helios-ow' ? 'rayon-helios' : key;
-const marketRank = key => {
-  const i=BLACK_MARKET_ORDER.indexOf(heliosFamily(key));
-  return i<0 ? 10000 : i;
-};
-function equipmentFamily(key) {
-  if (key.startsWith('bonnet-')) return 'bonnet';
-  if (key.startsWith('tapis-')) return 'tapis';
-  if (key.startsWith('bande-')) return 'bande';
-  if (key.startsWith('selle-')) return 'selle';
-  if (key.startsWith('bride-')) return 'bride';
-  return 'other';
+const BLACK_MARKET_ORDER=['defi-titans','pack-nyx','pack-harmonie','pack-hera','boite-pandore','pomme-or','toison-or','tyche-crown','5th-element','pierre-philosophale','bras-morphee','sablier-chronos','fragment-nuage','baton-fertilite','eclair-zeus','corne-abondance','sang-meduse','rayon-helios','larmes-aphrodite','eau-jouvence','pomme-vintage','orchidee-noire','talon-achille','caresse-philotes','lyre-apollon','fleche-artemis','parchemin-ploutos','couverture-hypnos'];
+const itemKey=(item,catalog)=>String(catalog.get(item.itemId)?.identifier||item.itemId||'').toLowerCase();
+const heliosFamily=key=>key==='rayon-helios-ow'?'rayon-helios':key;
+const marketRank=key=>{const i=BLACK_MARKET_ORDER.indexOf(heliosFamily(key));return i<0?10000:i;};
+function equipmentFamily(key){
+ if(key.startsWith('bonnet-'))return 'bonnet';
+ if(key.startsWith('tapis-'))return 'tapis';
+ if(key.startsWith('bande-'))return 'bande';
+ if(key.startsWith('selle-'))return 'selle';
+ if(key.startsWith('bride-'))return 'bride';
+ return 'other';
 }
-function friendlyName(rawName,identifier,groupId) {
-  let value=String(rawName??'').normalize('NFKC').trim().replace(/\s+/gu,' ');
-  const isEquipment=groupId==='equipment' && equipmentFamily(String(identifier).toLowerCase())!=='other';
-  if (isEquipment) {
-    value=value.replace(/(^|\s)[123]\s*\*{1,3}(?=\s|$)/gu,' ')
-      .replace(/\*/g,'')
-      .replace(/^\s*[123](?=\s)/u,'')
-      .replace(/\s+[123]\s*$/u,'');
-  }
-  value=value.replace(/([Чч])ерн(?=[а-яё])/gu,'$1ёрн')
-    .replace(/([Зз])елен(?=[а-яё])/gu,'$1елён')
-    .replace(/([Сс])лез(?=[а-яё])/gu,'$1лёз')
-    .replace(/\s+/gu,' ').trim();
-  return value || String(rawName??'').trim();
+function hiddenEquipment1x(item,sourceSection,catalog){
+ const entry=catalog.get(item.itemId);
+ const group=entry?.groupId||sourceSection;
+ if(group!=='equipment')return false;
+ const identifiers=[entry?.identifier,item.itemId].filter(Boolean).map(v=>String(v).toLowerCase());
+ return identifiers.some(id=>/(^|-)1x(?=-|$)/.test(id));
 }
-function publicCardVisible(item,sourceSection,catalog) {
-  if (item.type==='spacer' || item.inactive===true) return false;
-  const entry=catalog.get(item.itemId);
-  // Missing catalog entry is not published until its category is known.
-  if (!entry) return false;
-  const group=entry.groupId || sourceSection;
-  if (group==='check-list') return false;
-  return group!=='agriculture' || itemKey(item,catalog)==='graines-pass';
+function publicCardVisible(item,sourceSection,catalog){
+ if(item.type==='spacer'||item.inactive===true)return false;
+ const entry=catalog.get(item.itemId);
+ if(!entry)return false;
+ const group=entry.groupId||sourceSection;
+ if(group==='check-list')return false;
+ if(group==='agriculture'&&itemKey(item,catalog)!=='graines-pass')return false;
+ if(hiddenEquipment1x(item,sourceSection,catalog))return false;
+ return true;
 }
-function layoutBlocks(groupId,entries,catalog) {
-  const keyOf=e=>itemKey(e.item,catalog);
-  const labelOf=e=>String(catalog.get(e.item.itemId)?.name || e.item.itemId || '');
-  const bonusFirst=['pack-poseidon','pack-bonus','pactole-cresus'];
-  const bonusOrder=['main','crampons','eperons','longe','cloches','cravache'];
-  const equipOrder=['bonnet','tapis','bande','selle','bride','other'];
-  function compareItems(a,b) {
-    const ka=keyOf(a),kb=keyOf(b);
-    if (groupId==='black-market') {
-      const d=marketRank(ka)-marketRank(kb);if(d)return d;
-      if(heliosFamily(ka)==='rayon-helios' && heliosFamily(kb)==='rayon-helios'){
-        const d2=(ka==='rayon-helios'?0:1)-(kb==='rayon-helios'?0:1);if(d2)return d2;
-      }
-    }
-    if (groupId==='bonuses') {
-      const ia=bonusFirst.indexOf(ka),ib=bonusFirst.indexOf(kb);
-      if(ia>=0 || ib>=0){const d=(ia<0?999:ia)-(ib<0?999:ib);if(d)return d;}
-    }
-    // Group identical item IDs even when display names happen to be equal.
-    return labelOf(a).localeCompare(labelOf(b),'ru') || ka.localeCompare(kb) ||
-      String(a.item.itemId).localeCompare(String(b.item.itemId)) || a.position-b.position;
-  }
-  const buckets=new Map();
-  for(const e of entries){
-    const k=keyOf(e);
-    let block;
-    if(groupId==='black-market') block=heliosFamily(k);
-    else if(groupId==='equipment') block=equipmentFamily(k);
-    else if(groupId==='bonuses') block=bonusFirst.includes(k)?'main':k;
-    else if(groupId==='agriculture') block=k;
-    else if(groupId==='check-list') block=k;
-    else block='all';
-    if(!buckets.has(block))buckets.set(block,[]);
-    buckets.get(block).push(e);
-  }
-  for(const list of buckets.values())list.sort(compareItems);
+function layoutBlocks(groupId,entries,catalog){
+ const keyOf=e=>itemKey(e.item,catalog);
+ const labelOf=e=>String(catalog.get(e.item.itemId)?.name||e.item.itemId||'');
+ const bonusFirst=['pack-poseidon','pack-bonus','pactole-cresus'];
+ const bonusOrder=['main','crampons','eperons','longe','cloches','cravache'];
+ const equipOrder=['bonnet','tapis','bande','selle','bride','other'];
+ function compareItems(a,b){
+  const ka=keyOf(a),kb=keyOf(b);
   if(groupId==='black-market'){
-    const singles=[],repeat=[];
-    for(const [key,list] of buckets) {
-      if(list.length===1)singles.push(...list);else repeat.push({key,entries:list});
-    }
-    singles.sort(compareItems);
-    repeat.sort((a,b)=>marketRank(a.key)-marketRank(b.key)||compareItems(a.entries[0],b.entries[0]));
-    return [...(singles.length?[{key:'unique',entries:singles}]:[]),...repeat];
+   const d=marketRank(ka)-marketRank(kb);if(d)return d;
+   if(heliosFamily(ka)==='rayon-helios'&&heliosFamily(kb)==='rayon-helios'){
+    const d2=(ka==='rayon-helios'?0:1)-(kb==='rayon-helios'?0:1);if(d2)return d2;
+   }
   }
-  const blocks=[...buckets].map(([key,entries])=>({key,entries}));
-  function blockRank(key){
-    if(groupId==='equipment')return equipOrder.indexOf(key);
-    if(groupId==='bonuses'){const i=bonusOrder.indexOf(key);return i<0?999:i;}
-    if(groupId==='agriculture')return key==='graines-pass'?0:1;
-    if(groupId==='check-list')return key==='cadeau'?0:key==='none'?1:2;
-    return 0;
+  if(groupId==='bonuses'){
+   const ia=bonusFirst.indexOf(ka),ib=bonusFirst.indexOf(kb);
+   if(ia>=0||ib>=0){const d=(ia<0?999:ia)-(ib<0?999:ib);if(d)return d;}
   }
-  blocks.sort((a,b)=>blockRank(a.key)-blockRank(b.key)||compareItems(a.entries[0],b.entries[0]));
-  return blocks;
+  return labelOf(a).localeCompare(labelOf(b),'ru')||ka.localeCompare(kb)||String(a.item.itemId).localeCompare(String(b.item.itemId))||a.position-b.position;
+ }
+ const buckets=new Map();
+ for(const e of entries){
+  const k=keyOf(e);let block;
+  if(groupId==='black-market')block=heliosFamily(k);
+  else if(groupId==='equipment')block=equipmentFamily(k);
+  else if(groupId==='bonuses')block=bonusFirst.includes(k)?'main':k;
+  else if(groupId==='agriculture'||groupId==='check-list')block=k;
+  else block='all';
+  if(!buckets.has(block))buckets.set(block,[]);buckets.get(block).push(e);
+ }
+ for(const list of buckets.values())list.sort(compareItems);
+ if(groupId==='black-market'){
+  const singles=[],repeat=[];
+  for(const [key,list]of buckets){if(list.length===1)singles.push(...list);else repeat.push({key,entries:list});}
+  singles.sort(compareItems);
+  repeat.sort((a,b)=>marketRank(a.key)-marketRank(b.key)||compareItems(a.entries[0],b.entries[0]));
+  return [...(singles.length?[{key:'unique',entries:singles}]:[]),...repeat];
+ }
+ const blocks=[...buckets].map(([key,entries])=>({key,entries}));
+ function blockRank(key){
+  if(groupId==='equipment')return equipOrder.indexOf(key);
+  if(groupId==='bonuses'){const i=bonusOrder.indexOf(key);return i<0?999:i;}
+  if(groupId==='agriculture')return key==='graines-pass'?0:1;
+  if(groupId==='check-list')return key==='cadeau'?0:key==='none'?1:2;
+  return 0;
+ }
+ blocks.sort((a,b)=>blockRank(a.key)-blockRank(b.key)||compareItems(a.entries[0],b.entries[0]));
+ return blocks;
 }
-function stripSpacers(boardData) {
-  let removed=0;
-  for(const section of Object.values(boardData)){
-    if(!Array.isArray(section.items))continue;
-    const kept=section.items.filter(item=>item.type!=='spacer');
-    removed+=section.items.length-kept.length;
-    section.items=kept;
-  }
-  return removed;
+function stripSpacers(boardData){
+ let removed=0;
+ for(const section of Object.values(boardData)){
+  if(!Array.isArray(section.items))continue;
+  const kept=section.items.filter(item=>item.type!=='spacer');removed+=section.items.length-kept.length;section.items=kept;
+ }
+ return removed;
 }
 
-/* helpers */
 function isInactive(item){ return item.inactive === true; }
 function isSpacer(item){ return item.type === "spacer"; }
 function getCardId(href){ try{ return new URL(href).searchParams.get("id"); }catch(e){ return ""; } }
 function getNickname(item){ return item.nickname || ""; }
 function getCardSubtitle(item){ const nick=(getNickname(item)||"").trim(); return nick? nick : getCardId(item.href); }
-
 
 function updateSyncStatusDisplay(){
   if(state.isAdmin){
@@ -494,7 +446,6 @@ function updateSyncStatusDisplay(){
   }
 }
 
-/* Сохранение с проверкой актуальности доски */
 const writerSession = 'editor-' + crypto.randomUUID();
 let saveTimer = null;
 let saveInFlight = false;
@@ -548,7 +499,6 @@ async function saveToCloud(){
   },400);
 }
 
-let applyingRemote = false;
 onSnapshot(boardRef, (snap)=>{
   try{
     if(!snap.exists()){
@@ -566,16 +516,13 @@ onSnapshot(boardRef, (snap)=>{
       if(state.editing)showToast('Доска обновлена извне. Несохранённые правки отменены; повторите их при необходимости.');
     }
     boardVersion=remote.schemaVersion||0;
-    applyingRemote = true;
     data = remote.data || {};
     order = remote.order || Object.keys(data);
     lastUpdatedAt = remote.updatedAt || null;
     render();
-    applyingRemote = false;
     updateSyncStatusDisplay();
   }catch(err){ console.error(err); syncStatus.textContent = "Ошибка синхронизации"; }
 });
-
 
 onAuthStateChanged(auth, (user)=>{
   state.isAdmin = !!user && user.uid === ADMIN_UID;
@@ -586,14 +533,12 @@ onAuthStateChanged(auth, (user)=>{
   undoBtn.style.display = state.isAdmin ? "inline-flex" : "none";
   redoBtn.style.display = state.isAdmin ? "inline-flex" : "none";
 
-  if(user) console.log("UID:", user.uid);
   if(!state.isAdmin) setEditing(false);
 
   updateSyncStatusDisplay();
   render();
 });
 
-/* Автовход при автозаполнении логина/пароля браузером (детект через CSS-анимацию autofill) */
 let emailAutofilled = false, passwordAutofilled = false;
 function tryAutoLogin(){
   if(emailAutofilled && passwordAutofilled && loginModal.style.display === "flex" && loginEmail.value && loginPassword.value){
@@ -628,7 +573,6 @@ loginSubmit.addEventListener("click", async ()=>{
   }catch(e){ alert(e.message); }
 });
 
-
 function renderCategoryTabs(){
   categoryTabs.innerHTML = "";
   order.forEach(id=>{
@@ -652,30 +596,26 @@ function scrollToSection(id){
   window.scrollTo({ top: Math.max(0, offset), behavior: "smooth" });
 }
 
-
-/* RENDER */
 function displayEntries(target){
-  const result=[];
-  let position=0;
-  const sourceOrder=[...new Set([...order,...Object.keys(data)])];
-  for(const source of sourceOrder){
-    const sec=data[source];if(!sec)continue;
-    for(let index=0;index<(sec.items||[]).length;index++){
-      const item=sec.items[index];
-      const currentPosition=position++;
-      if(isSpacer(item))continue;
-      const group=catalog.get(item.itemId)?.groupId || source;
-      const effectiveGroup=data[group]?group:source;
-      if(effectiveGroup!==target)continue;
-      if(state.isAdmin){if(!showInactive && isInactive(item))continue;}
-      else {
-        if(sec.hidden || data[target]?.hidden)continue;
-        if(!publicCardVisible(item,source,catalog))continue;
-      }
-      result.push({section:source,index,item,position:currentPosition});
-    }
+ const result=[];let position=0;
+ const sourceOrder=[...new Set([...order,...Object.keys(data)])];
+ for(const source of sourceOrder){
+  const sec=data[source];if(!sec)continue;
+  for(let index=0;index<(sec.items||[]).length;index++){
+   const item=sec.items[index],currentPosition=position++;
+   if(isSpacer(item))continue;
+   const group=catalog.get(item.itemId)?.groupId||source;
+   const effectiveGroup=data[group]?group:source;
+   if(effectiveGroup!==target)continue;
+   if(state.isAdmin){if(!showInactive&&isInactive(item))continue;}
+   else{
+    if(sec.hidden||data[target]?.hidden)continue;
+    if(!publicCardVisible(item,source,catalog))continue;
+   }
+   result.push({section:source,index,item,position:currentPosition});
   }
-  return result;
+ }
+ return result;
 }
 
 function render(){
@@ -760,19 +700,13 @@ function render(){
 
     const blocks=layoutBlocks(id,visibleEntries,catalog);
     if(state.editing){
-      const addRow=document.createElement('div');
-      addRow.className='grid add-card-row';
-      addRow.appendChild(createAddCard(id));
-      section.appendChild(addRow);
+      const addRow=document.createElement('div');addRow.className='grid add-card-row';
+      addRow.appendChild(createAddCard(id));section.appendChild(addRow);
     }
     for(const block of blocks){
-      const grid=document.createElement('div');
-      grid.className='grid auto-block';
-      grid.dataset.section=id;
-      grid.dataset.block=block.key;
-      for(const e of block.entries){
-        grid.appendChild(createCard(e.section,e.index,e.item,isInactive(e.item)));
-      }
+      const grid=document.createElement('div');grid.className='grid auto-block';
+      grid.dataset.section=id;grid.dataset.block=block.key;
+      for(const e of block.entries)grid.appendChild(createCard(e.section,e.index,e.item,isInactive(e.item)));
       section.appendChild(grid);
     }
     main.appendChild(section);
@@ -796,16 +730,15 @@ function createCard(sectionId, index, item, inactive){
     <button class="card-toggle-dot${!inactive ? " on" : ""}" type="button" title="${inactive ? "Включить" : "Отключить"}"></button>
   `;
   const displayItem = catalog.get(item.itemId) || item;
-  if(displayItem.img){
-    try{
-      const imageUrl=new URL(displayItem.img);
-      if(imageUrl.protocol==='https:'){
-        const img=document.createElement('img');img.src=imageUrl.href;img.alt='';img.loading='lazy';
-        img.addEventListener('error',()=>{img.style.visibility='hidden';});
-        card.querySelector('.noicon').replaceWith(img);
-      }
-    }catch{}
-  }
+  if(displayItem.img){try{
+    const imageUrl=new URL(displayItem.img);
+    if(imageUrl.protocol==='https:'){
+      const img=document.createElement('img');img.src=imageUrl.href;img.alt='';img.loading='lazy';
+      img.addEventListener('error',()=>{img.style.visibility='hidden';});
+      card.querySelector('.noicon').replaceWith(img);
+    }
+  }catch{}}
+
   card.querySelector(".name").textContent = displayItem.name || "Предмет не выбран";
   card.querySelector("small").textContent = getCardSubtitle(item);
 
@@ -864,19 +797,12 @@ function createAddCard(sectionId){
 }
 
 function moveItemPrecise(fromSection,fromIndex,toSection,toIndex,before){
-  const item=data[fromSection]?.items[fromIndex];
-  const target=data[toSection]?.items[toIndex];
-  if(!item || !target || (fromSection===toSection && fromIndex===toIndex))return;
-  if(item.itemId!==target.itemId){
-    showToast('Порядок блоков автоматический. Переставлять можно карточки одного предмета.');
-    return;
-  }
-  pushHistory();
-  data[fromSection].items.splice(fromIndex,1);
-  let adjusted=toIndex;
-  if(fromSection===toSection && fromIndex<toIndex)adjusted--;
-  data[toSection].items.splice(adjusted+(before?0:1),0,item);
-  commit();
+ const item=data[fromSection]?.items[fromIndex],target=data[toSection]?.items[toIndex];
+ if(!item||!target||(fromSection===toSection&&fromIndex===toIndex))return;
+ if(item.itemId!==target.itemId){showToast('Порядок блоков автоматический. Переставлять можно карточки одного предмета.');return;}
+ pushHistory();data[fromSection].items.splice(fromIndex,1);
+ let adjusted=toIndex;if(fromSection===toSection&&fromIndex<toIndex)adjusted--;
+ data[toSection].items.splice(adjusted+(before?0:1),0,item);commit();
 }
 
 function deleteItem(sectionId, index){
@@ -908,11 +834,11 @@ redoBtn.addEventListener("click", ()=>{
 });
 let spacerBackupDownloaded=false;
 function commit(){
- if(!spacerBackupDownloaded && Object.values(data).some(s=>(s.items||[]).some(isSpacer))){
-   const snapshot=JSON.stringify({data,order,updatedAt:lastUpdatedAt,schemaVersion:boardVersion,catalog:Object.fromEntries(catalog)},null,2);
-   const url=URL.createObjectURL(new Blob([snapshot],{type:'application/json'}));
-   const a=document.createElement('a');a.href=url;a.download='ovni-before-auto-layout-'+Date.now()+'.json';a.click();
-   setTimeout(()=>URL.revokeObjectURL(url),10000);spacerBackupDownloaded=true;
+ if(!spacerBackupDownloaded&&Object.values(data).some(s=>(s.items||[]).some(isSpacer))){
+  const snapshot=JSON.stringify({data,order,updatedAt:lastUpdatedAt,schemaVersion:boardVersion,catalog:Object.fromEntries(catalog)},null,2);
+  const url=URL.createObjectURL(new Blob([snapshot],{type:'application/json'}));
+  const a=document.createElement('a');a.href=url;a.download='ovni-before-auto-layout-'+Date.now()+'.json';a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),10000);spacerBackupDownloaded=true;
  }
  const ids=new Set();for(const sec of Object.values(data))for(const it of sec.items||[]){if(!it.uid||ids.has(it.uid))it.uid='ovni-'+crypto.randomUUID();ids.add(it.uid);}
  render(); saveToCloud();
@@ -936,7 +862,6 @@ function setEditEnabled(val){
 }
 editEnabledDot.addEventListener("click", ()=>{ setEditEnabled(!state.editEnabled); });
 
-
 function openEditor(sectionId, index, item){
   state.pending = { section: sectionId, index };
   state.activeModal = "card";
@@ -950,8 +875,6 @@ function openEditor(sectionId, index, item){
   editHrefUnlock.style.display = state.hrefUnlocked ? "none" : "flex";
   editItem.closest(".form-row").classList.remove("has-error");
   editHref.closest(".form-row").classList.remove("has-error");
-
-
 
   modalBackdrop.style.display = "flex";
 }
@@ -1025,7 +948,6 @@ document.addEventListener("keydown", e=>{
     else undoBtn.click();
   }
 });
-
 
 const ITEM_GROUP_LABELS=[['black-market','Черный рынок'],['upgrades','Улучшения'],['bonuses','Бонусы'],['equipment','Снаряжение'],['agriculture','Сельское хозяйство'],['aging-points','Очки роста'],['check-list','Чек-лист']];
 function populateItemSelect(item){
