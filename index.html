@@ -1,4 +1,12 @@
-<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>В поисках ИНЛО</title><style>
+<!DOCTYPE html>
+
+<html lang="ru">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>В поисках ИНЛО</title>
+<link href="https://www.lowadi.com/media/equideo/image//fonctionnels/20/cadeau.png" rel="icon" type="image/png"/>
+<style>
 :root{
   --bg:#0d1526; --panel:#172338; --line:#2d3e5a; --accent:#7db6ff;
   --txt:#eef5ff; --muted:#a7b4c8; --edit:#ffcc66; --danger:#d94848;
@@ -50,7 +58,6 @@ h1{margin:0;font-size:22px;display:flex;align-items:baseline;gap:10px;flex-wrap:
 button{padding:8px 12px 10px;color:var(--txt);background:#1b3355;border:1px solid var(--line);border-radius:10px;cursor:pointer;font:inherit;display:inline-flex;align-items:center;justify-content:center;line-height:1}
 #loginBtn{background:transparent;border:1px solid var(--line);color:var(--muted);padding:6px 10px 7px;font-size:13px}
 #loginBtn:hover{color:var(--txt);border-color:var(--accent)}
-#onlyFlaggedBtn.active{background:var(--accent);color:#0d1526;border-color:var(--accent)}
 main{position:relative;z-index:1;max-width:1220px;margin:0 auto;padding:12px 18px 48px}
 section{margin-bottom:28px;scroll-margin-top:108px;transition:opacity .15s}
 section.section-drag-source{opacity:.4}
@@ -68,7 +75,6 @@ body.editing-mode .spacer-controls{display:flex}
 .card,.add-card{position:relative;display:grid;grid-template-columns:56px 1fr;grid-template-rows:1fr auto;gap:0 9px;align-items:center;min-height:65px;padding:9px;color:var(--txt);background:var(--panel);border:1px solid var(--line);border-radius:11px;text-decoration:none;transition:.15s;user-select:none}
 .card:hover,.add-card:hover{transform:translateY(-2px);background:#1c304e;border-color:var(--accent)}
 .card.editing{outline:none}
-.card.selectable{padding-right:36px;cursor:pointer}
 .card.drag-source{opacity:.4}
 .card.drag-over-before{box-shadow:-3px 0 0 0 var(--edit),inset 3px 0 0 0 var(--edit)}
 .card.drag-over-after{box-shadow:3px 0 0 0 var(--edit),inset -3px 0 0 0 var(--edit)}
@@ -159,44 +165,142 @@ body.editing-mode #addSectionBtn{display:inline-flex}
 #addSpacerToolbarBtn:active{cursor:grabbing}
 body.editing-mode #addSpacerToolbarBtn{display:inline-flex}
 
+/* Тост — крупный, контрастный, одна строка на десктопе; на мобильных переносится по ширине,
+   чтобы длинные сообщения не вылезали за экран. */
+.toast{
+  position:fixed; top:50%; left:50%;
+  transform:translate(-50%,-50%) scale(.95);
+  z-index:4000;
+  padding:18px 28px;
+  background:var(--accent);
+  border:none;
+  border-radius:14px;
+  box-shadow:none;
+  color:#0d1526;
+  font-size:18px;
+  font-weight:700;
+  white-space:nowrap;
+  opacity:0; pointer-events:none;
+  transition:opacity .25s ease, transform .25s ease;
+}
+.toast.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+@media (max-width:620px){
+  .toast{
+    font-size:15px;padding:14px 20px;
+    white-space:normal; text-align:center;
+    max-width:calc(100% - 32px);
+  }
+}
+
+@media (max-width:620px){
+  .toolbar{align-items:stretch}
+  .toolbar-right{margin-left:0;width:100%;justify-content:flex-start}
+  body:not(.is-admin) .grid{grid-template-columns:1fr}
+}
+@media (max-width:460px){
+  .grid{grid-template-columns:1fr}
+  .split-row{grid-template-columns:1fr}
+}
 
 [hidden]{display:none!important}
-body:not(.is-admin) .toolbar{display:none}
-#showInactive.active{background:var(--accent);color:var(--bg)}
-.modal{max-height:calc(100dvh - 36px);overflow:auto}
-.modal-backdrop{overflow:auto}
-.card .name, .card small{min-width:0;overflow-wrap:anywhere}
-.card{grid-template-columns:56px minmax(0,1fr)}
-.card small{grid-column:2}
-.delete-x{top:3px;right:3px}
-.card.editing{padding-right:30px}
-.card.drag-source{opacity:.4}
-#catalogMigration{width:min(900px,calc(100% - 32px));max-height:85dvh;overflow:auto;background:var(--panel);color:var(--txt);border:1px solid var(--line);border-radius:14px;padding:20px}
-#catalogMigration::backdrop{background:#060a12b8}
-.migration-row{display:grid;grid-template-columns:minmax(160px,1fr) minmax(160px,1fr);gap:12px;align-items:center;margin:12px 0}
-.migration-row small{display:block}
-.notice{color:var(--muted);font-size:13px;line-height:1.5}
-.empty{color:var(--muted);padding:12px 0}
-.field-error{display:none}.has-error .field-error{display:block}.has-error select{border-color:var(--danger)}
-.toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:4000;background:var(--accent);color:var(--bg);padding:16px 22px;border-radius:12px;max-width:calc(100vw - 32px);text-align:center;pointer-events:none;display:none}
-.toast.show{display:block}
-section{scroll-margin-top:var(--header-height,180px)}
-.spacer-block{height:24px}.editing-mode .spacer-block{border:1px dashed var(--line);border-radius:6px;cursor:grab;display:flex;align-items:center;justify-content:center;gap:8px}
-@media(max-width:620px){.toolbar-right{margin-left:0;width:100%}body.is-admin .category-tabs{border-top:1px solid var(--line);padding-top:8px;margin-top:8px}.migration-row{grid-template-columns:1fr}.grid{grid-template-columns:1fr}}
-</style></head><body>
-<header id="header"><div class="header-top"><h1>В поисках ИНЛО</h1><button id="loginBtn" type="button">Вход</button></div><span id="syncStatus">Загрузка…</span>
-<div class="toolbar"><div class="toolbar-left"><button id="modeBtn" type="button">Редактировать</button><button id="addDivider" type="button" hidden draggable="true" title="Перетащите в группу или нажмите">＋ Разделитель</button><div class="undo-redo"><button id="undoBtn" type="button">Вернуть</button><button id="redoBtn" type="button">Повторить</button></div></div><div class="toolbar-right"><button id="showInactive" type="button" aria-pressed="false">Показать выключенные</button><button id="migrationBtn" type="button">Настроить группы предметов</button></div></div>
-<nav class="category-tabs" id="categoryTabs" aria-label="Группы предметов"></nav></header><main id="main"></main>
-<div class="modal-backdrop" id="loginModal"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="loginTitle"><h3 id="loginTitle">Вход только для администратора</h3><form id="loginForm"><div class="form-row"><label for="loginEmail">Email</label><input id="loginEmail" type="email" autocomplete="username" required></div><div class="form-row"><label for="loginPassword">Пароль</label><input id="loginPassword" type="password" autocomplete="current-password" required></div><p id="loginError" class="notice"></p><div class="modal-actions"><button id="loginCancel" type="button">Отмена</button><button id="loginSubmit" type="submit" class="primary-btn">Войти</button></div></form></div></div>
-<div class="modal-backdrop" id="editorModal"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div class="modal-header"><h3 id="modalTitle">Карточка предмета</h3><button id="editEnabled" type="button" class="modal-switch on" aria-pressed="true"><span class="switch-label">вкл</span><span class="switch-dot"></span></button></div>
-<div class="form-row"><label for="editItem">Предмет *</label><select id="editItem"></select><span class="field-error">Выберите предмет</span></div><p id="itemGroup" class="notice"></p>
-<div class="form-row"><label for="editNickname">Никнейм (необязательно)</label><input id="editNickname" type="text"></div><div class="form-row"><label for="editHref">Ссылка *</label><div class="input-with-icon"><input id="editHref" type="url"><button id="unlockHref" type="button" class="icon-btn" title="Разблокировать ссылку">✎</button></div><span class="field-error">Укажите корректную ссылку http или https</span></div><div class="modal-actions"><button id="cancelEdit" type="button">Отмена</button><button id="saveEdit" type="button" class="primary-btn">Сохранить</button></div></div></div>
-<dialog id="catalogMigration"><h3>Группы предметов — импорт текущей сортировки</h3><p class="notice">Сначала сопоставьте старые разделы новым группам. Затем проверьте группы каждого предмета. Выключенные карточки тоже учитываются. Из раздела disabled группа не угадывается. До нажатия «Применить» база не меняется.</p><div id="sourceMappings"></div><button id="buildPreview" type="button">Составить предпросмотр</button><div id="migrationPreview"></div><p id="migrationError" class="notice"></p><div class="modal-actions"><button id="downloadBackup" type="button">Скачать резервную копию</button><button id="migrationCancel" type="button">Закрыть</button><button id="migrationApply" type="button" class="primary-btn" disabled>Применить</button></div></dialog>
-<div id="toast" class="toast" role="status" aria-live="polite"></div><script type="module">
-import {initializeApp} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js';
-import {getAuth,signInWithEmailAndPassword,onAuthStateChanged,signOut} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js';
-import {getFirestore,doc,collection,onSnapshot,runTransaction} from 'https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js';
-const firebaseConfig={
+dialog{width:min(760px,calc(100% - 32px));max-height:85vh;overflow:auto;background:var(--panel);color:var(--txt);border:1px solid var(--line);border-radius:14px;padding:20px}
+dialog::backdrop{background:#060a12b8}
+#reviewText{white-space:pre-wrap;overflow-wrap:anywhere;font:13px/1.5 system-ui}
+.form-row.has-error select{border-color:var(--danger)}
+.toast{max-width:calc(100vw - 32px);white-space:normal;text-align:center}
+
+#groupSetupBtn{border-color:var(--accent)}
+#groupSetupStatus{white-space:pre-wrap;overflow-wrap:anywhere;padding:14px;border:1px solid var(--accent);border-radius:10px;font:14px/1.5 system-ui}
+#groupSetupStatus.error{border-color:#ff7979;color:#ffb8b8}
+#groupSetupDialog button:disabled{opacity:.45;cursor:default}
+#configWarning{padding:16px;background:#532d23;color:#fff;border:1px solid #ffad85;margin:12px;border-radius:10px}
+</style>
+</head>
+<body>
+<header>
+<div class="header-top">
+<h1>В поисках ИНЛО</h1>
+<button id="loginBtn" type="button">Вход</button>
+</div>
+<span id="syncStatus"></span>
+<div class="toolbar">
+<div class="toolbar-left">
+<button id="modeBtn" style="display:none" type="button">Редактировать</button>
+<button draggable="true" id="addSpacerToolbarBtn" title="Перетащите в нужное место категории" type="button"></button>
+<button id="addSectionBtn" type="button">+ Новая категория</button>
+<div class="undo-redo">
+<button id="undoBtn" style="display:none" title="Отменить последнее действие" type="button">Вернуть</button>
+<button id="redoBtn" style="display:none" title="Повторить отменённое действие" type="button">Повторить</button>
+</div>
+</div>
+<div class="toolbar-right">
+
+
+<button hidden id="groupSetupBtn" type="button">Группы предметов — шаг 1</button><button hidden="" id="importCatalogBtn" type="button">Импорт предметов</button><button hidden="" id="migrateCardsBtn" type="button">Привязать карточки</button></div>
+</div>
+<nav aria-label="Категории" class="category-tabs" id="categoryTabs"></nav>
+</header>
+<div hidden id="configWarning"></div><main id="main"></main>
+
+<div class="modal-backdrop" id="loginModal">
+<div class="modal">
+<h3>Вход только для администратора</h3>
+<div class="form-row"><label>Email</label><input autocomplete="username" id="loginEmail" type="email"/></div>
+<div class="form-row"><label>Пароль</label><input autocomplete="current-password" id="loginPassword" type="password"/></div>
+<div class="modal-actions">
+<button id="loginCancel" type="button">Отмена</button>
+<button class="primary-btn" id="loginSubmit" type="button">Войти</button>
+</div>
+</div>
+</div>
+<div class="modal-backdrop" id="modalBackdrop">
+<div class="modal">
+<div class="modal-header">
+<h3 id="modalTitle">Карточка предмета</h3>
+<button class="modal-switch on" id="editEnabledDot" type="button">
+<span class="switch-label">вкл</span>
+<span class="switch-dot"></span>
+</button>
+</div>
+<div class="form-row">
+<label>Раздел</label>
+<select id="editSection"></select>
+</div>
+<div class="form-row"><label for="editItem">Предмет *</label><select id="editItem"></select><span class="field-error">Выберите предмет из справочника</span></div>
+
+<div class="split-row">
+<div class="form-row">
+<label>Никнейм (необязательно)</label>
+<input id="editNickname" type="text"/>
+</div>
+<div class="form-row">
+<label>Ссылка *</label>
+<div class="input-with-icon">
+<input id="editHref" type="text"/>
+<button class="icon-btn" id="editHrefUnlock" title="Разблокировать ссылку" type="button">
+<svg fill="none" stroke="currentColor" stroke-width="1.6" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</button>
+</div>
+<span class="field-error" id="editHrefError">Заполните это поле</span>
+</div>
+</div>
+
+<div class="modal-actions">
+<button id="cancelEdit" type="button">Отмена</button>
+<button id="saveEdit" type="button">Сохранить</button>
+</div>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+<dialog id="groupSetupDialog"><h3>Шаг 1: только группы справочника</h3><p>Карточки, разделы и checkerState не изменяются. Записывается только groupId в существующие документы itemCatalog.</p><p>Назначения взяты из вашей резервной копии. Сначала проверьте один предмет — «Автопоилка» (abreuvoir), группа «Улучшения». Затем можно сохранить остальные.</p><p>После проверки первого предмета можно увидеть поле groupId: upgrades в консоли Firebase → itemCatalog → abreuvoir.</p><pre id="groupSetupStatus" role="status">Ожидание проверки.</pre><div class="modal-actions" style="flex-wrap:wrap"><button id="groupTest" type="button">1. Записать и проверить Автопоилку</button><button id="groupAll" type="button" disabled>2. Записать остальные группы</button><button id="groupClose" type="button">Закрыть</button></div></dialog>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-analytics.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection, writeBatch, serverTimestamp, runTransaction, getDocFromServer } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+
+const firebaseConfig = {
     apiKey: "AIzaSyAjIY9iH0gZT9WalyKTUh6zNinBNvt9aqQ",
     authDomain: "ovni-b5823.firebaseapp.com",
     databaseURL: "https://ovni-b5823-default-rtdb.europe-west1.firebasedatabase.app",
@@ -206,236 +310,811 @@ const firebaseConfig={
     appId: "1:916848124747:web:7fa20edb5701619498fece",
     measurementId: "G-ZCKKVMYFVN"
 };
-const ADMIN_UID='xOqvdkpV57U8BSfnjePCRJRiaOi2';
-const GROUPS=[['black-market','Черный Рынок'],['upgrades','Улучшения'],['bonuses','Бонусы'],['equipment','Снаряжение'],['agriculture','Сельское хозяйство'],['aging-points','Очки роста'],['check-list','Чек-лист']];
-const validGroup=id=>GROUPS.some(g=>g[0]===id);
-const groupName=id=>GROUPS.find(g=>g[0]===id)?.[1] || 'Группа не назначена';
-const clone=v=>JSON.parse(JSON.stringify(v));
-const $=id=>document.getElementById(id);
-const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
-const boardRef=doc(db,'cards','board');
-let board={data:{},order:[]},catalog=new Map(),boardReady=false,catalogReady=false,admin=false,editing=false,showInactive=false,busy=false;
-let editor=null,enabled=true,drag=null,history=[],future=[],timer=null;
-let remoteVersion=null;
-const isSpacer=it=>it?.type==='spacer';
-const inactive=it=>it.inactive===true;
-function cleanImageUrl(src){try{const u=new URL(src);u.pathname=u.pathname.replace(/_v\d+(?=\.png$)/i,'');return u.href;}catch{return '';}}
-function imageId(src){try{return decodeURIComponent(new URL(cleanImageUrl(src)).pathname.split('/').pop()).replace(/\.png$/i,'');}catch{return '';}}
-function itemId(it){return it.itemId || imageId(it.img);}
-function itemGroup(id){if(id==='none'||id==='cadeau') return 'check-list';const g=catalog.get(id)?.groupId;return validGroup(g)?g:null;}
-function sectionOrder(b){return [...new Set([...(b.order||[]),...Object.keys(b.data||{})])];}
-function uid(){return crypto.randomUUID?crypto.randomUUID():Date.now()+'-'+Math.random().toString(36).slice(2);}
-function toast(text){$('toast').textContent=text;$('toast').classList.add('show');clearTimeout(timer);timer=setTimeout(()=>$('toast').classList.remove('show'),3000);}
-function fail(e){console.error(e);toast(e.message||'Ошибка');}
-function allCatalogItems(){const result=new Map(catalog);for(const id of sectionOrder(board))for(const it of board.data[id]?.items||[])if(!isSpacer(it)&&!result.has(itemId(it)))result.set(itemId(it),{name:it.name||itemId(it),img:it.img||''});return result;}
-function normalizeBoard(b,assignments=null){
-  const result=clone(b);const next={};GROUPS.forEach(([id,title])=>next[id]={title,items:[],hidden:false});
-  const pending=[];
-  for(const sid of sectionOrder(b)){
-    const sec=b.data[sid];if(!sec)continue;
-    for(const original of sec.items||[]){
-      const it=clone(original);
-      if(!it.uid)it.uid=uid();
-      if(isSpacer(it)){if(validGroup(sid))next[sid].items.push(it);continue;}
-      const g=assignments?assignments.get(itemId(it)):itemGroup(itemId(it));
-      if(!g){pending.push(it);continue;}
-      if(sid===g)next[g].items.push(it);else pending.push({__move:true,g,item:it});
-    }
+
+const configIncomplete = !firebaseConfig.apiKey || !firebaseConfig.appId || /ВСТАВЬТЕ/.test(firebaseConfig.apiKey+firebaseConfig.appId);
+if(configIncomplete){const warning=document.getElementById('configWarning');warning.hidden=false;warning.textContent='Firebase не настроен: замените apiKey и appId в firebaseConfig значениями из вашей рабочей страницы. Пока здесь заглушки, проверить запись невозможно.';}
+
+const ADMIN_UID = "xOqvdkpV57U8BSfnjePCRJRiaOi2";
+const DOC_PATH = ["cards","board"];
+
+const app = initializeApp(firebaseConfig);
+let analytics;
+try { analytics = getAnalytics(app); } catch(e) { console.warn("Analytics недоступна", e); }
+const auth = getAuth(app);
+const db = getFirestore(app);
+const boardRef = doc(db, DOC_PATH[0], DOC_PATH[1]);
+const catalogCol = collection(db, "itemCatalog");
+let catalog = new Map();
+const editItem = document.getElementById("editItem");
+
+const seedData = {
+  "predmety-chr": { title: "Предметы", items: [], hidden: false },
+  "bonusy":       { title: "Бонусы", items: [], hidden: false },
+  "snaryazhenie": { title: "Снаряжение", items: [], hidden: false },
+  "semena":       { title: "Семена пропуска", items: [], hidden: false },
+  "or":           { title: "Очки роста", items: [], hidden: false },
+  "check-list":   { title: "Чек-лист", items: [], hidden: false }
+};
+
+const MONTHS_RU = ["Января","Февраля","Марта","Апреля","Мая","Июня","Июля","Августа","Сентября","Октября","Ноября","Декабря"];
+const MONTHS_RU_LOWER = MONTHS_RU.map(m => m.charAt(0).toLowerCase() + m.slice(1));
+function formatUpdateDate(ts){
+  if(!ts) return "";
+  const d = new Date(ts);
+  return `Обновлено ${d.getDate()} ${MONTHS_RU[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+/* Относительное время отметки для админа: минуты -> часы -> сегодня/вчера/дата -> недели -> месяцы -> год */
+
+let data = {};
+let order = [];
+let lastUpdatedAt = null;
+
+
+const state = {
+  editing:false, isAdmin:false, history:[], future:[],
+  pending:null, activeModal:null, drag:null, sectionDrag:null, hrefUnlocked:false, editEnabled:true,
+  catalogReady:false
+};
+
+const categoryTabs = document.getElementById("categoryTabs");
+const main = document.getElementById("main");
+const modeBtn = document.getElementById("modeBtn");
+const undoBtn = document.getElementById("undoBtn");
+const redoBtn = document.getElementById("redoBtn");
+const loginBtn = document.getElementById("loginBtn");
+const syncStatus = document.getElementById("syncStatus");
+const addSectionBtn = document.getElementById("addSectionBtn");
+const addSpacerToolbarBtn = document.getElementById("addSpacerToolbarBtn");
+const loginModal = document.getElementById("loginModal");
+const loginEmail = document.getElementById("loginEmail");
+const loginPassword = document.getElementById("loginPassword");
+const loginSubmit = document.getElementById("loginSubmit");
+const loginCancel = document.getElementById("loginCancel");
+const modalBackdrop = document.getElementById("modalBackdrop");
+const modalTitle = document.getElementById("modalTitle");
+const editSection = document.getElementById("editSection");
+const editHref = document.getElementById("editHref");
+const editHrefUnlock = document.getElementById("editHrefUnlock");
+const editNickname = document.getElementById("editNickname");
+const editEnabledDot = document.getElementById("editEnabledDot");
+const editEnabledLabel = editEnabledDot.querySelector(".switch-label");
+
+const toast = document.getElementById("toast");
+
+
+const ICON_EYE_OPEN = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>`;
+const ICON_EYE_CLOSED = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88"/></svg>`;
+const ICON_X = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>`;
+const ICON_DRAG = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" d="M4 9h16M4 15h16"/></svg>`;
+const ICON_DUPLICATE = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><rect x="3" y="3" width="13" height="13" rx="2.5"/><rect x="8" y="8" width="13" height="13" rx="2.5" fill="var(--panel)"/></svg>`;
+const ICON_SPACER_DRAG = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 2.5v4.5m0 0-2-2m2 2 2-2M12 21.5V17m0 0-2 2m2-2 2 2M4.5 12h15"/></svg>`;
+addSpacerToolbarBtn.innerHTML = ICON_SPACER_DRAG;
+
+/* helpers */
+function isInactive(item){ return item.inactive === true; }
+function isSpacer(item){ return item.type === "spacer"; }
+function getCardId(href){ try{ return new URL(href).searchParams.get("id"); }catch(e){ return ""; } }
+function getNickname(item){ return item.nickname || ""; }
+function getCardSubtitle(item){ const nick=(getNickname(item)||"").trim(); return nick? nick : getCardId(item.href); }
+
+
+function updateSyncStatusDisplay(){
+  if(state.isAdmin){
+    syncStatus.textContent = "Синхронизировано";
+  }else{
+    syncStatus.textContent = formatUpdateDate(lastUpdatedAt);
   }
-  const unassigned=[];
-  for(const p of pending){if(p.__move)next[p.g].items.push(p.item);else unassigned.push(p);}
-  if(unassigned.length)next['unassigned']={title:'Группа не назначена',items:unassigned,hidden:true};
-  result.data=next;result.order=GROUPS.map(g=>g[0]);if(unassigned.length)result.order.push('unassigned');
-  return result;
 }
-function displayBoard(){return board.schemaVersion===2 ? normalizeBoard(board):board;}
-onSnapshot(boardRef,snap=>{
-  if(!snap.exists()){$('syncStatus').textContent='Документ cards/board не найден';return;}
-  board=snap.data();remoteVersion=board.updatedAt??null;boardReady=true;render();
-},fail);
-onSnapshot(collection(db,'itemCatalog'),snap=>{catalog=new Map(snap.docs.map(d=>[d.id,d.data()]));catalogReady=true;render();},fail);
-onAuthStateChanged(auth,user=>{admin=!!user&&user.uid===ADMIN_UID;if(!admin){editing=false;showInactive=false;}render();});
-function updateHeader(){
-  document.body.classList.toggle('is-admin',admin);document.body.classList.toggle('editing-mode',editing);
-  $('loginBtn').textContent=admin?'Выход':'Вход';$('modeBtn').textContent=editing?'Готово':'Редактировать';
-  $('addDivider').hidden=!editing;$('showInactive').classList.toggle('active',showInactive);$('showInactive').setAttribute('aria-pressed',String(showInactive));
-  $('showInactive').textContent=showInactive?'Скрыть выключенные':'Показать выключенные';
-  $('undoBtn').disabled=!history.length||busy;$('redoBtn').disabled=!future.length||busy;
-  $('syncStatus').textContent=busy?'Сохранение…':!boardReady||!catalogReady?'Загрузка…':admin?(board.schemaVersion===2?'Синхронизировано':'Нужно импортировать группы предметов'):(board.updatedAt?'Обновлено '+new Date(board.updatedAt).toLocaleDateString('ru-RU'):'');
+
+/* save */
+let saveTimer = null;
+async function saveToCloud(){
+  if(!state.isAdmin) return;
+  if(state.isAdmin) syncStatus.textContent = "Сохранение…";
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async ()=>{
+    try{
+      await setDoc(boardRef, { data, order, updatedAt: Date.now() });
+      if(state.isAdmin) syncStatus.textContent = "Сохранено";
+    }catch(e){ console.error(e); if(state.isAdmin) syncStatus.textContent = "Ошибка сохранения"; }
+  }, 400);
 }
-async function persist(next,remember=true){
-  if(!admin||busy)throw new Error('Дождитесь завершения операции');
-  busy=true;updateHeader();const before=clone(board),expected=remoteVersion;
+
+let applyingRemote = false;
+onSnapshot(boardRef, (snap)=>{
   try{
-    const stamp=Date.now();await runTransaction(db,async tx=>{const snap=await tx.get(boardRef);if(!snap.exists()||(snap.data().updatedAt??null)!==expected)throw new Error('Доска изменилась. Повторите действие после обновления.');tx.set(boardRef,{...next,updatedAt:stamp});});
-    if(remember){history.push(before);if(history.length>50)history.shift();future=[];}
-  }finally{busy=false;render();}
-}
-function findByUid(b,id){for(const sid of sectionOrder(b)){const index=(b.data[sid].items||[]).findIndex(it=>it.uid===id);if(index>=0)return {sid,index,item:b.data[sid].items[index]};}return null;}
-function render(){
-  updateHeader();if(!boardReady||!catalogReady)return;
-  const b=displayBoard();$('main').replaceChildren();$('categoryTabs').replaceChildren();
-  for(const sid of sectionOrder(b)){
-    const sec=b.data[sid];if(!sec || sec.hidden&&!admin)continue;
-    const tab=document.createElement('button');tab.className='category-tab';tab.type='button';tab.textContent=sec.title;
-    tab.onclick=()=>document.getElementById('section-'+sid)?.scrollIntoView({behavior:'smooth',block:'start'});$('categoryTabs').append(tab);
-    const section=document.createElement('section');section.id='section-'+sid;
-    const h=document.createElement('h2');h.textContent=sec.title;
-    const count=document.createElement('em');count.textContent=(sec.items||[]).filter(it=>!isSpacer(it)&&(admin&&showInactive||!inactive(it))).length;h.append(count);section.append(h);
-    const grid=document.createElement('div');grid.className='grid';grid.dataset.section=sid;
-    if(editing){const add=document.createElement('button');add.type='button';add.className='add-card single add-card-plus';add.textContent='+';add.onclick=()=>openEditor(null,sid);grid.append(add);}
-    (sec.items||[]).forEach((it,index)=>{
-      if(isSpacer(it)){const el=document.createElement('div');el.className='spacer-block';if(editing){el.textContent='Разделитель';const del=document.createElement('button');del.type='button';del.textContent='×';del.onclick=()=>deleteAt(sid,index);el.append(del);bindDrag(el,sid,index);}grid.append(el);return;}
-      if(inactive(it)&&!(admin&&showInactive))return;
-      const entry=catalog.get(itemId(it))||it;
-      const card=document.createElement('a');card.className='card'+(editing?' editing':'')+(inactive(it)?' inactive-card':'');card.href=it.href||'#';card.target='_blank';card.rel='noopener';
-      if(entry.img){const img=document.createElement('img');img.src=entry.img;img.alt='';img.onerror=()=>{img.style.visibility='hidden';};card.append(img);}else{const icon=document.createElement('span');icon.className='noicon';icon.textContent='—';card.append(icon);}
-      const name=document.createElement('span');name.className='name';name.textContent=entry.name||'Предмет не выбран';card.append(name);
-      const small=document.createElement('small');small.textContent=it.nickname||'';if(!small.textContent)try{small.textContent=new URL(it.href).searchParams.get('id')||'';}catch{}card.append(small);
-      if(editing){card.onclick=e=>{e.preventDefault();openEditor({sid,index},sid);};bindDrag(card,sid,index);
-        const del=document.createElement('button');del.type='button';del.className='delete-x icon-btn danger';del.textContent='×';del.title='Удалить карточку';del.onclick=e=>{e.preventDefault();e.stopPropagation();if(confirm('Удалить карточку?'))deleteAt(sid,index);};card.append(del);
-        const dot=document.createElement('button');dot.type='button';dot.className='card-toggle-dot'+(!inactive(it)?' on':'');dot.title=inactive(it)?'Включить':'Выключить';dot.onclick=async e=>{e.preventDefault();e.stopPropagation();try{const next=displayBoard();next.data[sid].items[index].inactive=!inactive(it);await persist(next);}catch(err){fail(err);}};card.append(dot);
-      }
-      grid.append(card);
-    });
-    grid.ondragover=e=>{if(editing&&drag)e.preventDefault();};grid.ondrop=e=>{if(!editing||!drag||e.target!==grid)return;e.preventDefault();performDrop(sid,(sec.items||[]).length);};
-    section.append(grid);$('main').append(section);
+    if(!snap.exists()){
+      syncStatus.textContent = "Документ cards/board не найден. Автоматическое создание отключено.";
+      return;
+    }
+    const remote = snap.data();
+    applyingRemote = true;
+    data = remote.data || {};
+    order = remote.order || Object.keys(data);
+    lastUpdatedAt = remote.updatedAt || null;
+    render();
+    applyingRemote = false;
+    updateSyncStatusDisplay();
+  }catch(err){ console.error(err); syncStatus.textContent = "Ошибка синхронизации"; }
+});
+
+/* CARD STATUSES — видны всем, подписка не зависит от роли.
+   Один документ на карточку, поля catch/stop независимы и могут быть true одновременно. */
+onAuthStateChanged(auth, (user)=>{
+  state.isAdmin = !!user && user.uid === ADMIN_UID;
+  loginBtn.textContent = state.isAdmin ? "Выход" : "Вход";
+  loginBtn.classList.toggle("logged-in", state.isAdmin);
+  document.body.classList.toggle("is-admin", state.isAdmin);
+  modeBtn.style.display = state.isAdmin ? "inline-flex" : "none";
+  undoBtn.style.display = state.isAdmin ? "inline-flex" : "none";
+  redoBtn.style.display = state.isAdmin ? "inline-flex" : "none";
+
+  if(user) console.log("UID:", user.uid);
+  if(!state.isAdmin) setEditing(false);
+
+  updateSyncStatusDisplay();
+  render();
+});
+
+/* Автовход при автозаполнении логина/пароля браузером (детект через CSS-анимацию autofill) */
+let emailAutofilled = false, passwordAutofilled = false;
+function tryAutoLogin(){
+  if(emailAutofilled && passwordAutofilled && loginModal.style.display === "flex" && loginEmail.value && loginPassword.value){
+    loginSubmit.click();
   }
 }
-function bindDrag(el,sid,index){
-  el.draggable=true;el.ondragstart=e=>{if(e.target.closest('button')){e.preventDefault();return;}drag={sid,index};e.dataTransfer.setData('text/plain','ovni');el.classList.add('drag-source');};el.ondragend=()=>{drag=null;el.classList.remove('drag-source');};
-  el.ondragover=e=>{if(drag&&editing)e.preventDefault();};el.ondrop=e=>{if(!drag||!editing)return;e.preventDefault();e.stopPropagation();const r=el.getBoundingClientRect();performDrop(sid,index+(e.clientY>r.top+r.height/2?1:0));};
-}
-async function performDrop(sid,index){
-  const d=drag;drag=null;if(!d)return;
-  try{const next=displayBoard();let it;if(d.newDivider)it={type:'spacer',uid:uid()};else{
-    it=next.data[d.sid].items[d.index];if(!isSpacer(it)&&sid!==d.sid){toast('Группа карточки определяется предметом. Меняйте порядок внутри группы.');return;}
-    next.data[d.sid].items.splice(d.index,1);if(d.sid===sid&&d.index<index)index--;
-  }next.data[sid].items.splice(index,0,it);await persist(next);}catch(e){fail(e);}
-}
-async function deleteAt(sid,index){try{const next=displayBoard();next.data[sid].items.splice(index,1);await persist(next);}catch(e){fail(e);}}
-$('modeBtn').onclick=()=>{if(board.schemaVersion!==2){toast('Сначала настройте и примените группы предметов');return;}editing=!editing;render();};
-$('showInactive').onclick=()=>{showInactive=!showInactive;render();};
-$('addDivider').ondragstart=e=>{drag={newDivider:true};e.dataTransfer.setData('text/plain','divider');};$('addDivider').ondragend=()=>{drag=null;};
-$('addDivider').onclick=()=>{const sid=prompt('В какую группу добавить разделитель? Введите номер:\n'+GROUPS.map((g,i)=>`${i+1}. ${g[1]}`).join('\n'));const group=GROUPS[Number(sid)-1];if(group){const next=displayBoard();next.data[group[0]].items.push({type:'spacer',uid:uid()});persist(next).catch(fail);}};
-$('undoBtn').onclick=async()=>{if(!history.length)return;const target=history[history.length-1],current=clone(board);try{await persist(target,false);history.pop();future.push(current);render();}catch(e){fail(e);}};
-$('redoBtn').onclick=async()=>{if(!future.length)return;const target=future[future.length-1],current=clone(board);try{await persist(target,false);future.pop();history.push(current);render();}catch(e){fail(e);}};
-function fillItemSelect(selected){
-  $('editItem').replaceChildren(new Option('Выберите предмет',''));
-  const items=allCatalogItems();
-  for(const [g,label] of [...GROUPS,['unassigned','Группа не назначена']]){
-    const entries=[...items].filter(([id])=>(itemGroup(id)||'unassigned')===g).sort((a,b)=>(a[1].name||a[0]).localeCompare(b[1].name||b[0],'ru'));
-    if(!entries.length)continue;const group=document.createElement('optgroup');group.label=label;
-    entries.forEach(([id,it])=>group.append(new Option(it.name||id,id)));$('editItem').append(group);
-  }$('editItem').value=selected||'';updateItemGroup();
-}
-function updateItemGroup(){$('itemGroup').textContent='Группа: '+groupName(itemGroup($('editItem').value));}
-$('editItem').onchange=updateItemGroup;
-function setEnabled(v){enabled=v;$('editEnabled').classList.toggle('on',v);$('editEnabled').classList.toggle('off',!v);$('editEnabled').setAttribute('aria-pressed',String(v));$('editEnabled').querySelector('.switch-label').textContent=v?'вкл':'выкл';}
-$('editEnabled').onclick=()=>setEnabled(!enabled);
-function openEditor(ref,group){
-  const b=displayBoard(),it=ref?b.data[ref.sid].items[ref.index]:null;
-  editor={ref,group,uid:it?.uid,original:it?clone(it):null};fillItemSelect(it?itemId(it):'');$('editNickname').value=it?.nickname||'';$('editHref').value=it?.href||'';$('editHref').disabled=!!it;$('unlockHref').hidden=!it;setEnabled(!it?.inactive);
-  $('editorModal').querySelectorAll('.has-error').forEach(el=>el.classList.remove('has-error'));openModal('editorModal');
-}
-$('unlockHref').onclick=()=>{$('editHref').disabled=false;$('unlockHref').hidden=true;$('editHref').focus();};
-$('cancelEdit').onclick=()=>{editor=null;closeModal('editorModal');};
-$('saveEdit').onclick=async()=>{
-  if(!editor||busy)return;const id=$('editItem').value,g=itemGroup(id),href=$('editHref').value.trim();let urlValid=false;try{urlValid=['http:','https:'].includes(new URL(href).protocol);}catch{}
-  $('editItem').closest('.form-row').classList.toggle('has-error',!catalog.has(id)||!g);$('editHref').closest('.form-row').classList.toggle('has-error',!urlValid);
-  if(!catalog.has(id)||!g||!urlValid){if(!g)toast('Сначала назначьте предмету группу');return;}
-  try{const next=displayBoard();const found=editor.uid?findByUid(next,editor.uid):null;if(editor.original&&!found)throw new Error('Карточка больше не найдена. Откройте редактор заново.');
-    const it={...(found?.item||{}),uid:found?.item.uid||uid(),itemId:id,href,inactive:!enabled};delete it.name;delete it.img;delete it.nickname;const nick=$('editNickname').value.trim();if(nick)it.nickname=nick;
-    if(found&&found.sid===g)next.data[g].items[found.index]=it;else{if(found)next.data[found.sid].items.splice(found.index,1);next.data[g].items.push(it);}
-    await persist(next);editor=null;closeModal('editorModal');
-  }catch(e){fail(e);}
-};
-let scrollY=0,modalOpen=null;
-function openModal(id){scrollY=window.scrollY;document.body.style.position='fixed';document.body.style.top=-scrollY+'px';document.body.style.width='100%';$(id).style.display='flex';modalOpen=id;$(id).querySelector('input,select,button')?.focus();}
-function closeModal(id){$(id).style.display='none';modalOpen=null;document.body.style.position='';document.body.style.top='';document.body.style.width='';window.scrollTo(0,scrollY);}
-$('loginBtn').onclick=()=>{if(admin)signOut(auth).catch(fail);else{$('loginError').textContent='';lastAutoAttempt='';openModal('loginModal');setTimeout(checkAutofill,150);}};
-$('loginCancel').onclick=()=>closeModal('loginModal');
-let loggingIn=false,lastAutoAttempt='';
-async function login(){if(loggingIn||!$('loginEmail').value||!$('loginPassword').value)return;loggingIn=true;$('loginSubmit').disabled=true;
-  try{await signInWithEmailAndPassword(auth,$('loginEmail').value.trim(),$('loginPassword').value);closeModal('loginModal');$('loginPassword').value='';}catch(e){$('loginError').textContent='Не удалось войти. Проверьте логин и пароль.';console.error(e);}finally{loggingIn=false;$('loginSubmit').disabled=false;}}
-$('loginForm').onsubmit=e=>{e.preventDefault();login();};
-function checkAutofill(){if(modalOpen!=='loginModal')return;const email=$('loginEmail'),pass=$('loginPassword');let filled=false;try{filled=email.matches(':autofill')&&pass.matches(':autofill');}catch{}try{filled=filled||(email.matches(':-webkit-autofill')&&pass.matches(':-webkit-autofill'));}catch{}
-  const key=email.value+'\n'+pass.value;if(filled&&email.value&&pass.value&&key!==lastAutoAttempt){lastAutoAttempt=key;login();}}
-setInterval(checkAutofill,600);
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modalOpen){closeModal(modalOpen);editor=null;}if(e.key==='Enter'&&modalOpen==='editorModal'&&e.target.tagName==='INPUT'){e.preventDefault();$('saveEdit').click();}if(admin&&!modalOpen&&(e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();$(e.shiftKey?'redoBtn':'undoBtn').click();}});
-new ResizeObserver(()=>document.documentElement.style.setProperty('--header-height',($('header').offsetHeight+12)+'px')).observe($('header'));
+loginEmail.addEventListener("animationstart", e=>{
+  if(e.animationName === "onAutoFillStart") emailAutofilled = true;
+  if(e.animationName === "onAutoFillCancel") emailAutofilled = false;
+  tryAutoLogin();
+});
+loginPassword.addEventListener("animationstart", e=>{
+  if(e.animationName === "onAutoFillStart") passwordAutofilled = true;
+  if(e.animationName === "onAutoFillCancel") passwordAutofilled = false;
+  tryAutoLogin();
+});
 
+loginBtn.addEventListener("click", ()=>{
+  if(state.isAdmin) signOut(auth);
+  else{
+    emailAutofilled = false;
+    passwordAutofilled = false;
+    loginModal.style.display = "flex";
+  }
+});
+loginCancel.addEventListener("click", ()=>{ loginModal.style.display = "none"; });
+loginSubmit.addEventListener("click", async ()=>{
+  try{
+    await signInWithEmailAndPassword(auth, loginEmail.value.trim(), loginPassword.value);
+    loginModal.style.display = "none";
+    loginEmail.value=""; loginPassword.value="";
+  }catch(e){ alert(e.message); }
+});
 
-const migrationDialog=$('catalogMigration');let migrationSnapshot=null,migrationCatalog=null,sourceMap=new Map(),assignments=new Map(),backupDone=false;
-function groupSelect(value,allowEmpty=true){const sel=document.createElement('select');if(allowEmpty)sel.add(new Option('Не назначать / выбрать вручную',''));GROUPS.forEach(([id,name])=>sel.add(new Option(name,id)));sel.value=value||'';return sel;}
-function guessSource(id,title){
-  const t=(id+' '+title).toLowerCase();
-  if(t.includes('disabled')||t.includes('выключ'))return '';
-  if(t.includes('чек')||t.includes('check-list'))return 'check-list';
-  if(t.includes('черн')||t.includes('чр')||t.includes('predmety-chr'))return 'black-market';
-  if(t.includes('улучш')||t.includes('upgrades'))return 'upgrades';
-  if(t.includes('бонус')||t.includes('bonus'))return 'bonuses';
-  if(t.includes('снаряж')||t.includes('snaryazhenie')||t.includes('equipment'))return 'equipment';
-  if(t.includes('семен')||t.includes('сельск')||t.includes('semena')||t.includes('agriculture'))return 'agriculture';
-  if(id==='or'||t.includes('очки роста')||id==='aging-points')return 'aging-points';return '';
-}
-function resetPreview(){assignments.clear();$('migrationPreview').replaceChildren();$('migrationApply').disabled=true;backupDone=false;}
-$('migrationBtn').onclick=()=>{
-  if(!admin||busy||!boardReady||!catalogReady)return;
-  migrationSnapshot=clone(board);migrationCatalog=new Map([...catalog].map(([id,v])=>[id,clone(v)]));sourceMap.clear();resetPreview();$('sourceMappings').replaceChildren();$('migrationError').textContent='';
-  sectionOrder(migrationSnapshot).forEach(id=>{const sec=migrationSnapshot.data[id];if(!sec)return;const row=document.createElement('div');row.className='migration-row';const label=document.createElement('label');label.textContent=sec.title+' →';const sel=groupSelect(guessSource(id,sec.title));sourceMap.set(id,sel.value);sel.onchange=()=>{sourceMap.set(id,sel.value);resetPreview();};row.append(label,sel);$('sourceMappings').append(row);});
-  migrationDialog.showModal();
-};
-$('migrationCancel').onclick=()=>migrationDialog.close();
-function updateApply(){ $('migrationApply').disabled=busy||!backupDone||assignments.size===0||[...assignments.values()].some(v=>!validGroup(v)); }
-$('buildPreview').onclick=()=>{
-  if(!migrationSnapshot)return;resetPreview();const usage=new Map(),items=new Map(migrationCatalog);
-  for(const sid of sectionOrder(migrationSnapshot))for(const it of migrationSnapshot.data[sid]?.items||[]){if(isSpacer(it))continue;const id=itemId(it);if(!items.has(id))items.set(id,{name:it.name||id,img:it.img||''});if(!usage.has(id))usage.set(id,new Set());const g=sourceMap.get(sid);if(g)usage.get(id).add(g);}
-  const title=document.createElement('h4');title.textContent='Проверьте группы каждого предмета';$('migrationPreview').append(title);
-  [...items].sort((a,b)=>(a[1].name||a[0]).localeCompare(b[1].name||b[0],'ru')).forEach(([id,it])=>{
-    const groups=[...(usage.get(id)||[])];let choice=id==='none'||id==='cadeau'?'check-list':groups.length===1?groups[0]:groups.length>1?'':validGroup(it.groupId)?it.groupId:'';
-    assignments.set(id,choice);const row=document.createElement('div');row.className='migration-row';const label=document.createElement('label');label.textContent=it.name||id;const detail=document.createElement('small');detail.textContent=id+(groups.length>1?' — конфликт: '+groups.map(groupName).join(', '):!choice?' — выберите группу':'');label.append(detail);
-    const sel=groupSelect(choice);if(id==='none'||id==='cadeau')sel.disabled=true;sel.onchange=()=>{assignments.set(id,sel.value);backupDone=false;updateApply();};row.append(label,sel);$('migrationPreview').append(row);
+addSpacerToolbarBtn.addEventListener("dragstart", e=>{
+  state.drag = { fromToolbar: true };
+  e.dataTransfer.effectAllowed = "copy";
+});
+addSpacerToolbarBtn.addEventListener("dragend", ()=>{ state.drag = null; });
+
+function renderCategoryTabs(){
+  categoryTabs.innerHTML = "";
+  order.forEach(id=>{
+    const sec = data[id];
+    if(!sec || (sec.hidden && !state.isAdmin)) return;
+    const tab = document.createElement("button");
+    tab.type = "button";
+    tab.className = "category-tab";
+    tab.textContent = sec.title;
+    tab.dataset.sectionId = id;
+    tab.addEventListener("click", ()=>scrollToSection(id));
+    categoryTabs.appendChild(tab);
   });
-  updateApply();
-};
-$('downloadBackup').onclick=()=>{
-  if(!migrationSnapshot||!assignments.size){toast('Сначала составьте предпросмотр');return;}
-  const contents={board:migrationSnapshot,itemCatalog:Object.fromEntries(migrationCatalog),sourceMappings:Object.fromEntries(sourceMap),assignments:Object.fromEntries(assignments)};
-  const a=document.createElement('a'),url=URL.createObjectURL(new Blob([JSON.stringify(contents,null,2)],{type:'application/json'}));a.href=url;a.download='ovni-before-groups-'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);backupDone=true;updateApply();
-};
-function migratedBoard(){
-  const next=clone(migrationSnapshot),dest={};GROUPS.forEach(([id,title])=>dest[id]={title,hidden:false,items:[]});
-  // Each source keeps its original sequence. Sources joining a group are concatenated in board order.
-  for(const sid of sectionOrder(migrationSnapshot)){
-    const sec=migrationSnapshot.data[sid];if(!sec)continue;
-    for(const original of sec.items||[]){
-      const it=clone(original);if(!it.uid)it.uid=uid();
-      const g=isSpacer(it)?sourceMap.get(sid):assignments.get(itemId(it));
-      if(!g){if(isSpacer(it))throw new Error('У раздела «'+sec.title+'» есть девайдеры. Назначьте ему группу, чтобы не потерять их.');throw new Error('Не назначена группа предмету');}
-      if(!isSpacer(it)){it.itemId=itemId(it);delete it.name;delete it.img;}
-      dest[g].items.push(it);
-    }
-  }
-  next.data=dest;next.order=GROUPS.map(g=>g[0]);next.schemaVersion=2;next.updatedAt=Date.now();return next;
 }
-$('migrationApply').onclick=async()=>{
-  if(!admin||busy||!backupDone||[...assignments.values()].some(v=>!validGroup(v)))return;
-  if(!confirm('Применить группы предметов и заменить старые категории? Ручной порядок внутри исходных разделов будет сохранён.'))return;
-  try{
-    const next=migratedBoard(),entries=new Map(migrationCatalog);
-    for(const sec of Object.values(migrationSnapshot.data))for(const it of sec.items||[])if(!isSpacer(it)&&!entries.has(itemId(it)))entries.set(itemId(it),{name:it.name||itemId(it),identifier:itemId(it),img:cleanImageUrl(it.img)});
-    if(entries.size>450)throw new Error('Слишком много предметов для одной операции. Нужна пакетная миграция.');
-    busy=true;updateApply();updateHeader();
-    await runTransaction(db,async tx=>{
-      const current=await tx.get(boardRef);
-      const reads=[];for(const [id]of entries)reads.push([id,await tx.get(doc(db,'itemCatalog',id))]);
-      if(JSON.stringify(current.data())!==JSON.stringify(migrationSnapshot))throw new Error('Доска изменилась. Откройте настройку групп заново.');
-      for(const [id,snap]of reads){const old=migrationCatalog.get(id);if(snap.exists()!==!!old||snap.exists()&&JSON.stringify(snap.data())!==JSON.stringify(old))throw new Error('Справочник изменился. Откройте настройку групп заново.');}
-      for(const [id,entry]of entries)tx.set(doc(db,'itemCatalog',id),{...entry,groupId:assignments.get(id)});
-      tx.set(boardRef,next);
+
+function scrollToSection(id){
+  const target = document.getElementById(id);
+  if(!target) return;
+  const rect = target.getBoundingClientRect();
+  const offset = window.scrollY + rect.top - window.innerHeight * 0.22;
+  window.scrollTo({ top: Math.max(0, offset), behavior: "smooth" });
+}
+
+/* Пример-превью для пояснения — берём первую реальную карточку из базы, показываем некликабельно
+   с обоими бейджами сразу, чтобы наглядно показать, как они выглядят. */
+/* RENDER */
+function render(){
+  main.innerHTML = "";
+  order.forEach(id=>{
+    if(!data[id]) return;
+    const sec = data[id];
+    if(sec.hidden && !state.isAdmin) return;
+
+    const section = document.createElement("section");
+    section.id = id;
+    if(sec.hidden) section.classList.add("section-hidden-user");
+
+    const h2 = document.createElement("h2");
+    const titleSpan = document.createElement("span");
+    titleSpan.className = "section-title-text";
+    titleSpan.contentEditable = state.editing ? "true" : "false";
+    titleSpan.spellcheck = false;
+    titleSpan.textContent = sec.title;
+    if(state.editing){
+      titleSpan.addEventListener("blur", ()=>{
+        const newTitle = titleSpan.textContent.trim();
+        if(newTitle && newTitle !== sec.title){
+          pushHistory();
+          data[id].title = newTitle;
+          saveToCloud();
+        }
+      });
+      titleSpan.addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); titleSpan.blur(); } });
+    }
+
+    const visibleCount = sec.items.filter(it=>!isSpacer(it) && (state.isAdmin || !isInactive(it))).length;
+    const countEm = document.createElement("em");
+    countEm.textContent = visibleCount;
+
+    const sectionControls = document.createElement("div");
+    sectionControls.className = "section-controls";
+    if(state.editing){
+      const eyeBtn = document.createElement("button");
+      eyeBtn.className = "icon-btn" + (!sec.hidden ? " active-eye" : "");
+      eyeBtn.type = "button";
+      eyeBtn.title = sec.hidden ? "Показать пользователям" : "Скрыть от пользователей";
+      eyeBtn.innerHTML = sec.hidden ? ICON_EYE_CLOSED : ICON_EYE_OPEN;
+      eyeBtn.addEventListener("click", ()=>{
+        pushHistory();
+        data[id].hidden = !data[id].hidden;
+        commit();
+      });
+
+      const dragBtn = document.createElement("button");
+      dragBtn.className = "icon-btn";
+      dragBtn.type = "button";
+      dragBtn.title = "Перетащить категорию";
+      dragBtn.innerHTML = ICON_DRAG;
+      dragBtn.style.cursor = "grab";
+      dragBtn.draggable = true;
+      dragBtn.addEventListener("dragstart", e=>{
+        state.sectionDrag = id;
+        e.dataTransfer.effectAllowed = "move";
+        section.classList.add("section-drag-source");
+      });
+      dragBtn.addEventListener("dragend", ()=>{
+        state.sectionDrag = null;
+        section.classList.remove("section-drag-source");
+      });
+
+      const delBtn = document.createElement("button");
+      delBtn.className = "icon-btn danger";
+      delBtn.type = "button";
+      delBtn.title = "Удалить категорию";
+      delBtn.innerHTML = ICON_X;
+      delBtn.addEventListener("click", ()=>{
+        if(!confirm(`Удалить категорию "${sec.title}"?`)) return;
+        pushHistory();
+        delete data[id];
+        order.splice(order.indexOf(id),1);
+        commit();
+      });
+
+      sectionControls.append(eyeBtn, dragBtn, delBtn);
+    }
+
+    h2.append(titleSpan, countEm, sectionControls);
+
+    section.addEventListener("dragover", e=>{
+      if(!state.sectionDrag || state.sectionDrag === id) return;
+      e.preventDefault();
+      section.classList.add("section-drag-over");
     });
-    history=[];future=[];migrationDialog.close();toast('Группы сохранены');
-  }catch(e){$('migrationError').textContent=e.message;console.error(e);}finally{busy=false;updateApply();render();}
+    section.addEventListener("dragleave", ()=>{
+      section.classList.remove("section-drag-over");
+    });
+    section.addEventListener("drop", e=>{
+      if(!state.sectionDrag || state.sectionDrag === id) return;
+      e.preventDefault();
+      section.classList.remove("section-drag-over");
+      pushHistory();
+      const fromIdx = order.indexOf(state.sectionDrag);
+      const toIdx = order.indexOf(id);
+      order.splice(fromIdx, 1);
+      order.splice(toIdx, 0, state.sectionDrag);
+      state.sectionDrag = null;
+      commit();
+    });
+    section.appendChild(h2);
+
+    const grid = document.createElement("div");
+    grid.className = "grid";
+    grid.dataset.section = id;
+
+    if(state.editing) grid.appendChild(createAddCard(id));
+
+    sec.items.forEach((item, index)=>{
+      if(isSpacer(item)){
+        grid.appendChild(createSpacerEl(id, index));
+        return;
+      }
+      if(isInactive(item) && !state.isAdmin) return;
+      grid.appendChild(createCard(id, index, item, isInactive(item)));
+    });
+
+    bindGridDropZone(grid);
+    section.appendChild(grid);
+    main.appendChild(section);
+  });
+  populateSectionSelect();
+  renderCategoryTabs();
+}
+
+function createSpacerEl(sectionId, index){
+  const wrap = document.createElement("div");
+  wrap.className = "spacer-block";
+  wrap.dataset.section = sectionId;
+  wrap.dataset.index = index;
+  const inner = document.createElement("div");
+  inner.className = "spacer-block-inner";
+  wrap.appendChild(inner);
+
+  if(state.editing){
+    const controls = document.createElement("div");
+    controls.className = "spacer-controls";
+    const dupBtn = document.createElement("button");
+    dupBtn.className = "icon-btn";
+    dupBtn.type = "button";
+    dupBtn.title = "Дублировать";
+    dupBtn.innerHTML = ICON_DUPLICATE;
+    dupBtn.addEventListener("click", e=>{
+      e.stopPropagation();
+      pushHistory();
+      data[sectionId].items.splice(index, 0, { type:"spacer" });
+      commit();
+    });
+    const delBtn = document.createElement("button");
+    delBtn.className = "icon-btn danger";
+    delBtn.type = "button";
+    delBtn.title = "Удалить";
+    delBtn.innerHTML = ICON_X;
+    delBtn.addEventListener("click", e=>{
+      e.stopPropagation();
+      pushHistory();
+      data[sectionId].items.splice(index, 1);
+      commit();
+    });
+    controls.append(dupBtn, delBtn);
+    wrap.appendChild(controls);
+  }
+
+  wrap.draggable = state.editing;
+  wrap.addEventListener("dragstart", ()=>{
+    state.drag = { section: sectionId, index, isSpacer: true };
+    wrap.style.opacity = "0.4";
+  });
+  wrap.addEventListener("dragend", ()=>{ wrap.style.opacity = ""; state.drag = null; });
+  return wrap;
+}
+
+function createCard(sectionId, index, item, inactive){
+  const card = document.createElement("a");
+  card.className = "card" + (state.editing ? " editing" : "") + (inactive ? " inactive-card" : "");
+  card.href = item.href;
+  card.target = "_blank";
+  card.rel = "noopener";
+  card.dataset.section = sectionId;
+  card.dataset.index = index;
+  card.innerHTML = `
+    <button class="delete-x icon-btn danger" type="button" title="Удалить" aria-label="Удалить">${ICON_X}</button>
+    ${(catalog.get(item.itemId) || item).img ? `<img src="${(catalog.get(item.itemId) || item).img}" alt="" onerror="this.style.visibility='hidden'">` : `<span class="noicon">?</span>`}
+    <span class="name"></span>
+    <small></small>
+    <button class="card-toggle-dot${!inactive ? " on" : ""}" type="button" title="${inactive ? "Включить" : "Отключить"}"></button>
+  `;
+  const displayItem = catalog.get(item.itemId) || item;
+  card.querySelector(".name").textContent = displayItem.name || "Предмет не выбран";
+  card.querySelector("small").textContent = getCardSubtitle(item);
+
+  if(state.editing){
+    card.addEventListener("click", event=>{ event.preventDefault(); openEditor(sectionId, index, item); });
+    card.querySelector(".delete-x").addEventListener("click", event=>{
+      event.preventDefault(); event.stopPropagation(); deleteItem(sectionId, index);
+    });
+    card.querySelector(".card-toggle-dot").addEventListener("click", event=>{
+      event.preventDefault(); event.stopPropagation();
+      pushHistory();
+      const it = data[sectionId].items[index];
+      if(isInactive(it)) delete it.inactive; else it.inactive = true;
+      commit();
+    });
+    card.addEventListener("dragstart", e=>{
+      state.drag = { section: sectionId, index };
+      card.classList.add("drag-source");
+      e.dataTransfer.effectAllowed = "move";
+    });
+    card.addEventListener("dragend", ()=>{
+      card.classList.remove("drag-source","drag-over-before","drag-over-after");
+    });
+    card.addEventListener("dragover", e=>{
+      if(!state.drag) return;
+      e.preventDefault(); e.stopPropagation();
+      const rect = card.getBoundingClientRect();
+      const half = rect.left + rect.width/2;
+      card.classList.toggle("drag-over-before", e.clientX < half);
+      card.classList.toggle("drag-over-after", e.clientX >= half);
+    });
+    card.addEventListener("dragleave", ()=>{
+      card.classList.remove("drag-over-before","drag-over-after");
+    });
+    card.addEventListener("drop", e=>{
+      if(!state.drag) return;
+      e.preventDefault(); e.stopPropagation();
+      const rect = card.getBoundingClientRect();
+      const before = e.clientX < rect.left + rect.width/2;
+      card.classList.remove("drag-over-before","drag-over-after");
+      if(state.drag.fromToolbar){
+        pushHistory();
+        const insertAt = before ? index : index + 1;
+        data[sectionId].items.splice(insertAt, 0, { type:"spacer" });
+        commit();
+      }else{
+        moveItemPrecise(state.drag.section, state.drag.index, sectionId, index, before);
+      }
+      state.drag = null;
+    });
+    card.draggable = true;
+  }
+  return card;
+}
+
+function createAddCard(sectionId){
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "add-card single add-card-plus";
+  button.innerHTML = `<span class="plus">+</span>`;
+  button.addEventListener("click", ()=>openEditor(sectionId, -1, null));
+  return button;
+}
+
+function bindGridDropZone(grid){
+  grid.addEventListener("dragover", event=>{
+    if(!state.editing || !state.drag) return;
+    event.preventDefault();
+    grid.classList.add("dragover");
+  });
+  grid.addEventListener("dragleave", e=>{
+    if(!grid.contains(e.relatedTarget)) grid.classList.remove("dragover");
+  });
+  grid.addEventListener("drop", event=>{
+    if(!state.editing || !state.drag) return;
+    if(event.target !== grid) return;
+    event.preventDefault();
+    grid.classList.remove("dragover");
+    const toSection = grid.dataset.section;
+    if(state.drag.fromToolbar){
+      pushHistory();
+      data[toSection].items.push({ type:"spacer" });
+      commit();
+    }else{
+      moveItemAppend(state.drag.section, state.drag.index, toSection);
+    }
+    state.drag = null;
+  });
+}
+
+function moveItemPrecise(fromSection, fromIndex, toSection, toIndex, before){
+  if(fromSection === toSection && fromIndex === toIndex) return;
+  pushHistory();
+  const item = data[fromSection].items.splice(fromIndex, 1)[0];
+  let adjustedTo = toIndex;
+  if(fromSection === toSection && fromIndex < toIndex) adjustedTo--;
+  const insertAt = before ? adjustedTo : adjustedTo + 1;
+  data[toSection].items.splice(Math.max(0, insertAt), 0, item);
+  commit();
+}
+
+function moveItemAppend(fromSection, fromIndex, toSection){
+  pushHistory();
+  const item = data[fromSection].items.splice(fromIndex, 1)[0];
+  data[toSection].items.push(item);
+  commit();
+}
+
+function deleteItem(sectionId, index){
+  if(!confirm("Удалить карточку?")) return;
+  pushHistory();
+  data[sectionId].items.splice(index, 1);
+  commit();
+}
+
+function pushHistory(){
+  state.history.push(JSON.stringify({ data, order }));
+  if(state.history.length > 50) state.history.shift();
+  state.future = [];
+}
+function restoreFrom(snapshot){
+  const r = JSON.parse(snapshot);
+  data = r.data; order = r.order;
+  commit();
+}
+undoBtn.addEventListener("click", ()=>{
+  if(!state.history.length) return;
+  state.future.push(JSON.stringify({ data, order }));
+  restoreFrom(state.history.pop());
+});
+redoBtn.addEventListener("click", ()=>{
+  if(!state.future.length) return;
+  state.history.push(JSON.stringify({ data, order }));
+  restoreFrom(state.future.pop());
+});
+function commit(){ render(); saveToCloud(); }
+
+function setEditing(enabled){
+  state.editing = enabled && state.isAdmin;
+  document.body.classList.toggle("editing-mode", state.editing);
+  modeBtn.classList.toggle("save-mode", state.editing);
+  modeBtn.textContent = state.editing ? "Готово" : "Редактировать";
+  render();
+}
+modeBtn.addEventListener("click", ()=>setEditing(!state.editing));
+
+addSectionBtn.addEventListener("click", ()=>{
+  const title = prompt("Название новой категории:");
+  if(!title || !title.trim()) return;
+  const id = "sec-" + Date.now();
+  pushHistory();
+  data[id] = { title: title.trim(), items: [], hidden: false };
+  order.push(id);
+  commit();
+});
+
+function populateSectionSelect(){
+  const prevValue = editSection.value;
+  editSection.innerHTML = "";
+  order.forEach(id=>{
+    if(!data[id]) return;
+    const opt = document.createElement("option");
+    opt.value = id;
+    opt.textContent = data[id].title;
+    editSection.appendChild(opt);
+  });
+  if(prevValue && data[prevValue]) editSection.value = prevValue;
+}
+
+function setEditEnabled(val){
+  state.editEnabled = val;
+  editEnabledDot.classList.toggle("on", val);
+  editEnabledDot.classList.toggle("off", !val);
+  editEnabledLabel.textContent = val ? "вкл" : "выкл";
+}
+editEnabledDot.addEventListener("click", ()=>{ setEditEnabled(!state.editEnabled); });
+
+/* Поле "Бейджи" в редакторе карточки: слева время последней отметки, справа — фишки
+   поставленных бейджей, у каждой свой крестик для точечного удаления. */
+function openEditor(sectionId, index, item){
+  state.pending = { section: sectionId, index };
+  state.activeModal = "card";
+  state.hrefUnlocked = index < 0;
+  editSection.value = sectionId;
+  populateItemSelect(item);
+  editHref.value = item ? item.href : "";
+
+  editNickname.value = item ? getNickname(item) : "";
+  setEditEnabled(item ? !isInactive(item) : true);
+  editHref.disabled = !state.hrefUnlocked;
+  editHrefUnlock.style.display = state.hrefUnlocked ? "none" : "flex";
+  editItem.closest(".form-row").classList.remove("has-error");
+  editHref.closest(".form-row").classList.remove("has-error");
+
+
+
+  modalBackdrop.style.display = "flex";
+}
+editHrefUnlock.addEventListener("click", ()=>{
+  state.hrefUnlocked = true;
+  editHref.disabled = false;
+  editHrefUnlock.style.display = "none";
+  editHref.focus();
+});
+function closeModal(){
+  state.activeModal = null;
+  modalBackdrop.style.display = "none";
+  state.pending = null;
+}
+document.getElementById("cancelEdit").addEventListener("click", closeModal);
+document.getElementById("saveEdit").addEventListener("click", saveEditHandler);
+function saveEditHandler(){
+  const { section, index } = state.pending;
+  const newSection = editSection.value;
+  const itemId = editItem.value;
+  const href = editHref.value.trim();
+
+  const nickname = editNickname.value.trim();
+  const enabled = state.editEnabled;
+
+  const nameRow = editItem.closest(".form-row");
+  const hrefRow = editHref.closest(".form-row");
+  nameRow.classList.toggle("has-error", !catalog.has(itemId));
+  hrefRow.classList.toggle("has-error", !href);
+  if(!catalog.has(itemId) || !href) return;
+
+  pushHistory();
+  let item = { ...(index >= 0 ? data[section].items[index] : {}), itemId, href };
+  delete item.name; delete item.img; delete item.nickname; delete item.inactive;
+  if(nickname) item.nickname = nickname;
+  if(!enabled) item.inactive = true;
+  if(index >= 0){
+    if(newSection === section){
+      data[section].items[index] = item;
+    }else{
+      data[section].items.splice(index, 1);
+
+      data[newSection].items.push(item);
+    }
+  }else{
+
+    data[newSection].items.push(item);
+  }
+  closeModal();
+  commit();
+}
+
+let toastTimer = null;
+function showToast(text){
+  toast.textContent = text;
+  toast.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>toast.classList.remove("show"), 2200);
+}
+
+document.addEventListener("keydown", e=>{
+  if(state.activeModal === "card"){
+    if(e.key === "Enter"){ e.preventDefault(); saveEditHandler(); return; }
+    if(e.key === "Escape"){ e.preventDefault(); closeModal(); return; }
+  }
+  if(state.isAdmin && (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z"){
+    e.preventDefault();
+    if(e.shiftKey) redoBtn.click();
+    else undoBtn.click();
+  }
+});
+
+
+function populateItemSelect(item){
+  editItem.replaceChildren(new Option('Выберите предмет', ''));
+  [...catalog.entries()].sort((a,b)=>a[1].name.localeCompare(b[1].name,'ru')).forEach(([id,v])=>editItem.add(new Option(v.name,id)));
+  const id=item && (item.itemId || imageIdentifier(item.img));
+  if(id && catalog.has(id)) editItem.value=id;
+  else if(item){editItem.add(new Option('Не сопоставлен: '+(item.name || item.itemId || 'без названия'),''));editItem.selectedIndex=editItem.options.length-1;}
+}
+onSnapshot(catalogCol,snap=>{
+  catalog=new Map(snap.docs.map(d=>[d.id,d.data()]));state.catalogReady=true;render();
+  if(state.activeModal==='card'){
+    const selected=editItem.value,p=state.pending;
+    populateItemSelect(p.index>=0 ? data[p.section]?.items[p.index] : null);
+    if(catalog.has(selected)) editItem.value=selected;
+  }
+},err=>{console.error(err);showToast('Нет доступа к справочнику. Проверьте правила Firestore.');});
+const importBtn=document.getElementById('importCatalogBtn');
+const migrateBtn=document.getElementById('migrateCardsBtn');
+onAuthStateChanged(auth,user=>{
+  const admin=!!user && user.uid===ADMIN_UID;
+  importBtn.hidden=!admin;migrateBtn.hidden=!admin;
+});
+const review=document.getElementById('catalogReview');
+let pendingCatalogAction=null;
+function showReview(title,text,action){
+  document.getElementById('reviewTitle').textContent=title;
+  document.getElementById('reviewText').textContent=text;
+  pendingCatalogAction=action;review.showModal();
+}
+document.getElementById('reviewCancel').onclick=()=>{pendingCatalogAction=null;review.close();};
+document.getElementById('reviewApply').onclick=async()=>{
+  const action=pendingCatalogAction;if(!action || !state.isAdmin) return;
+  const btn=document.getElementById('reviewApply');btn.disabled=true;
+  try{await action();pendingCatalogAction=null;review.close();showToast('Готово');}
+  catch(e){console.error(e);alert('Не удалось завершить: '+e.message);}
+  finally{btn.disabled=false;}
 };
-</script></body></html>
+
+function cleanImageUrl(src){
+  try{const u=new URL(src);u.pathname=u.pathname.replace(/_v\d+(?=\.png$)/i,'');return u.href;}catch{return '';}
+}
+function imageIdentifier(src){
+  try{const n=decodeURIComponent(new URL(cleanImageUrl(src)).pathname.split('/').pop());return /\.png$/i.test(n)?n.replace(/\.png$/i,''):null;}catch{return null;}
+}
+function normalizedItemName(n){return String(n||'').normalize('NFC').trim().replace(/\s+/g,' ').toLocaleLowerCase('ru').replace(/ё/g,'е');}
+importBtn.onclick=()=>{
+  if(!state.isAdmin || !state.catalogReady) return;
+  const candidates=new Map(),conflicts=new Set(),issues=[],origins=new Map();
+  Object.entries(data).forEach(([sid,sec])=>(sec.items||[]).forEach(it=>{
+    if(isSpacer(it) || it.itemId && catalog.has(it.itemId) && !it.img) return;
+    const id=imageIdentifier(it.img);
+    if(!id || !String(it.name||'').trim()){issues.push('Пропущено: '+(it.name||it.href||'без названия'));return;}
+    const entry={name:it.name.trim(),identifier:id,img:cleanImageUrl(it.img)};
+    if(!origins.has(id)) origins.set(id,[]);
+    origins.get(id).push(`${entry.name}\nКартинка: ${entry.img}\nРаздел: ${sec.title||sid}`);
+    const prev=candidates.get(id);
+    if(prev){
+      if(normalizedItemName(prev.name)!==normalizedItemName(entry.name)) conflicts.add(id);
+      else if(/ё/i.test(entry.name) && !/ё/i.test(prev.name)) prev.name=entry.name;
+    }else candidates.set(id,entry);
+    const existing=catalog.get(id);
+    if(existing && normalizedItemName(existing.name)!==normalizedItemName(entry.name)) conflicts.add(id);
+  }));
+  const additions=[...candidates].filter(([id])=>!catalog.has(id) && !conflicts.has(id));
+  const conflictText=[...conflicts].map(id=>`${id}\n${catalog.has(id)?'В справочнике: '+catalog.get(id).name+'\n':''}${origins.get(id).join('\n---\n')}`).join('\n\n');
+  showReview('Импорт справочника',`Новых предметов: ${additions.length}\nСуществующие записи не будут перезаписаны.\nЕ/ё считаются одной буквой. Суффиксы версии удалены из идентификаторов и URL.\n\n`+
+    additions.map(([id,v])=>`${v.name}\nИдентификатор: ${id}\nКартинка: ${v.img}`).join('\n\n')+
+    '\n\nКонфликты (не импортируются):\n'+(conflictText||'Нет')+'\n\n'+issues.join('\n'),async()=>{
+    for(let i=0;i<additions.length;i+=400){const batch=writeBatch(db);additions.slice(i,i+400).forEach(([id,v])=>batch.set(doc(db,'itemCatalog',id),v));await batch.commit();}
+  });
+};
+
+migrateBtn.onclick=()=>{
+  if(!state.isAdmin || !state.catalogReady) return;
+  const snapshot=JSON.stringify({data,order});
+  const next=JSON.parse(JSON.stringify(data));let count=0;const skipped=[];
+  Object.values(next).forEach(sec=>(sec.items||[]).forEach(it=>{
+    if(isSpacer(it)) return;
+    const id=it.itemId || imageIdentifier(it.img);
+    if(!catalog.has(id)){skipped.push(it.name||it.href||'Без названия');return;}
+    if(it.itemId===id && !('name' in it) && !('img' in it)) return;
+    it.itemId=id;delete it.name;delete it.img;count++;
+  }));
+  showReview('Привязка карточек',`Будут переведены: ${count}\nСсылки, разделы и активность сохраняются.\nНесопоставленные останутся как есть:\n${skipped.join('\n')}`,async()=>{
+    if(snapshot!==JSON.stringify({data,order})) throw new Error('Доска изменилась. Откройте предпросмотр заново.');
+    const blob=new Blob([snapshot],{type:'application/json'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='ovni-board-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+    await setDoc(boardRef,{data:next,order,updatedAt:Date.now()});
+  });
+};
+
+// Isolated catalog-only operation. No board writes or local board changes.
+const savedGroupAssignments={"5th-element": "black-market", "abreuvoir": "upgrades", "talon-achille": "black-market", "bonnet-2x-vert-blanc": "equipment", "tapis-classique-2x-bleu-blanc": "equipment", "bonnet-2x-violet-blanc": "equipment", "bande-2x-blanc": "equipment", "bande-1x": "equipment", "pactole-cresus": "bonuses", "pack-bonus": "bonuses", "pomme-vintage": "black-market", "bras-morphee": "black-market", "ressource-bois": "agriculture", "douche": "upgrades", "ressource-fer": "agriculture", "eau-jouvence": "black-market", "bande-2x-vert": "equipment", "pomme-or": "black-market", "bride-classique-1x": "equipment", "selle-classique-3x": "equipment", "ressource-cuir": "agriculture", "mash": "agriculture", "longe": "bonuses", "bonnet-2x-rouge-blanc": "equipment", "bonnet-2x-rouge-bleu": "equipment", "sang-meduse": "black-market", "fragment-nuage": "black-market", "caresse-philotes": "black-market", "ressource-lin": "agriculture", "lyre-apollon": "black-market", "rayon-helios": "black-market", "eclair-zeus": "black-market", "carotte": "agriculture", "pack-harmonie": "black-market", "pack-hera": "black-market", "pack-nyx": "black-market", "pack-poseidon": "black-market", "engrais-fumier": "agriculture", "bonnet-1x": "equipment", "none": "check-list", "cloches": "bonuses", "avoine": "agriculture", "couverture-hypnos": "black-market", "vieillissement": "aging-points", "parchemin-ploutos": "black-market", "baton-fertilite": "black-market", "cadeau": "check-list", "son-ble": "agriculture", "corne-abondance": "black-market", "bande-2x-rose": "equipment", "selle-western-3x": "equipment", "graines-luzerne": "agriculture", "graines-pass": "agriculture", "graines-pomme": "agriculture", "bonnet-2x-vert-bleu": "equipment", "bande-2x-bleu": "equipment", "tapis-western-2x-bleu": "equipment", "larmes-aphrodite": "black-market", "ressource-paille": "agriculture", "fleche-artemis": "black-market", "tracteur": "bonuses", "engrais-k": "agriculture", "pierre-philosophale": "black-market", "bande-2x-violet": "equipment", "fourrage": "agriculture", "cravache": "bonuses", "sablier-chronos": "black-market", "orchidee-noire": "black-market", "bonnet-2x-noir-blanc": "equipment", "tapis-western-2x-noir-rose": "equipment", "bonnet-2x-noir-rose": "equipment", "tapis-classique-2x-noir": "equipment", "crampons": "bonuses", "eperons": "bonuses", "crottin": "agriculture", "pomme": "agriculture", "boite-pandore": "black-market"};
+const groupSetupBtn=document.getElementById('groupSetupBtn');
+const groupDialog=document.getElementById('groupSetupDialog');
+const groupStatus=document.getElementById('groupSetupStatus');
+const testGroupBtn=document.getElementById('groupTest');
+const allGroupBtn=document.getElementById('groupAll');
+let groupTestPassed=false,groupBusy=false;
+function groupMessage(text,error=false){groupStatus.textContent=text;groupStatus.classList.toggle('error',error);}
+function groupControls(){testGroupBtn.disabled=groupBusy||configIncomplete||!state.isAdmin;allGroupBtn.disabled=groupBusy||!groupTestPassed||configIncomplete||!state.isAdmin;document.getElementById('groupClose').disabled=groupBusy;}
+onAuthStateChanged(auth,user=>{groupSetupBtn.hidden=user?.uid!==ADMIN_UID;groupTestPassed=false;groupControls();});
+groupSetupBtn.onclick=()=>{groupControls();groupDialog.showModal();};
+document.getElementById('groupClose').onclick=()=>groupDialog.close();
+groupDialog.addEventListener('cancel',e=>{if(groupBusy)e.preventDefault();});
+function groupBackup(rows){const blob=new Blob([JSON.stringify({projectId:firebaseConfig.projectId,createdAt:new Date().toISOString(),itemCatalog:Object.fromEntries(rows)},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='ovni-catalog-before-group-write.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);}
+async function applyCatalogGroups(ids){
+ if(configIncomplete)throw Error('Не заполнен firebaseConfig.');
+ if(auth.currentUser?.uid!==ADMIN_UID)throw Error('Требуется вход администратором.');
+ groupMessage('Читаю текущее состояние с сервера…');
+ const before=[];
+ for(const id of ids){const s=await getDocFromServer(doc(db,'itemCatalog',id));if(!s.exists())throw Error('Документ itemCatalog/'+id+' отсутствует. Ничего не записано.');const v=s.data();if(v.groupId!=null && v.groupId!==savedGroupAssignments[id])throw Error('У '+id+' уже другая группа: '+v.groupId+'. Ничего не записано.');before.push([id,v]);}
+ groupBackup(before);
+ const changed=before.filter(([id,v])=>v.groupId!==savedGroupAssignments[id]);
+ if(changed.length){groupMessage('Отправляю запись '+changed.length+' групп…');
+ await runTransaction(db,async tx=>{
+ const reads=[];
+ for(const [id]of changed){reads.push([id,await tx.get(doc(db,'itemCatalog',id))]);}
+ for(const [id,s]of reads){if(!s.exists())throw Error('Исчез документ '+id);if(s.data().groupId!=null && s.data().groupId!==savedGroupAssignments[id])throw Error('Группа '+id+' изменилась во время операции.');}
+ for(const [id]of reads)tx.update(doc(db,'itemCatalog',id),{groupId:savedGroupAssignments[id]});
+ });}
+ groupMessage('Запись подтверждена. Повторно читаю '+ids.length+' документов с сервера…');
+ for(const id of ids){const s=await getDocFromServer(doc(db,'itemCatalog',id));if(!s.exists()||s.data().groupId!==savedGroupAssignments[id])throw Error('Запись могла выполниться, но проверка '+id+' не совпала. Проверьте Firebase; успех не подтверждён.');}
+ return changed.length;
+}
+async function runGroupStep(ids,test){
+ groupBusy=true;groupControls();
+ try{const changed=await applyCatalogGroups(ids);if(test){groupTestPassed=true;groupMessage('Проверено на сервере: itemCatalog/abreuvoir → groupId: upgrades.\nМожно проверить поле в консоли и перейти ко второму шагу. cards/board не изменялся.');}else{groupMessage('Готово: все 77 назначений проверены чтением с сервера. Изменено в этой операции: '+changed+'.\ncards/board и checkerState не изменялись. Старые табы пока остаются — это ожидаемо на шаге 1.');}}
+ catch(e){console.error('Catalog groups',e);groupTestPassed=false;groupMessage('Операция не подтверждена.\nКод: '+(e.code||'нет')+'\n'+e.message+'\nЕсли ошибка возникла при контрольном чтении, запись уже могла состояться. Не меняйте правила доступа вслепую.',true);}
+ finally{groupBusy=false;groupControls();}
+}
+testGroupBtn.onclick=()=>{if(confirm('Добавить только groupId: upgrades предмету abreuvoir в Firebase?'))runGroupStep(['abreuvoir'],true);};
+allGroupBtn.onclick=()=>{if(confirm('Сохранить назначения groupId для 77 предметов? Карточки и разделы останутся без изменений.'))runGroupStep(Object.keys(savedGroupAssignments),false);};
+
+</script>
+<dialog id="catalogReview"><h3 id="reviewTitle"></h3><pre id="reviewText"></pre><div class="modal-actions"><button id="reviewCancel" type="button">Отмена</button><button id="reviewApply" type="button">Применить</button></div></dialog></body>
+</html>
