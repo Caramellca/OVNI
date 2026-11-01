@@ -67,11 +67,6 @@ h2 em{color:var(--muted);font-size:13px;font-style:normal;font-weight:500}
 section.section-hidden-user{display:none}
 body.is-admin section.section-hidden-user{display:block;opacity:.55}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(188px,1fr));gap:10px}
-.spacer-block{grid-column:1/-1;height:20px;position:relative}
-.spacer-block-inner{width:100%;height:100%;border-radius:6px;background:transparent;transition:background .15s}
-body.editing-mode .spacer-block-inner{background:rgba(125,182,255,.08);border:1px dashed var(--line);cursor:grab;display:flex;align-items:center;justify-content:center}
-.spacer-controls{position:absolute;top:-9px;right:2px;z-index:5;display:none;gap:4px;align-items:center}
-body.editing-mode .spacer-controls{display:flex}
 .card,.add-card{position:relative;display:grid;grid-template-columns:56px 1fr;grid-template-rows:1fr auto;gap:0 9px;align-items:center;min-height:65px;padding:9px;color:var(--txt);background:var(--panel);border:1px solid var(--line);border-radius:11px;text-decoration:none;transition:.15s;user-select:none}
 .card:hover,.add-card:hover{transform:translateY(-2px);background:#1c304e;border-color:var(--accent)}
 .card.editing{outline:none}
@@ -159,9 +154,6 @@ input:-webkit-autofill:active{
 .undo-redo{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
 #modeBtn.save-mode{color:#111;background:var(--edit);border-color:var(--edit)}
 #loginBtn.logged-in{color:#7ee0a0;border-color:#2c7a45}
-#addSpacerToolbarBtn{display:none;width:36px;height:36px;padding:0;cursor:grab}
-#addSpacerToolbarBtn:active{cursor:grabbing}
-body.editing-mode #addSpacerToolbarBtn{display:inline-flex}
 
 /* Тост — крупный, контрастный, одна строка на десктопе; на мобильных переносится по ширине,
    чтобы длинные сообщения не вылезали за экран. */
@@ -207,6 +199,9 @@ dialog::backdrop{background:#060a12b8}
 .form-row.has-error select{border-color:var(--danger)}
 .toast{max-width:calc(100vw - 32px);white-space:normal;text-align:center}
 body.saving-cloud::after{content:"Сохранение…";position:fixed;inset:0;z-index:10000;display:grid;place-items:center;background:#060a1290;color:white;font-size:20px;cursor:wait}
+.auto-block + .auto-block{margin-top:28px}
+.add-card-row{margin-bottom:12px}
+.card img,.noicon{min-width:0}
 </style>
 </head>
 <body>
@@ -219,7 +214,6 @@ body.saving-cloud::after{content:"Сохранение…";position:fixed;inset:
 <div class="toolbar">
 <div class="toolbar-left">
 <button id="modeBtn" style="display:none" type="button">Редактировать</button>
-<button draggable="true" id="addSpacerToolbarBtn" title="Перетащите в нужное место категории" type="button"></button>
 
 <div class="undo-redo">
 <button id="undoBtn" style="display:none" title="Отменить последнее действие" type="button">Вернуть</button>
@@ -315,14 +309,6 @@ const catalogCol = collection(db, "itemCatalog");
 let catalog = new Map();
 const editItem = document.getElementById("editItem");
 
-const seedData = {
-  "predmety-chr": { title: "Предметы", items: [], hidden: false },
-  "bonusy":       { title: "Бонусы", items: [], hidden: false },
-  "snaryazhenie": { title: "Снаряжение", items: [], hidden: false },
-  "semena":       { title: "Семена пропуска", items: [], hidden: false },
-  "or":           { title: "Очки роста", items: [], hidden: false },
-  "check-list":   { title: "Чек-лист", items: [], hidden: false }
-};
 
 const MONTHS_RU = ["Января","Февраля","Марта","Апреля","Мая","Июня","Июля","Августа","Сентября","Октября","Ноября","Декабря"];
 const MONTHS_RU_LOWER = MONTHS_RU.map(m => m.charAt(0).toLowerCase() + m.slice(1));
@@ -355,7 +341,6 @@ const redoBtn = document.getElementById("redoBtn");
 const loginBtn = document.getElementById("loginBtn");
 const syncStatus = document.getElementById("syncStatus");
 
-const addSpacerToolbarBtn = document.getElementById("addSpacerToolbarBtn");
 const loginModal = document.getElementById("loginModal");
 const loginEmail = document.getElementById("loginEmail");
 const loginPassword = document.getElementById("loginPassword");
@@ -377,9 +362,121 @@ const ICON_EYE_OPEN = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewB
 const ICON_EYE_CLOSED = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88"/></svg>`;
 const ICON_X = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>`;
 const ICON_DRAG = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" d="M4 9h16M4 15h16"/></svg>`;
-const ICON_DUPLICATE = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><rect x="3" y="3" width="13" height="13" rx="2.5"/><rect x="8" y="8" width="13" height="13" rx="2.5" fill="var(--panel)"/></svg>`;
-const ICON_SPACER_DRAG = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 2.5v4.5m0 0-2-2m2 2 2-2M12 21.5V17m0 0-2 2m2-2 2 2M4.5 12h15"/></svg>`;
-addSpacerToolbarBtn.innerHTML = ICON_SPACER_DRAG;
+
+// Pure layout and name rules; shared verbatim by the page and synchronizer.
+const BLACK_MARKET_ORDER = [
+  'defi-titans','pack-nyx','pack-harmonie','pack-hera','boite-pandore',
+  'pomme-or','toison-or','tyche-crown','5th-element','pierre-philosophale',
+  'bras-morphee','sablier-chronos','fragment-nuage','baton-fertilite',
+  'eclair-zeus','corne-abondance','sang-meduse','rayon-helios',
+  'larmes-aphrodite','eau-jouvence','pomme-vintage','orchidee-noire',
+  'talon-achille','caresse-philotes','lyre-apollon','fleche-artemis',
+  'parchemin-ploutos','couverture-hypnos'
+];
+const itemKey = (item,catalog) => String(catalog.get(item.itemId)?.identifier || item.itemId || '').toLowerCase();
+const heliosFamily = key => key === 'rayon-helios-ow' ? 'rayon-helios' : key;
+const marketRank = key => {
+  const i=BLACK_MARKET_ORDER.indexOf(heliosFamily(key));
+  return i<0 ? 10000 : i;
+};
+function equipmentFamily(key) {
+  if (key.startsWith('bonnet-')) return 'bonnet';
+  if (key.startsWith('tapis-')) return 'tapis';
+  if (key.startsWith('bande-')) return 'bande';
+  if (key.startsWith('selle-')) return 'selle';
+  if (key.startsWith('bride-')) return 'bride';
+  return 'other';
+}
+function friendlyName(rawName,identifier,groupId) {
+  let value=String(rawName??'').normalize('NFKC').trim().replace(/\s+/gu,' ');
+  const isEquipment=groupId==='equipment' && equipmentFamily(String(identifier).toLowerCase())!=='other';
+  if (isEquipment) {
+    value=value.replace(/(^|\s)[123]\s*\*{1,3}(?=\s|$)/gu,' ')
+      .replace(/\*/g,'')
+      .replace(/^\s*[123](?=\s)/u,'')
+      .replace(/\s+[123]\s*$/u,'');
+  }
+  value=value.replace(/([Чч])ерн(?=[а-яё])/gu,'$1ёрн')
+    .replace(/([Зз])елен(?=[а-яё])/gu,'$1елён')
+    .replace(/([Сс])лез(?=[а-яё])/gu,'$1лёз')
+    .replace(/\s+/gu,' ').trim();
+  return value || String(rawName??'').trim();
+}
+function publicCardVisible(item,sourceSection,catalog) {
+  if (item.type==='spacer' || item.inactive===true) return false;
+  const entry=catalog.get(item.itemId);
+  // Missing catalog entry is not published until its category is known.
+  if (!entry) return false;
+  const group=entry.groupId || sourceSection;
+  if (group==='check-list') return false;
+  return group!=='agriculture' || itemKey(item,catalog)==='graines-pass';
+}
+function layoutBlocks(groupId,entries,catalog) {
+  const keyOf=e=>itemKey(e.item,catalog);
+  const labelOf=e=>String(catalog.get(e.item.itemId)?.name || e.item.itemId || '');
+  const bonusFirst=['pack-poseidon','pack-bonus','pactole-cresus'];
+  const bonusOrder=['main','crampons','eperons','longe','cloches','cravache'];
+  const equipOrder=['bonnet','tapis','bande','selle','bride','other'];
+  function compareItems(a,b) {
+    const ka=keyOf(a),kb=keyOf(b);
+    if (groupId==='black-market') {
+      const d=marketRank(ka)-marketRank(kb);if(d)return d;
+      if(heliosFamily(ka)==='rayon-helios' && heliosFamily(kb)==='rayon-helios'){
+        const d2=(ka==='rayon-helios'?0:1)-(kb==='rayon-helios'?0:1);if(d2)return d2;
+      }
+    }
+    if (groupId==='bonuses') {
+      const ia=bonusFirst.indexOf(ka),ib=bonusFirst.indexOf(kb);
+      if(ia>=0 || ib>=0){const d=(ia<0?999:ia)-(ib<0?999:ib);if(d)return d;}
+    }
+    // Group identical item IDs even when display names happen to be equal.
+    return labelOf(a).localeCompare(labelOf(b),'ru') || ka.localeCompare(kb) ||
+      String(a.item.itemId).localeCompare(String(b.item.itemId)) || a.position-b.position;
+  }
+  const buckets=new Map();
+  for(const e of entries){
+    const k=keyOf(e);
+    let block;
+    if(groupId==='black-market') block=heliosFamily(k);
+    else if(groupId==='equipment') block=equipmentFamily(k);
+    else if(groupId==='bonuses') block=bonusFirst.includes(k)?'main':k;
+    else if(groupId==='agriculture') block=k;
+    else if(groupId==='check-list') block=k;
+    else block='all';
+    if(!buckets.has(block))buckets.set(block,[]);
+    buckets.get(block).push(e);
+  }
+  for(const list of buckets.values())list.sort(compareItems);
+  if(groupId==='black-market'){
+    const singles=[],repeat=[];
+    for(const [key,list] of buckets) {
+      if(list.length===1)singles.push(...list);else repeat.push({key,entries:list});
+    }
+    singles.sort(compareItems);
+    repeat.sort((a,b)=>marketRank(a.key)-marketRank(b.key)||compareItems(a.entries[0],b.entries[0]));
+    return [...(singles.length?[{key:'unique',entries:singles}]:[]),...repeat];
+  }
+  const blocks=[...buckets].map(([key,entries])=>({key,entries}));
+  function blockRank(key){
+    if(groupId==='equipment')return equipOrder.indexOf(key);
+    if(groupId==='bonuses'){const i=bonusOrder.indexOf(key);return i<0?999:i;}
+    if(groupId==='agriculture')return key==='graines-pass'?0:1;
+    if(groupId==='check-list')return key==='cadeau'?0:key==='none'?1:2;
+    return 0;
+  }
+  blocks.sort((a,b)=>blockRank(a.key)-blockRank(b.key)||compareItems(a.entries[0],b.entries[0]));
+  return blocks;
+}
+function stripSpacers(boardData) {
+  let removed=0;
+  for(const section of Object.values(boardData)){
+    if(!Array.isArray(section.items))continue;
+    const kept=section.items.filter(item=>item.type!=='spacer');
+    removed+=section.items.length-kept.length;
+    section.items=kept;
+  }
+  return removed;
+}
 
 /* helpers */
 function isInactive(item){ return item.inactive === true; }
@@ -407,6 +504,7 @@ async function saveToCloud(){
   clearTimeout(saveTimer);
   const expectedVersion = lastUpdatedAt;
   const payload = JSON.parse(JSON.stringify({data,order}));
+  stripSpacers(payload.data);
   syncStatus.textContent='Сохранение…';
   saveTimer=setTimeout(async()=>{
     saveTimer=null;
@@ -423,7 +521,8 @@ async function saveToCloud(){
           ...payload,
           updatedAt:Math.max(Date.now(),Number(remote.updatedAt||0)+1),
           lastWriter:writerSession,
-          syncProtocolVersion:1
+          syncProtocolVersion:1,
+          layoutVersion:3
         });
       });
       syncStatus.textContent='Сохранено';
@@ -477,8 +576,7 @@ onSnapshot(boardRef, (snap)=>{
   }catch(err){ console.error(err); syncStatus.textContent = "Ошибка синхронизации"; }
 });
 
-/* CARD STATUSES — видны всем, подписка не зависит от роли.
-   Один документ на карточку, поля catch/stop независимы и могут быть true одновременно. */
+
 onAuthStateChanged(auth, (user)=>{
   state.isAdmin = !!user && user.uid === ADMIN_UID;
   loginBtn.textContent = state.isAdmin ? "Выход" : "Вход";
@@ -530,11 +628,6 @@ loginSubmit.addEventListener("click", async ()=>{
   }catch(e){ alert(e.message); }
 });
 
-addSpacerToolbarBtn.addEventListener("dragstart", e=>{
-  state.drag = { fromToolbar: true };
-  e.dataTransfer.effectAllowed = "copy";
-});
-addSpacerToolbarBtn.addEventListener("dragend", ()=>{ state.drag = null; });
 
 function renderCategoryTabs(){
   categoryTabs.innerHTML = "";
@@ -559,9 +652,32 @@ function scrollToSection(id){
   window.scrollTo({ top: Math.max(0, offset), behavior: "smooth" });
 }
 
-/* Пример-превью для пояснения — берём первую реальную карточку из базы, показываем некликабельно
-   с обоими бейджами сразу, чтобы наглядно показать, как они выглядят. */
+
 /* RENDER */
+function displayEntries(target){
+  const result=[];
+  let position=0;
+  const sourceOrder=[...new Set([...order,...Object.keys(data)])];
+  for(const source of sourceOrder){
+    const sec=data[source];if(!sec)continue;
+    for(let index=0;index<(sec.items||[]).length;index++){
+      const item=sec.items[index];
+      const currentPosition=position++;
+      if(isSpacer(item))continue;
+      const group=catalog.get(item.itemId)?.groupId || source;
+      const effectiveGroup=data[group]?group:source;
+      if(effectiveGroup!==target)continue;
+      if(state.isAdmin){if(!showInactive && isInactive(item))continue;}
+      else {
+        if(sec.hidden || data[target]?.hidden)continue;
+        if(!publicCardVisible(item,source,catalog))continue;
+      }
+      result.push({section:source,index,item,position:currentPosition});
+    }
+  }
+  return result;
+}
+
 function render(){
   main.innerHTML = "";
   order.forEach(id=>{
@@ -579,7 +695,8 @@ function render(){
     titleSpan.contentEditable = "false";
     titleSpan.spellcheck = false;
     titleSpan.textContent = sec.title;
-    const visibleCount = sec.items.filter(it=>!isSpacer(it) && ((state.isAdmin && showInactive) || !isInactive(it))).length;
+    const visibleEntries = displayEntries(id);
+    const visibleCount = visibleEntries.length;
     const countEm = document.createElement("em");
     countEm.textContent = visibleCount;
 
@@ -641,73 +758,26 @@ function render(){
     });
     section.appendChild(h2);
 
-    const grid = document.createElement("div");
-    grid.className = "grid";
-    grid.dataset.section = id;
-
-    if(state.editing) grid.appendChild(createAddCard(id));
-
-    sec.items.forEach((item, index)=>{
-      if(isSpacer(item)){
-        grid.appendChild(createSpacerEl(id, index));
-        return;
+    const blocks=layoutBlocks(id,visibleEntries,catalog);
+    if(state.editing){
+      const addRow=document.createElement('div');
+      addRow.className='grid add-card-row';
+      addRow.appendChild(createAddCard(id));
+      section.appendChild(addRow);
+    }
+    for(const block of blocks){
+      const grid=document.createElement('div');
+      grid.className='grid auto-block';
+      grid.dataset.section=id;
+      grid.dataset.block=block.key;
+      for(const e of block.entries){
+        grid.appendChild(createCard(e.section,e.index,e.item,isInactive(e.item)));
       }
-      if(isInactive(item) && (!state.isAdmin || !showInactive)) return;
-      grid.appendChild(createCard(id, index, item, isInactive(item)));
-    });
-
-    bindGridDropZone(grid);
-    section.appendChild(grid);
+      section.appendChild(grid);
+    }
     main.appendChild(section);
   });
   renderCategoryTabs();
-}
-
-function createSpacerEl(sectionId, index){
-  const wrap = document.createElement("div");
-  wrap.className = "spacer-block";
-  wrap.dataset.section = sectionId;
-  wrap.dataset.index = index;
-  const inner = document.createElement("div");
-  inner.className = "spacer-block-inner";
-  wrap.appendChild(inner);
-
-  if(state.editing){
-    const controls = document.createElement("div");
-    controls.className = "spacer-controls";
-    const dupBtn = document.createElement("button");
-    dupBtn.className = "icon-btn";
-    dupBtn.type = "button";
-    dupBtn.title = "Дублировать";
-    dupBtn.innerHTML = ICON_DUPLICATE;
-    dupBtn.addEventListener("click", e=>{
-      e.stopPropagation();
-      pushHistory();
-      data[sectionId].items.splice(index, 0, { type:"spacer" });
-      commit();
-    });
-    const delBtn = document.createElement("button");
-    delBtn.className = "icon-btn danger";
-    delBtn.type = "button";
-    delBtn.title = "Удалить";
-    delBtn.innerHTML = ICON_X;
-    delBtn.addEventListener("click", e=>{
-      e.stopPropagation();
-      pushHistory();
-      data[sectionId].items.splice(index, 1);
-      commit();
-    });
-    controls.append(dupBtn, delBtn);
-    wrap.appendChild(controls);
-  }
-
-  wrap.draggable = state.editing;
-  wrap.addEventListener("dragstart", ()=>{
-    state.drag = { section: sectionId, index, isSpacer: true };
-    wrap.style.opacity = "0.4";
-  });
-  wrap.addEventListener("dragend", ()=>{ wrap.style.opacity = ""; state.drag = null; });
-  return wrap;
 }
 
 function createCard(sectionId, index, item, inactive){
@@ -720,12 +790,22 @@ function createCard(sectionId, index, item, inactive){
   card.dataset.index = index;
   card.innerHTML = `
     <button class="delete-x icon-btn danger" type="button" title="Удалить" aria-label="Удалить">${ICON_X}</button>
-    ${(catalog.get(item.itemId) || item).img ? `<img src="${(catalog.get(item.itemId) || item).img}" alt="" onerror="this.style.visibility='hidden'">` : `<span class="noicon">?</span>`}
+    <span class="noicon">?</span>
     <span class="name"></span>
     <small></small>
     <button class="card-toggle-dot${!inactive ? " on" : ""}" type="button" title="${inactive ? "Включить" : "Отключить"}"></button>
   `;
   const displayItem = catalog.get(item.itemId) || item;
+  if(displayItem.img){
+    try{
+      const imageUrl=new URL(displayItem.img);
+      if(imageUrl.protocol==='https:'){
+        const img=document.createElement('img');img.src=imageUrl.href;img.alt='';img.loading='lazy';
+        img.addEventListener('error',()=>{img.style.visibility='hidden';});
+        card.querySelector('.noicon').replaceWith(img);
+      }
+    }catch{}
+  }
   card.querySelector(".name").textContent = displayItem.name || "Предмет не выбран";
   card.querySelector("small").textContent = getCardSubtitle(item);
 
@@ -766,14 +846,7 @@ function createCard(sectionId, index, item, inactive){
       const rect = card.getBoundingClientRect();
       const before = e.clientX < rect.left + rect.width/2;
       card.classList.remove("drag-over-before","drag-over-after");
-      if(state.drag.fromToolbar){
-        pushHistory();
-        const insertAt = before ? index : index + 1;
-        data[sectionId].items.splice(insertAt, 0, { type:"spacer" });
-        commit();
-      }else{
-        moveItemPrecise(state.drag.section, state.drag.index, sectionId, index, before);
-      }
+      moveItemPrecise(state.drag.section, state.drag.index, sectionId, index, before);
       state.drag = null;
     });
     card.draggable = true;
@@ -790,54 +863,19 @@ function createAddCard(sectionId){
   return button;
 }
 
-function bindGridDropZone(grid){
-  grid.addEventListener("dragover", event=>{
-    if(!state.editing || !state.drag) return;
-    event.preventDefault();
-    grid.classList.add("dragover");
-  });
-  grid.addEventListener("dragleave", e=>{
-    if(!grid.contains(e.relatedTarget)) grid.classList.remove("dragover");
-  });
-  grid.addEventListener("drop", event=>{
-    if(!state.editing || !state.drag) return;
-    if(event.target !== grid) return;
-    event.preventDefault();
-    grid.classList.remove("dragover");
-    const toSection = grid.dataset.section;
-    if(state.drag.fromToolbar){
-      pushHistory();
-      data[toSection].items.push({ type:"spacer" });
-      commit();
-    }else{
-      moveItemAppend(state.drag.section, state.drag.index, toSection);
-    }
-    state.drag = null;
-  });
-}
-
-function allowedCardMove(section,index,target){
- const item=data[section]?.items[index];
- if(item&&!isSpacer(item)&&catalog.get(item.itemId)?.groupId!==target){showToast('Карточку можно перемещать только внутри группы её предмета');return false;}
- return true;
-}
-function moveItemPrecise(fromSection, fromIndex, toSection, toIndex, before){
-  if(fromSection === toSection && fromIndex === toIndex) return;
-  if(!allowedCardMove(fromSection,fromIndex,toSection))return;
+function moveItemPrecise(fromSection,fromIndex,toSection,toIndex,before){
+  const item=data[fromSection]?.items[fromIndex];
+  const target=data[toSection]?.items[toIndex];
+  if(!item || !target || (fromSection===toSection && fromIndex===toIndex))return;
+  if(item.itemId!==target.itemId){
+    showToast('Порядок блоков автоматический. Переставлять можно карточки одного предмета.');
+    return;
+  }
   pushHistory();
-  const item = data[fromSection].items.splice(fromIndex, 1)[0];
-  let adjustedTo = toIndex;
-  if(fromSection === toSection && fromIndex < toIndex) adjustedTo--;
-  const insertAt = before ? adjustedTo : adjustedTo + 1;
-  data[toSection].items.splice(Math.max(0, insertAt), 0, item);
-  commit();
-}
-
-function moveItemAppend(fromSection, fromIndex, toSection){
-  if(!allowedCardMove(fromSection,fromIndex,toSection))return;
-  pushHistory();
-  const item = data[fromSection].items.splice(fromIndex, 1)[0];
-  data[toSection].items.push(item);
+  data[fromSection].items.splice(fromIndex,1);
+  let adjusted=toIndex;
+  if(fromSection===toSection && fromIndex<toIndex)adjusted--;
+  data[toSection].items.splice(adjusted+(before?0:1),0,item);
   commit();
 }
 
@@ -868,7 +906,14 @@ redoBtn.addEventListener("click", ()=>{
   state.history.push(JSON.stringify({ data, order }));
   restoreFrom(state.future.pop());
 });
+let spacerBackupDownloaded=false;
 function commit(){
+ if(!spacerBackupDownloaded && Object.values(data).some(s=>(s.items||[]).some(isSpacer))){
+   const snapshot=JSON.stringify({data,order,updatedAt:lastUpdatedAt,schemaVersion:boardVersion,catalog:Object.fromEntries(catalog)},null,2);
+   const url=URL.createObjectURL(new Blob([snapshot],{type:'application/json'}));
+   const a=document.createElement('a');a.href=url;a.download='ovni-before-auto-layout-'+Date.now()+'.json';a.click();
+   setTimeout(()=>URL.revokeObjectURL(url),10000);spacerBackupDownloaded=true;
+ }
  const ids=new Set();for(const sec of Object.values(data))for(const it of sec.items||[]){if(!it.uid||ids.has(it.uid))it.uid='ovni-'+crypto.randomUUID();ids.add(it.uid);}
  render(); saveToCloud();
 }
@@ -891,8 +936,7 @@ function setEditEnabled(val){
 }
 editEnabledDot.addEventListener("click", ()=>{ setEditEnabled(!state.editEnabled); });
 
-/* Поле "Бейджи" в редакторе карточки: слева время последней отметки, справа — фишки
-   поставленных бейджей, у каждой свой крестик для точечного удаления. */
+
 function openEditor(sectionId, index, item){
   state.pending = { section: sectionId, index };
   state.activeModal = "card";
@@ -925,6 +969,7 @@ function closeModal(){
 document.getElementById("cancelEdit").addEventListener("click", closeModal);
 document.getElementById("saveEdit").addEventListener("click", saveEditHandler);
 function saveEditHandler(){
+  if(!state.pending || saveInFlight)return;
   const { section, index } = state.pending;
   const newSection = catalog.get(editItem.value)?.groupId;
   const itemId = editItem.value;
@@ -993,7 +1038,7 @@ function populateItemSelect(item){
 }
 onSnapshot(catalogCol,snap=>{
   catalog=new Map(snap.docs.map(d=>[d.id,d.data()]));state.catalogReady=true;render();
-  if(state.activeModal==='card'){
+  if(state.activeModal==='card' && state.pending){
     const selected=editItem.value,p=state.pending;
     populateItemSelect(p.index>=0 ? data[p.section]?.items[p.index] : null);
     if(catalog.has(selected)) editItem.value=selected;
