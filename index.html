@@ -1,10 +1,11 @@
 <!DOCTYPE html>
+
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
 <title>В поисках ИНЛО</title>
-<link rel="icon" type="image/png" href="https://www.lowadi.com/media/equideo/image//fonctionnels/20/cadeau.png">
+<link href="https://www.lowadi.com/media/equideo/image//fonctionnels/20/cadeau.png" rel="icon" type="image/png"/>
 <style>
 :root{
   --bg:#0d1526; --panel:#172338; --line:#2d3e5a; --accent:#7db6ff;
@@ -57,7 +58,6 @@ h1{margin:0;font-size:22px;display:flex;align-items:baseline;gap:10px;flex-wrap:
 button{padding:8px 12px 10px;color:var(--txt);background:#1b3355;border:1px solid var(--line);border-radius:10px;cursor:pointer;font:inherit;display:inline-flex;align-items:center;justify-content:center;line-height:1}
 #loginBtn{background:transparent;border:1px solid var(--line);color:var(--muted);padding:6px 10px 7px;font-size:13px}
 #loginBtn:hover{color:var(--txt);border-color:var(--accent)}
-#onlyFlaggedBtn.active{background:var(--accent);color:#0d1526;border-color:var(--accent)}
 main{position:relative;z-index:1;max-width:1220px;margin:0 auto;padding:12px 18px 48px}
 section{margin-bottom:28px;scroll-margin-top:108px;transition:opacity .15s}
 section.section-drag-source{opacity:.4}
@@ -75,7 +75,6 @@ body.editing-mode .spacer-controls{display:flex}
 .card,.add-card{position:relative;display:grid;grid-template-columns:56px 1fr;grid-template-rows:1fr auto;gap:0 9px;align-items:center;min-height:65px;padding:9px;color:var(--txt);background:var(--panel);border:1px solid var(--line);border-radius:11px;text-decoration:none;transition:.15s;user-select:none}
 .card:hover,.add-card:hover{transform:translateY(-2px);background:#1c304e;border-color:var(--accent)}
 .card.editing{outline:none}
-.card.selectable{padding-right:36px;cursor:pointer}
 .card.drag-source{opacity:.4}
 .card.drag-over-before{box-shadow:-3px 0 0 0 var(--edit),inset 3px 0 0 0 var(--edit)}
 .card.drag-over-after{box-shadow:3px 0 0 0 var(--edit),inset -3px 0 0 0 var(--edit)}
@@ -166,51 +165,6 @@ body.editing-mode #addSectionBtn{display:inline-flex}
 #addSpacerToolbarBtn:active{cursor:grabbing}
 body.editing-mode #addSpacerToolbarBtn{display:inline-flex}
 
-/* Поле "Бейджи" в редакторе карточки — визуально как инпут: слева время последней отметки,
-   справа фишки поставленных бейджей с крестиком удаления у каждой. */
-.badges-field{
-  min-height:44px; padding:8px 12px;
-  background:#0e1727; border:1px solid var(--line); border-radius:10px;
-  display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
-}
-.badges-field-time{font-size:12px;font-style:italic;color:var(--muted);white-space:nowrap}
-.badges-field-empty{font-size:13px;color:var(--muted)}
-.badges-field-chips{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-left:auto}
-.badge-chip{position:relative}
-.badge-chip .status-badge{position:static}
-.badge-remove{
-  position:absolute; top:-9px; right:-9px;
-  width:16px; height:16px; padding:0;
-  display:grid; place-items:center;
-  background:var(--bg); border:1px solid var(--line); border-radius:50%;
-  color:var(--muted); cursor:pointer; font-size:11px; line-height:1;
-}
-.badge-remove:hover{color:var(--danger);border-color:var(--danger)}
-
-body.no-scroll{overflow:hidden}
-
-/* Пояснение к отметкам "Поймал / Больше нет" — показывается один раз, до выбора карточки */
-.info-text{color:var(--txt);font-size:14px;line-height:1.5;margin:0 0 14px}
-.info-legend{display:flex;gap:14px;align-items:center;margin:0 0 14px;padding:12px;background:#0e1727;border:1px solid var(--line);border-radius:12px}
-.legend-explain{display:flex;flex-direction:column;gap:10px;flex:1;min-width:0}
-.legend-row{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--txt);line-height:1.3}
-.legend-preview{width:220px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
-.legend-card{position:relative;display:grid;grid-template-columns:48px 1fr;grid-template-rows:1fr auto;gap:0 10px;align-items:center;width:100%;min-height:60px;padding:9px;color:var(--txt);background:var(--panel);border:1px solid var(--line);border-radius:11px}
-.legend-card img,.legend-card .noicon{grid-row:1/3;width:48px;height:48px;object-fit:contain}
-.legend-card .noicon{display:grid;place-items:center;color:var(--accent);font-size:22px}
-.legend-card .name{font-weight:650;line-height:1.16;font-size:13px}
-.legend-card small{padding-top:2px;color:var(--muted);font-size:11px}
-.info-checkbox{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;cursor:pointer;user-select:none;margin-bottom:2px}
-.checkbox-box{position:relative;width:18px;height:18px;flex-shrink:0;border:1.5px solid var(--line);border-radius:5px;background:#111b2d;display:inline-flex;align-items:center;justify-content:center}
-.checkbox-box input{position:absolute;inset:0;margin:0;padding:0;opacity:0;cursor:pointer}
-.checkbox-check{width:12px;height:12px;color:var(--edit);opacity:0;transition:opacity .12s ease;pointer-events:none}
-.checkbox-box input:checked ~ .checkbox-check{opacity:1}
-.checkbox-box input:focus-visible ~ .checkbox-check,
-.checkbox-box:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
-.info-close-link{color:var(--muted);font-size:14px;cursor:pointer;padding:6px 2px;text-decoration:underline;transition:color .15s ease}
-.info-close-link:hover{color:var(--txt)}
-.signal-info-actions{justify-content:center}
-
 /* Тост — крупный, контрастный, одна строка на десктопе; на мобильных переносится по ширине,
    чтобы длинные сообщения не вылезали за экран. */
 .toast{
@@ -238,90 +192,6 @@ body.no-scroll{overflow:hidden}
   }
 }
 
-/* Статусы карточки — дизайн в стиле кнопок сигналов: полупрозрачная подложка + яркая рамка + цветной текст.
-   Синий = "Ниже шанс" (сегодня уже поймали), жёлтый = "Больше нет / Изменилось". Могут стоять оба сразу. */
-.card-status-badges{position:absolute;top:-9px;right:-9px;z-index:7;display:flex;flex-direction:row-reverse;gap:4px;pointer-events:none}
-.status-badge{padding:4px 8px 5px;border:1px solid transparent;border-radius:8px;font-size:10px;font-weight:400;line-height:1;white-space:nowrap}
-.status-badge.catch{background:rgba(125,182,255,.16);border-color:var(--accent);color:var(--accent)}
-.status-badge.stop{background:rgba(217,161,58,.16);border-color:var(--stop-color);color:var(--stop-color);font-weight:700;padding:4px 7px 5px}
-
-.admin-status-alert{
-  position:absolute; top:-8px; left:-8px; z-index:8;
-  display:grid; place-items:center; width:19px; height:19px;
-  border:2px solid var(--bg); border-radius:50%;
-  background:var(--danger); color:#fff; font-size:12px; font-weight:800;
-  animation:statusPulse 1.3s ease-in-out infinite;
-}
-@keyframes statusPulse{50%{transform:scale(1.16);box-shadow:0 0 0 5px rgba(217,72,72,.15)}}
-
-/* Радиокнопка выбора карточки (режим "Больше нет / Поймал") */
-.card-select-radio{
-  position:absolute; top:50%; right:9px; z-index:9;
-  transform:translateY(-50%);
-  width:20px; height:20px; border-radius:50%;
-  border:2px solid var(--muted); background:var(--panel);
-  padding:0; cursor:pointer;
-}
-.card-select-radio.checked{border-color:var(--accent)}
-.card-select-radio.checked::after{
-  content:""; position:absolute; inset:4px; border-radius:50%; background:var(--accent);
-}
-
-/* Кнопки "Больше нет / Поймал" — фиксированная полоса внизу, никогда не меняют размер/положение.
-   После нажатия любой из них левая всегда становится "Отменить", правая — "Подтвердить"
-   с мелкой курсивной подписью, какое действие подтверждается. Цвет "Подтвердить" совпадает
-   с цветом той кнопки, что была нажата — чтобы не путать пользователя переключением на синий. */
-.user-drop-zones{
-  display:none;
-  position:fixed; left:0; right:0; bottom:0; z-index:1500;
-  gap:10px;
-  padding:12px max(18px,calc(50% - 610px));
-  background:#0d1526f2; backdrop-filter:blur(10px);
-  border-top:1px solid var(--line);
-}
-.user-drop-zone{
-  flex:1 1 0; height:60px; padding:8px 14px;
-  border:1.5px solid transparent; border-radius:11px;
-  display:flex; align-items:center; justify-content:center;
-  transition:background .15s ease,color .15s ease,opacity .15s ease,border-color .15s ease;
-  cursor:pointer;
-  font-weight:400;
-}
-.zone-content{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center}
-.zone-line{display:flex;align-items:center;justify-content:center;gap:4px;font-size:13px;font-weight:400;line-height:1.2;white-space:nowrap}
-.zone-caption{font-size:10px;font-style:italic;font-weight:400;opacity:.75;line-height:1;white-space:nowrap}
-.zone-emoji{display:inline-flex;align-items:center;justify-content:center;width:1.1em;flex-shrink:0}
-
-.user-drop-zone.left{background:rgba(217,161,58,.14);border-color:var(--stop-color);color:var(--stop-color)}
-.user-drop-zone.left:hover{background:rgba(217,161,58,.22)}
-
-.user-drop-zone.right{background:rgba(125,182,255,.14);border-color:var(--accent);color:var(--accent)}
-.user-drop-zone.right:hover{background:rgba(125,182,255,.22)}
-
-/* Едва заметное дыхание кнопки "Поймал", пока сигнал не активирован — напоминание отметить находку */
-@keyframes catchPulse{
-  0%,100%{background:rgba(125,182,255,.10)}
-  50%{background:rgba(125,182,255,.20)}
-}
-.user-drop-zone.right:not(.as-confirm){animation:catchPulse 3.2s ease-in-out infinite}
-
-.user-drop-zone.waiting{opacity:.55;cursor:default}
-
-.user-drop-zone.as-cancel{background:transparent;border-color:var(--line);color:var(--muted);-webkit-tap-highlight-color:transparent}
-.user-drop-zone.as-cancel:hover{background:transparent;border-color:var(--accent);color:var(--txt)}
-
-/* "Подтвердить" по умолчанию (подтверждаем "Поймал") — голубой, как правая кнопка */
-.user-drop-zone.as-confirm{background:rgba(125,182,255,.14);border-color:var(--accent);color:var(--accent);-webkit-tap-highlight-color:transparent}
-.user-drop-zone.as-confirm:hover{background:rgba(125,182,255,.24)}
-.user-drop-zone.as-confirm.waiting{opacity:.55;cursor:default}
-
-/* "Подтвердить" при подтверждении "Больше нет" — перекрашивается в жёлтый, как левая кнопка */
-.user-drop-zone.as-confirm.confirm-stop{background:rgba(217,161,58,.14);border-color:var(--stop-color);color:var(--stop-color)}
-.user-drop-zone.as-confirm.confirm-stop:hover{background:rgba(217,161,58,.24)}
-
-body:not(.is-admin) .user-drop-zones{display:flex}
-body:not(.is-admin) main{padding-bottom:104px}
-
 @media (max-width:620px){
   .toolbar{align-items:stretch}
   .toolbar-right{margin-left:0;width:100%;justify-content:flex-start}
@@ -330,140 +200,93 @@ body:not(.is-admin) main{padding-bottom:104px}
 @media (max-width:460px){
   .grid{grid-template-columns:1fr}
   .split-row{grid-template-columns:1fr}
-  .info-legend{flex-direction:column}
-  .legend-preview{width:100%}
 }
+
+[hidden]{display:none!important}
+dialog{width:min(760px,calc(100% - 32px));max-height:85vh;overflow:auto;background:var(--panel);color:var(--txt);border:1px solid var(--line);border-radius:14px;padding:20px}
+dialog::backdrop{background:#060a12b8}
+#reviewText{white-space:pre-wrap;overflow-wrap:anywhere;font:13px/1.5 system-ui}
+.form-row.has-error select{border-color:var(--danger)}
+.toast{max-width:calc(100vw - 32px);white-space:normal;text-align:center}
 </style>
 </head>
 <body>
 <header>
-  <div class="header-top">
-    <h1>В поисках ИНЛО</h1>
-    <button id="loginBtn" type="button">Вход</button>
-  </div>
-  <span id="syncStatus"></span>
-  <div class="toolbar">
-    <div class="toolbar-left">
-      <button id="modeBtn" type="button" style="display:none">Редактировать</button>
-      <button id="addSpacerToolbarBtn" type="button" title="Перетащите в нужное место категории" draggable="true"></button>
-      <button id="addSectionBtn" type="button">+ Новая категория</button>
-      <div class="undo-redo">
-        <button id="undoBtn" type="button" title="Отменить последнее действие" style="display:none">Вернуть</button>
-        <button id="redoBtn" type="button" title="Повторить отменённое действие" style="display:none">Повторить</button>
-      </div>
-    </div>
-    <div class="toolbar-right">
-      <button id="clearAllStatusesBtn" type="button" style="display:none">Снять все бейджи</button>
-      <button id="onlyFlaggedBtn" type="button" style="display:none">Показать только отмеченные</button>
-    </div>
-  </div>
-  <nav class="category-tabs" id="categoryTabs" aria-label="Категории"></nav>
-</header>
+<div class="header-top">
+<h1>В поисках ИНЛО</h1>
+<button id="loginBtn" type="button">Вход</button>
+</div>
+<span id="syncStatus"></span>
+<div class="toolbar">
+<div class="toolbar-left">
+<button id="modeBtn" style="display:none" type="button">Редактировать</button>
+<button draggable="true" id="addSpacerToolbarBtn" title="Перетащите в нужное место категории" type="button"></button>
+<button id="addSectionBtn" type="button">+ Новая категория</button>
+<div class="undo-redo">
+<button id="undoBtn" style="display:none" title="Отменить последнее действие" type="button">Вернуть</button>
+<button id="redoBtn" style="display:none" title="Повторить отменённое действие" type="button">Повторить</button>
+</div>
+</div>
+<div class="toolbar-right">
 
+
+<button hidden="" id="importCatalogBtn" type="button">Импорт предметов</button><button hidden="" id="migrateCardsBtn" type="button">Привязать карточки</button></div>
+</div>
+<nav aria-label="Категории" class="category-tabs" id="categoryTabs"></nav>
+</header>
 <main id="main"></main>
 
-<div class="user-drop-zones" id="userDropZones">
-  <button type="button" class="user-drop-zone left" id="userStopDrop">
-    <span class="zone-content"><span class="zone-line"><span class="zone-label">Больше нет / Изменилось</span></span></span>
-  </button>
-  <button type="button" class="user-drop-zone right" id="userCatchDrop">
-    <span class="zone-content"><span class="zone-line"><span class="zone-label">Поймал(-а)</span><span class="zone-emoji">🎉</span></span></span>
-  </button>
-</div>
-
 <div class="modal-backdrop" id="loginModal">
-  <div class="modal">
-    <h3>Вход только для администратора</h3>
-    <div class="form-row"><label>Email</label><input id="loginEmail" type="email" autocomplete="username"></div>
-    <div class="form-row"><label>Пароль</label><input id="loginPassword" type="password" autocomplete="current-password"></div>
-    <div class="modal-actions">
-      <button id="loginCancel" type="button">Отмена</button>
-      <button id="loginSubmit" type="button" class="primary-btn">Войти</button>
-    </div>
-  </div>
+<div class="modal">
+<h3>Вход только для администратора</h3>
+<div class="form-row"><label>Email</label><input autocomplete="username" id="loginEmail" type="email"/></div>
+<div class="form-row"><label>Пароль</label><input autocomplete="current-password" id="loginPassword" type="password"/></div>
+<div class="modal-actions">
+<button id="loginCancel" type="button">Отмена</button>
+<button class="primary-btn" id="loginSubmit" type="button">Войти</button>
 </div>
-
+</div>
+</div>
 <div class="modal-backdrop" id="modalBackdrop">
-  <div class="modal">
-    <div class="modal-header">
-      <h3 id="modalTitle">Карточка предмета</h3>
-      <button type="button" id="editEnabledDot" class="modal-switch on">
-        <span class="switch-label">вкл</span>
-        <span class="switch-dot"></span>
-      </button>
-    </div>
-    <div class="form-row">
-      <label>Раздел</label>
-      <select id="editSection"></select>
-    </div>
-    <div class="form-row">
-      <label>Название *</label>
-      <input id="editName" type="text">
-      <span class="field-error" id="editNameError">Заполните это поле</span>
-    </div>
-    <div class="form-row">
-      <label>Картинка (URL)</label>
-      <input id="editImg" type="text">
-    </div>
-    <div class="split-row">
-      <div class="form-row">
-        <label>Никнейм (необязательно)</label>
-        <input id="editNickname" type="text">
-      </div>
-      <div class="form-row">
-        <label>Ссылка *</label>
-        <div class="input-with-icon">
-          <input id="editHref" type="text">
-          <button class="icon-btn" id="editHrefUnlock" type="button" title="Разблокировать ссылку">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"/></svg>
-          </button>
-        </div>
-        <span class="field-error" id="editHrefError">Заполните это поле</span>
-      </div>
-    </div>
-    <div class="form-row" id="badgesRow">
-      <label>Бейджи</label>
-      <div class="badges-field" id="badgesField">
-        <span class="badges-field-time" id="badgesFieldTime"></span>
-        <div class="badges-field-chips" id="badgesFieldChips"></div>
-      </div>
-    </div>
-    <div class="modal-actions">
-      <button id="cancelEdit" type="button">Отмена</button>
-      <button id="saveEdit" type="button">Сохранить</button>
-    </div>
-  </div>
+<div class="modal">
+<div class="modal-header">
+<h3 id="modalTitle">Карточка предмета</h3>
+<button class="modal-switch on" id="editEnabledDot" type="button">
+<span class="switch-label">вкл</span>
+<span class="switch-dot"></span>
+</button>
+</div>
+<div class="form-row">
+<label>Раздел</label>
+<select id="editSection"></select>
+</div>
+<div class="form-row"><label for="editItem">Предмет *</label><select id="editItem"></select><span class="field-error">Выберите предмет из справочника</span></div>
+
+<div class="split-row">
+<div class="form-row">
+<label>Никнейм (необязательно)</label>
+<input id="editNickname" type="text"/>
+</div>
+<div class="form-row">
+<label>Ссылка *</label>
+<div class="input-with-icon">
+<input id="editHref" type="text"/>
+<button class="icon-btn" id="editHrefUnlock" title="Разблокировать ссылку" type="button">
+<svg fill="none" stroke="currentColor" stroke-width="1.6" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</button>
+</div>
+<span class="field-error" id="editHrefError">Заполните это поле</span>
+</div>
 </div>
 
-<div class="modal-backdrop" id="signalInfoModal">
-  <div class="modal">
-    <div class="modal-header">
-      <h3>Как работают отметки</h3>
-    </div>
-    <p class="info-text">Отметки <b>полностью анонимны</b>. Когда вы отмечаете карточку, на ней появляется небольшой бейдж, который служит подсказкой всем игрокам:</p>
-    <div class="info-legend">
-      <div class="legend-explain">
-        <div class="legend-row"><span class="status-badge catch">Ниже шанс</span><span>предмет ловили сегодня</span></div>
-        <div class="legend-row"><span class="status-badge stop">!</span><span>предмет закончился или поменялся</span></div>
-      </div>
-      <div class="legend-preview" id="legendPreview"></div>
-    </div>
-    <p class="info-text">В конце дня админ исправляет отмеченные карточки и снимает бейджи.<br>Не&nbsp;бойтесь ошибаться, всё поправимо. Спасибо, что помогаете поддерживать страничку актуальной и живой!<br><br>Ваша barsa &lt;3</p>
-    <label class="info-checkbox">
-      <span class="checkbox-box">
-        <input type="checkbox" id="signalInfoDontShow">
-        <svg class="checkbox-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="m5 13 4 4L19 7"/></svg>
-      </span>
-      <span>Всё понятно, больше не показывать</span>
-    </label>
-    <div class="modal-actions signal-info-actions">
-      <span class="info-close-link" id="signalInfoClose" role="button" tabindex="0">Закрыть</span>
-    </div>
-  </div>
+<div class="modal-actions">
+<button id="cancelEdit" type="button">Отмена</button>
+<button id="saveEdit" type="button">Сохранить</button>
+</div>
+</div>
 </div>
 
 <div class="toast" id="toast"></div>
-
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-analytics.js";
@@ -483,20 +306,17 @@ const firebaseConfig = {
 
 const ADMIN_UID = "xOqvdkpV57U8BSfnjePCRJRiaOi2";
 const DOC_PATH = ["cards","board"];
-const SIGNAL_INFO_KEY = "ovni_signal_info_seen";
 
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+let analytics;
+try { analytics = getAnalytics(app); } catch(e) { console.warn("Analytics недоступна", e); }
 const auth = getAuth(app);
 const db = getFirestore(app);
 const boardRef = doc(db, DOC_PATH[0], DOC_PATH[1]);
-const cardStatusesCol = collection(db, "cardStatuses");
+const catalogCol = collection(db, "itemCatalog");
+let catalog = new Map();
+const editItem = document.getElementById("editItem");
 
-const SPECIAL_SECTIONS = {
-  "semena":     { name: "Семена пропуска", img: "https://www.lowadi.com/media/equideo/image/produits/60/graines-pass.png" },
-  "or":         { name: "Очки роста",       img: "https://www.lowadi.com/media/equideo/image/produits/60/vieillissement.png" },
-  "check-list": { name: "Рандом",           img: "" }
-};
 const seedData = {
   "predmety-chr": { title: "Предметы", items: [], hidden: false },
   "bonusy":       { title: "Бонусы", items: [], hidden: false },
@@ -515,61 +335,16 @@ function formatUpdateDate(ts){
 }
 
 /* Относительное время отметки для админа: минуты -> часы -> сегодня/вчера/дата -> недели -> месяцы -> год */
-function formatRelativeTime(date){
-  const now = new Date();
-  const diffMs = now - date;
-  const diffMin = Math.floor(diffMs / 60000);
-  if(diffMin < 1) return "отмечено только что";
-  if(diffMin < 3) return "отмечено минуту назад";
-  if(diffMin < 8) return "отмечено 5 минут назад";
-  if(diffMin < 15) return "отмечено 10 минут назад";
-  if(diffMin < 25) return "отмечено 20 минут назад";
-  if(diffMin < 35) return "отмечено 30 минут назад";
-  if(diffMin < 45) return "отмечено 40 минут назад";
-  if(diffMin < 55) return "отмечено 50 минут назад";
-  if(diffMin < 90) return "отмечено 1 час назад";
-
-  const diffDays = Math.floor(diffMs / 86400000);
-  if(diffDays < 7){
-    const hh = String(date.getHours()).padStart(2,"0");
-    const mi = String(date.getMinutes()).padStart(2,"0");
-    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const startOfDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-    const dayDiff = Math.round((startOfToday - startOfDate) / 86400000);
-    if(dayDiff === 0) return `отмечено сегодня в ${hh}:${mi}`;
-    if(dayDiff === 1) return `отмечено вчера в ${hh}:${mi}`;
-    const dd = date.getDate();
-    const monthGenitive = MONTHS_RU_LOWER[date.getMonth()];
-    const yearPart = date.getFullYear() !== now.getFullYear() ? ` ${date.getFullYear()}` : "";
-    return `отмечено ${dd} ${monthGenitive}${yearPart} в ${hh}:${mi}`;
-  }
-  if(diffDays < 14) return "отмечено неделю назад";
-  if(diffDays < 21) return "отмечено 2 недели назад";
-  if(diffDays < 28) return "отмечено 3 недели назад";
-  if(diffDays < 45) return "отмечено месяц назад";
-  if(diffDays < 75) return "отмечено 2 месяца назад";
-  if(diffDays < 105) return "отмечено 3 месяца назад";
-  if(diffDays < 135) return "отмечено 4 месяца назад";
-  if(diffDays < 165) return "отмечено 5 месяцев назад";
-  if(diffDays < 300) return "отмечено пол года назад";
-  return "отмечено год назад";
-}
 
 let data = {};
 let order = [];
 let lastUpdatedAt = null;
-let cardStatusMap = new Map(); // statusId -> { catch?:bool, stop?:bool, updatedAt }
-let cardStatusesUnsub = null;
 
-let signalMode = null;        // "catch" | "stop" | null
-let signalStage = "idle";     // "idle" | "picking" | "confirming"
-let signalTarget = null;      // { section, index, item }
-let pendingSignalMode = null; // режим, ожидающий закрытия пояснения
 
 const state = {
   editing:false, isAdmin:false, history:[], future:[],
   pending:null, activeModal:null, drag:null, sectionDrag:null, hrefUnlocked:false, editEnabled:true,
-  onlyFlagged:false
+  catalogReady:false
 };
 
 const categoryTabs = document.getElementById("categoryTabs");
@@ -581,8 +356,6 @@ const loginBtn = document.getElementById("loginBtn");
 const syncStatus = document.getElementById("syncStatus");
 const addSectionBtn = document.getElementById("addSectionBtn");
 const addSpacerToolbarBtn = document.getElementById("addSpacerToolbarBtn");
-const clearAllStatusesBtn = document.getElementById("clearAllStatusesBtn");
-const onlyFlaggedBtn = document.getElementById("onlyFlaggedBtn");
 const loginModal = document.getElementById("loginModal");
 const loginEmail = document.getElementById("loginEmail");
 const loginPassword = document.getElementById("loginPassword");
@@ -591,34 +364,15 @@ const loginCancel = document.getElementById("loginCancel");
 const modalBackdrop = document.getElementById("modalBackdrop");
 const modalTitle = document.getElementById("modalTitle");
 const editSection = document.getElementById("editSection");
-const editName = document.getElementById("editName");
 const editHref = document.getElementById("editHref");
 const editHrefUnlock = document.getElementById("editHrefUnlock");
-const editImg = document.getElementById("editImg");
 const editNickname = document.getElementById("editNickname");
 const editEnabledDot = document.getElementById("editEnabledDot");
 const editEnabledLabel = editEnabledDot.querySelector(".switch-label");
-const badgesRow = document.getElementById("badgesRow");
-const badgesFieldTime = document.getElementById("badgesFieldTime");
-const badgesFieldChips = document.getElementById("badgesFieldChips");
 
 const toast = document.getElementById("toast");
-const userDropZones = document.getElementById("userDropZones");
-const userStopDrop = document.getElementById("userStopDrop");
-const userCatchDrop = document.getElementById("userCatchDrop");
 
-const signalInfoModal = document.getElementById("signalInfoModal");
-const signalInfoDontShow = document.getElementById("signalInfoDontShow");
-const signalInfoClose = document.getElementById("signalInfoClose");
-const legendPreview = document.getElementById("legendPreview");
 
-const ZONE_LABEL_STOP = `<span class="zone-line"><span class="zone-label">Больше нет / Изменилось</span></span>`;
-const ZONE_LABEL_CATCH = `<span class="zone-line"><span class="zone-label">Поймал(-а)</span><span class="zone-emoji">🎉</span></span>`;
-const ZONE_LABEL_CANCEL = `<span class="zone-line"><span class="zone-label">Отменить</span></span>`;
-function confirmLabel(mode){
-  const caption = mode === "catch" ? "Поймал(-а)" : "Больше нет / Изменилось";
-  return `<span class="zone-line"><span class="zone-label">Подтвердить</span></span><span class="zone-caption">${caption}</span>`;
-}
 const ICON_EYE_OPEN = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>`;
 const ICON_EYE_CLOSED = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88"/></svg>`;
 const ICON_X = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>`;
@@ -634,14 +388,6 @@ function getCardId(href){ try{ return new URL(href).searchParams.get("id"); }cat
 function getNickname(item){ return item.nickname || ""; }
 function getCardSubtitle(item){ const nick=(getNickname(item)||"").trim(); return nick? nick : getCardId(item.href); }
 
-function applySpecialSection(sectionId, item){
-  const special = SPECIAL_SECTIONS[sectionId];
-  if(special){
-    item.name = special.name;
-    item.img = special.img;
-  }
-  return item;
-}
 
 function updateSyncStatusDisplay(){
   if(state.isAdmin){
@@ -654,6 +400,7 @@ function updateSyncStatusDisplay(){
 /* save */
 let saveTimer = null;
 async function saveToCloud(){
+  if(!state.isAdmin) return;
   if(state.isAdmin) syncStatus.textContent = "Сохранение…";
   clearTimeout(saveTimer);
   saveTimer = setTimeout(async ()=>{
@@ -668,7 +415,7 @@ let applyingRemote = false;
 onSnapshot(boardRef, (snap)=>{
   try{
     if(!snap.exists()){
-      setDoc(boardRef, { data: seedData, order: Object.keys(seedData), updatedAt: Date.now() });
+      syncStatus.textContent = "Документ cards/board не найден. Автоматическое создание отключено.";
       return;
     }
     const remote = snap.data();
@@ -684,45 +431,6 @@ onSnapshot(boardRef, (snap)=>{
 
 /* CARD STATUSES — видны всем, подписка не зависит от роли.
    Один документ на карточку, поля catch/stop независимы и могут быть true одновременно. */
-function statusIdFor(item){
-  return encodeURIComponent(item.href);
-}
-function subscribeCardStatuses(){
-  if(cardStatusesUnsub) return;
-  cardStatusesUnsub = onSnapshot(cardStatusesCol, snap=>{
-    cardStatusMap = new Map(snap.docs.map(d=>[d.id, d.data()]));
-    render();
-  }, err=>console.error(err));
-}
-function getCardStatus(item){
-  const s = cardStatusMap.get(statusIdFor(item));
-  return { catch: !!(s && s.catch), stop: !!(s && s.stop) };
-}
-function hasAnyCardStatus(item){
-  const s = getCardStatus(item);
-  return s.catch || s.stop;
-}
-async function setCardStatus(item, type){
-  await setDoc(doc(db, "cardStatuses", statusIdFor(item)), { [type]: true, updatedAt: serverTimestamp() }, { merge: true });
-}
-async function removeCardStatus(item){
-  await deleteDoc(doc(db, "cardStatuses", statusIdFor(item)));
-}
-async function removeSingleBadge(item, type){
-  const status = getCardStatus(item);
-  const other = type === "catch" ? "stop" : "catch";
-  if(status[other]){
-    await setDoc(doc(db, "cardStatuses", statusIdFor(item)), { [type]: false }, { merge: true });
-  }else{
-    await removeCardStatus(item);
-  }
-}
-subscribeCardStatuses();
-
-function updateClearBtnVisibility(){
-  clearAllStatusesBtn.style.display = (state.isAdmin && state.onlyFlagged) ? "inline-flex" : "none";
-}
-
 onAuthStateChanged(auth, (user)=>{
   state.isAdmin = !!user && user.uid === ADMIN_UID;
   loginBtn.textContent = state.isAdmin ? "Выход" : "Вход";
@@ -731,15 +439,10 @@ onAuthStateChanged(auth, (user)=>{
   modeBtn.style.display = state.isAdmin ? "inline-flex" : "none";
   undoBtn.style.display = state.isAdmin ? "inline-flex" : "none";
   redoBtn.style.display = state.isAdmin ? "inline-flex" : "none";
-  onlyFlaggedBtn.style.display = state.isAdmin ? "inline-flex" : "none";
-  if(!state.isAdmin){
-    state.onlyFlagged = false;
-    onlyFlaggedBtn.classList.remove("active");
-  }
-  updateClearBtnVisibility();
+
   if(user) console.log("UID:", user.uid);
   if(!state.isAdmin) setEditing(false);
-  cancelSignal();
+
   updateSyncStatusDisplay();
   render();
 });
@@ -785,24 +488,6 @@ addSpacerToolbarBtn.addEventListener("dragstart", e=>{
 });
 addSpacerToolbarBtn.addEventListener("dragend", ()=>{ state.drag = null; });
 
-clearAllStatusesBtn.addEventListener("click", async ()=>{
-  if(!cardStatusMap.size) return;
-  if(!confirm("Снять все бейджи со всех карточек?")) return;
-  try{
-    const batch = writeBatch(db);
-    cardStatusMap.forEach((_, id)=> batch.delete(doc(db, "cardStatuses", id)));
-    await batch.commit();
-  }catch(e){ console.error(e); }
-});
-
-onlyFlaggedBtn.addEventListener("click", ()=>{
-  state.onlyFlagged = !state.onlyFlagged;
-  onlyFlaggedBtn.classList.toggle("active", state.onlyFlagged);
-  updateClearBtnVisibility();
-  render();
-});
-
-/* ТАБЫ КАТЕГОРИЙ (без визуальной подсветки активного таба) */
 function renderCategoryTabs(){
   categoryTabs.innerHTML = "";
   order.forEach(id=>{
@@ -828,173 +513,6 @@ function scrollToSection(id){
 
 /* Пример-превью для пояснения — берём первую реальную карточку из базы, показываем некликабельно
    с обоими бейджами сразу, чтобы наглядно показать, как они выглядят. */
-function findFirstRealItem(){
-  for(const id of order){
-    const sec = data[id];
-    if(!sec || !sec.items) continue;
-    for(const item of sec.items){
-      if(!isSpacer(item)) return item;
-    }
-  }
-  return null;
-}
-function renderLegendPreview(){
-  const item = findFirstRealItem();
-  if(!item){ legendPreview.innerHTML = ""; return; }
-  legendPreview.innerHTML = `
-    <div class="legend-card">
-      ${item.img ? `<img src="${item.img}" alt="" onerror="this.style.visibility='hidden'">` : `<span class="noicon">?</span>`}
-      <span class="name"></span>
-      <small></small>
-      <div class="card-status-badges">
-        <span class="status-badge stop">!</span>
-        <span class="status-badge catch">Ниже шанс</span>
-      </div>
-    </div>
-  `;
-  legendPreview.querySelector(".name").textContent = item.name;
-  legendPreview.querySelector("small").textContent = getCardSubtitle(item);
-}
-
-/* Блокировка скролла страницы, пока открыто пояснение к отметкам */
-let lockedScrollY = 0;
-function lockPageScroll(){
-  lockedScrollY = window.scrollY;
-  document.body.classList.add("no-scroll");
-  document.body.style.position = "fixed";
-  document.body.style.top = `-${lockedScrollY}px`;
-  document.body.style.left = "0";
-  document.body.style.right = "0";
-}
-function unlockPageScroll(){
-  document.body.classList.remove("no-scroll");
-  document.body.style.position = "";
-  document.body.style.top = "";
-  document.body.style.left = "";
-  document.body.style.right = "";
-  window.scrollTo(0, lockedScrollY);
-}
-
-/* МЕХАНИКА "БОЛЬШЕ НЕТ / ПОЙМАЛ".
-   При первом в этом браузере запуске сигнала (ещё до выбора карточки) показывается
-   пояснение с затемнением фона — пока оно открыто, обе нижние кнопки недоступны,
-   т.к. модалка перекрывает всё, а фон страницы заблокирован от скролла. Закрывается
-   ссылкой "Закрыть", после чего сигнал стартует как обычно. Цвет кнопки "Подтвердить"
-   совпадает с цветом нажатой кнопки. */
-async function handleUserSignal(item, mode){
-  try{
-    await setCardStatus(item, mode);
-    showToast(mode === "catch" ? "Поздравляю!!! 🥳" : "Будет исправлено ❤️");
-  }catch(err){
-    console.error(err);
-    showToast("Не удалось сохранить отметку");
-  }
-}
-
-function updateSignalUI(){
-  const leftContent = userStopDrop.querySelector(".zone-content");
-  const rightContent = userCatchDrop.querySelector(".zone-content");
-
-  userStopDrop.classList.remove("as-cancel","waiting");
-  userCatchDrop.classList.remove("as-confirm","waiting","confirm-stop");
-
-  if(signalMode === null){
-    leftContent.innerHTML = ZONE_LABEL_STOP;
-    rightContent.innerHTML = ZONE_LABEL_CATCH;
-  }else{
-    userStopDrop.classList.add("as-cancel");
-    leftContent.innerHTML = ZONE_LABEL_CANCEL;
-
-    userCatchDrop.classList.add("as-confirm");
-    if(signalMode === "stop") userCatchDrop.classList.add("confirm-stop");
-    if(signalStage === "picking") userCatchDrop.classList.add("waiting");
-    rightContent.innerHTML = confirmLabel(signalMode);
-  }
-  render();
-}
-
-function cancelSignal(){
-  signalMode = null;
-  signalStage = "idle";
-  signalTarget = null;
-  updateSignalUI();
-}
-
-async function confirmSignal(){
-  if(!signalTarget) return;
-  const mode = signalMode;
-  const item = signalTarget.item;
-  signalMode = null;
-  signalStage = "idle";
-  signalTarget = null;
-  updateSignalUI();
-  await handleUserSignal(item, mode);
-}
-
-function startSignal(mode){
-  signalMode = mode;
-  signalStage = "picking";
-  signalTarget = null;
-  updateSignalUI();
-}
-
-function pickCard(sectionId, index, item){
-  if(signalStage !== "picking" && signalStage !== "confirming") return;
-  signalTarget = { section: sectionId, index, item };
-  signalStage = "confirming";
-  updateSignalUI();
-}
-
-function openSignalInfoModal(){
-  state.activeModal = "signalInfo";
-  signalInfoDontShow.checked = false;
-  renderLegendPreview();
-  signalInfoModal.style.display = "flex";
-  lockPageScroll();
-}
-function closeSignalInfoModal(){
-  state.activeModal = null;
-  signalInfoModal.style.display = "none";
-  unlockPageScroll();
-}
-function dismissSignalInfo(){
-  if(signalInfoDontShow.checked){
-    try{ localStorage.setItem(SIGNAL_INFO_KEY, "1"); }catch(e){}
-  }
-  closeSignalInfoModal();
-  const mode = pendingSignalMode;
-  pendingSignalMode = null;
-  if(mode) startSignal(mode);
-}
-signalInfoClose.addEventListener("click", dismissSignalInfo);
-signalInfoClose.addEventListener("keydown", e=>{
-  if(e.key === "Enter" || e.key === " "){ e.preventDefault(); dismissSignalInfo(); }
-});
-
-function requestSignal(mode){
-  let seen = false;
-  try{ seen = localStorage.getItem(SIGNAL_INFO_KEY) === "1"; }catch(e){}
-  if(seen){
-    startSignal(mode);
-  }else{
-    pendingSignalMode = mode;
-    openSignalInfoModal();
-  }
-}
-
-userStopDrop.addEventListener("click", ()=>{
-  if(signalMode !== null) cancelSignal();
-  else requestSignal("stop");
-});
-userCatchDrop.addEventListener("click", ()=>{
-  if(signalMode !== null){
-    if(signalStage === "confirming") confirmSignal();
-    else showToast("Сначала выберите карточку, которую нужно отметить");
-  }else{
-    requestSignal("catch");
-  }
-});
-
 /* RENDER */
 function render(){
   main.innerHTML = "";
@@ -1108,12 +626,10 @@ function render(){
 
     sec.items.forEach((item, index)=>{
       if(isSpacer(item)){
-        if(state.isAdmin && state.onlyFlagged) return;
         grid.appendChild(createSpacerEl(id, index));
         return;
       }
       if(isInactive(item) && !state.isAdmin) return;
-      if(state.isAdmin && state.onlyFlagged && !hasAnyCardStatus(item)) return;
       grid.appendChild(createCard(id, index, item, isInactive(item)));
     });
 
@@ -1182,56 +698,14 @@ function createCard(sectionId, index, item, inactive){
   card.dataset.index = index;
   card.innerHTML = `
     <button class="delete-x icon-btn danger" type="button" title="Удалить" aria-label="Удалить">${ICON_X}</button>
-    ${item.img ? `<img src="${item.img}" alt="" onerror="this.style.visibility='hidden'">` : `<span class="noicon">?</span>`}
+    ${(catalog.get(item.itemId) || item).img ? `<img src="${(catalog.get(item.itemId) || item).img}" alt="" onerror="this.style.visibility='hidden'">` : `<span class="noicon">?</span>`}
     <span class="name"></span>
     <small></small>
     <button class="card-toggle-dot${!inactive ? " on" : ""}" type="button" title="${inactive ? "Включить" : "Отключить"}"></button>
   `;
-  card.querySelector(".name").textContent = item.name;
+  const displayItem = catalog.get(item.itemId) || item;
+  card.querySelector(".name").textContent = displayItem.name || "Предмет не выбран";
   card.querySelector("small").textContent = getCardSubtitle(item);
-
-  const status = getCardStatus(item);
-  if(status.catch || status.stop){
-    const badges = document.createElement("div");
-    badges.className = "card-status-badges";
-    if(status.stop){
-      const b = document.createElement("span");
-      b.className = "status-badge stop";
-      b.textContent = "!";
-      badges.appendChild(b);
-    }
-    if(status.catch){
-      const b = document.createElement("span");
-      b.className = "status-badge catch";
-      b.textContent = "Ниже шанс";
-      badges.appendChild(b);
-    }
-    card.appendChild(badges);
-    if(state.isAdmin){
-      const alertIcon = document.createElement("span");
-      alertIcon.className = "admin-status-alert";
-      alertIcon.textContent = "!";
-      card.appendChild(alertIcon);
-    }
-  }
-
-  const isPickable = !state.isAdmin && signalMode !== null;
-  if(isPickable){
-    card.classList.add("selectable");
-    const isChecked = signalTarget && signalTarget.section === sectionId && signalTarget.index === index;
-    const radio = document.createElement("button");
-    radio.type = "button";
-    radio.className = "card-select-radio" + (isChecked ? " checked" : "");
-    radio.addEventListener("click", e=>{
-      e.preventDefault(); e.stopPropagation();
-      pickCard(sectionId, index, item);
-    });
-    card.appendChild(radio);
-    card.addEventListener("click", e=>{
-      e.preventDefault();
-      pickCard(sectionId, index, item);
-    });
-  }
 
   if(state.editing){
     card.addEventListener("click", event=>{ event.preventDefault(); openEditor(sectionId, index, item); });
@@ -1324,7 +798,6 @@ function moveItemPrecise(fromSection, fromIndex, toSection, toIndex, before){
   if(fromSection === toSection && fromIndex === toIndex) return;
   pushHistory();
   const item = data[fromSection].items.splice(fromIndex, 1)[0];
-  if(fromSection !== toSection) applySpecialSection(toSection, item);
   let adjustedTo = toIndex;
   if(fromSection === toSection && fromIndex < toIndex) adjustedTo--;
   const insertAt = before ? adjustedTo : adjustedTo + 1;
@@ -1335,7 +808,6 @@ function moveItemPrecise(fromSection, fromIndex, toSection, toIndex, before){
 function moveItemAppend(fromSection, fromIndex, toSection){
   pushHistory();
   const item = data[fromSection].items.splice(fromIndex, 1)[0];
-  if(fromSection !== toSection) applySpecialSection(toSection, item);
   data[toSection].items.push(item);
   commit();
 }
@@ -1411,67 +883,22 @@ editEnabledDot.addEventListener("click", ()=>{ setEditEnabled(!state.editEnabled
 
 /* Поле "Бейджи" в редакторе карточки: слева время последней отметки, справа — фишки
    поставленных бейджей, у каждой свой крестик для точечного удаления. */
-function createBadgeChip(item, type, label){
-  const wrap = document.createElement("span");
-  wrap.className = "badge-chip";
-  const badge = document.createElement("span");
-  badge.className = "status-badge " + type;
-  badge.textContent = label;
-  const removeBtn = document.createElement("button");
-  removeBtn.type = "button";
-  removeBtn.className = "badge-remove";
-  removeBtn.title = "Убрать бейдж";
-  removeBtn.textContent = "×";
-  removeBtn.addEventListener("click", async ()=>{
-    try{
-      await removeSingleBadge(item, type);
-      renderBadgesField(item);
-    }catch(err){ console.error(err); }
-  });
-  wrap.append(badge, removeBtn);
-  return wrap;
-}
-function renderBadgesField(item){
-  const status = item ? getCardStatus(item) : { catch:false, stop:false };
-  const hasAny = status.catch || status.stop;
-  const statusDoc = item ? cardStatusMap.get(statusIdFor(item)) : null;
-
-  if(hasAny && statusDoc && statusDoc.updatedAt && statusDoc.updatedAt.toDate){
-    badgesFieldTime.textContent = formatRelativeTime(statusDoc.updatedAt.toDate());
-    badgesFieldTime.style.display = "inline";
-  }else{
-    badgesFieldTime.style.display = "none";
-  }
-
-  badgesFieldChips.innerHTML = "";
-  if(!hasAny){
-    const empty = document.createElement("span");
-    empty.className = "badges-field-empty";
-    empty.textContent = "Бейджей нет";
-    badgesFieldChips.appendChild(empty);
-    return;
-  }
-  if(status.stop) badgesFieldChips.appendChild(createBadgeChip(item, "stop", "!"));
-  if(status.catch) badgesFieldChips.appendChild(createBadgeChip(item, "catch", "Ниже шанс"));
-}
-
 function openEditor(sectionId, index, item){
   state.pending = { section: sectionId, index };
   state.activeModal = "card";
   state.hrefUnlocked = index < 0;
   editSection.value = sectionId;
-  editName.value = item ? item.name : "";
+  populateItemSelect(item);
   editHref.value = item ? item.href : "";
-  editImg.value = item ? item.img : "";
+
   editNickname.value = item ? getNickname(item) : "";
   setEditEnabled(item ? !isInactive(item) : true);
   editHref.disabled = !state.hrefUnlocked;
   editHrefUnlock.style.display = state.hrefUnlocked ? "none" : "flex";
-  editName.closest(".form-row").classList.remove("has-error");
+  editItem.closest(".form-row").classList.remove("has-error");
   editHref.closest(".form-row").classList.remove("has-error");
 
-  badgesRow.style.display = item ? "" : "none";
-  if(item) renderBadgesField(item);
+
 
   modalBackdrop.style.display = "flex";
 }
@@ -1491,20 +918,21 @@ document.getElementById("saveEdit").addEventListener("click", saveEditHandler);
 function saveEditHandler(){
   const { section, index } = state.pending;
   const newSection = editSection.value;
-  const name = editName.value.trim();
+  const itemId = editItem.value;
   const href = editHref.value.trim();
-  const img = editImg.value.trim();
+
   const nickname = editNickname.value.trim();
   const enabled = state.editEnabled;
 
-  const nameRow = editName.closest(".form-row");
+  const nameRow = editItem.closest(".form-row");
   const hrefRow = editHref.closest(".form-row");
-  nameRow.classList.toggle("has-error", !name);
+  nameRow.classList.toggle("has-error", !catalog.has(itemId));
   hrefRow.classList.toggle("has-error", !href);
-  if(!name || !href) return;
+  if(!catalog.has(itemId) || !href) return;
 
   pushHistory();
-  let item = { name, href, img };
+  let item = { ...(index >= 0 ? data[section].items[index] : {}), itemId, href };
+  delete item.name; delete item.img; delete item.nickname; delete item.inactive;
   if(nickname) item.nickname = nickname;
   if(!enabled) item.inactive = true;
   if(index >= 0){
@@ -1512,11 +940,11 @@ function saveEditHandler(){
       data[section].items[index] = item;
     }else{
       data[section].items.splice(index, 1);
-      item = applySpecialSection(newSection, item);
+
       data[newSection].items.push(item);
     }
   }else{
-    item = applySpecialSection(newSection, item);
+
     data[newSection].items.push(item);
   }
   closeModal();
@@ -1536,15 +964,102 @@ document.addEventListener("keydown", e=>{
     if(e.key === "Enter"){ e.preventDefault(); saveEditHandler(); return; }
     if(e.key === "Escape"){ e.preventDefault(); closeModal(); return; }
   }
-  if(state.activeModal === "signalInfo"){
-    if(e.key === "Escape"){ e.preventDefault(); dismissSignalInfo(); return; }
-  }
   if(state.isAdmin && (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z"){
     e.preventDefault();
     if(e.shiftKey) redoBtn.click();
     else undoBtn.click();
   }
 });
+
+
+function imageIdentifier(src){
+  try { const u = new URL(src); const name = decodeURIComponent(u.pathname.split('/').pop());
+    return /\.png$/i.test(name) ? name.replace(/\.png$/i,'') : null;
+  } catch { return null; }
+}
+function populateItemSelect(item){
+  editItem.replaceChildren();
+  const placeholder = new Option('Выберите предмет', '');
+  editItem.add(placeholder);
+  [...catalog.entries()].sort((a,b)=>a[1].name.localeCompare(b[1].name,'ru')).forEach(([id,v])=>editItem.add(new Option(v.name,id)));
+  const id = item && (item.itemId || imageIdentifier(item.img));
+  if(id && catalog.has(id)) editItem.value=id;
+  else if(item){ const o = new Option('Не сопоставлен: '+(item.name || item.itemId || 'без названия'), ''); editItem.add(o); editItem.selectedIndex=editItem.options.length-1; }
+}
+onSnapshot(catalogCol, snap=>{
+  catalog=new Map(snap.docs.map(d=>[d.id,d.data()])); state.catalogReady=true;
+  render();
+  if(state.activeModal==='card'){
+    const selected=editItem.value;
+    const p=state.pending;
+    populateItemSelect(p.index>=0 ? data[p.section]?.items[p.index] : null);
+    if(catalog.has(selected)) editItem.value=selected;
+  }
+},err=>{console.error(err); showToast('Нет доступа к справочнику. Проверьте правила Firestore.');});
+
+const importBtn=document.getElementById('importCatalogBtn');
+const migrateBtn=document.getElementById('migrateCardsBtn');
+onAuthStateChanged(auth, user=>{
+  const admin=!!user && user.uid===ADMIN_UID;
+  importBtn.hidden=!admin; migrateBtn.hidden=!admin;
+});
+const review=document.getElementById('catalogReview');
+let pendingCatalogAction=null;
+function showReview(title, text, action){
+  document.getElementById('reviewTitle').textContent=title;
+  document.getElementById('reviewText').textContent=text;
+  pendingCatalogAction=action; review.showModal();
+}
+document.getElementById('reviewCancel').onclick=()=>{pendingCatalogAction=null; review.close();};
+document.getElementById('reviewApply').onclick=async()=>{
+  const action=pendingCatalogAction; if(!action || !state.isAdmin) return;
+  const btn=document.getElementById('reviewApply'); btn.disabled=true;
+  try{await action(); pendingCatalogAction=null; review.close(); showToast('Готово');}
+  catch(e){console.error(e); alert('Не удалось завершить: '+e.message);}
+  finally{btn.disabled=false;}
+};
+importBtn.onclick=()=>{
+  if(!state.isAdmin || !state.catalogReady) return;
+  const candidates=new Map(), conflicts=new Set(), issues=[];
+  Object.values(data).forEach(sec=>(sec.items||[]).forEach(it=>{
+    if(isSpacer(it) || it.itemId && catalog.has(it.itemId)) return;
+    const id=imageIdentifier(it.img);
+    if(!id || !it.name?.trim()){issues.push('Пропущено: '+(it.name||it.href||'без названия')); return;}
+    const entry={name:it.name.trim(),identifier:id,img:it.img};
+    const prev=candidates.get(id) || catalog.get(id);
+    if(prev && (prev.name!==entry.name || imageIdentifier(prev.img)!==id)) conflicts.add(id);
+    if(!candidates.has(id)) candidates.set(id,entry);
+  }));
+  const additions=[...candidates].filter(([id])=>!catalog.has(id) && !conflicts.has(id));
+  showReview('Импорт справочника',
+    `Новых предметов: ${additions.length}\nСуществующие записи не будут перезаписаны.\n\n`+
+    additions.map(([id,v])=>`${v.name} — ${id}`).join('\n')+
+    '\n\nКонфликты (не импортируются):\n'+[...conflicts].join('\n')+'\n\n'+issues.join('\n'), async()=>{
+      for(let i=0;i<additions.length;i+=400){
+        const batch=writeBatch(db);
+        additions.slice(i,i+400).forEach(([id,v])=>batch.set(doc(db,'itemCatalog',id),v));
+        await batch.commit();
+      }
+    });
+};
+migrateBtn.onclick=()=>{
+  if(!state.isAdmin || !state.catalogReady) return;
+  const snapshot=JSON.stringify({data,order});
+  const next=JSON.parse(JSON.stringify(data)); let count=0; const skipped=[];
+  Object.values(next).forEach(sec=>(sec.items||[]).forEach(it=>{
+    if(isSpacer(it)) return;
+    const id=it.itemId || imageIdentifier(it.img);
+    if(!catalog.has(id)){skipped.push(it.name||it.href||'Без названия');return;}
+    if(it.itemId===id && !('name' in it) && !('img' in it)) return;
+    it.itemId=id; delete it.name; delete it.img; count++;
+  }));
+  showReview('Привязка карточек',`Будут переведены: ${count}\nСсылки, разделы и активность сохраняются.\nНесопоставленные останутся как есть:\n${skipped.join('\n')}`,async()=>{
+    if(snapshot!==JSON.stringify({data,order})) throw new Error('Доска изменилась. Откройте предпросмотр заново.');
+    const blob=new Blob([snapshot],{type:'application/json'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='ovni-board-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+    await setDoc(boardRef,{data:next,order,updatedAt:Date.now()});
+  });
+};
 </script>
-</body>
+<dialog id="catalogReview"><h3 id="reviewTitle"></h3><pre id="reviewText"></pre><div class="modal-actions"><button id="reviewCancel" type="button">Отмена</button><button id="reviewApply" type="button">Применить</button></div></dialog></body>
 </html>
