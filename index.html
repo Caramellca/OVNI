@@ -365,7 +365,7 @@ function hiddenEquipment1x(item,sourceSection,catalog){
  return identifiers.some(id=>/(^|-)1x(?=-|$)/.test(id));
 }
 function publicCardVisible(item,sourceSection,catalog){
- if(item.type==='spacer'||item.inactive===true)return false;
+ if(!item.itemId||item.inactive===true)return false;
  const entry=catalog.get(item.itemId);
  if(!entry)return false;
  const group=entry.groupId||sourceSection;
@@ -423,17 +423,7 @@ function layoutBlocks(groupId,entries,catalog){
  blocks.sort((a,b)=>blockRank(a.key)-blockRank(b.key)||compareItems(a.entries[0],b.entries[0]));
  return blocks;
 }
-function stripSpacers(boardData){
- let removed=0;
- for(const section of Object.values(boardData)){
-  if(!Array.isArray(section.items))continue;
-  const kept=section.items.filter(item=>item.type!=='spacer');removed+=section.items.length-kept.length;section.items=kept;
- }
- return removed;
-}
-
 function isInactive(item){ return item.inactive === true; }
-function isSpacer(item){ return item.type === "spacer"; }
 function getCardId(href){ try{ return new URL(href).searchParams.get("id"); }catch(e){ return ""; } }
 function getNickname(item){ return item.nickname || ""; }
 function getCardSubtitle(item){ const nick=(getNickname(item)||"").trim(); return nick? nick : getCardId(item.href); }
@@ -455,7 +445,6 @@ async function saveToCloud(){
   clearTimeout(saveTimer);
   const expectedVersion = lastUpdatedAt;
   const payload = JSON.parse(JSON.stringify({data,order}));
-  stripSpacers(payload.data);
   syncStatus.textContent='Сохранение…';
   saveTimer=setTimeout(async()=>{
     saveTimer=null;
@@ -472,8 +461,7 @@ async function saveToCloud(){
           ...payload,
           updatedAt:Math.max(Date.now(),Number(remote.updatedAt||0)+1),
           lastWriter:writerSession,
-          syncProtocolVersion:1,
-          layoutVersion:3
+          syncProtocolVersion:1
         });
       });
       syncStatus.textContent='Сохранено';
@@ -603,7 +591,7 @@ function displayEntries(target){
   const sec=data[source];if(!sec)continue;
   for(let index=0;index<(sec.items||[]).length;index++){
    const item=sec.items[index],currentPosition=position++;
-   if(isSpacer(item))continue;
+   if(!item.itemId)continue;
    const group=catalog.get(item.itemId)?.groupId||source;
    const effectiveGroup=data[group]?group:source;
    if(effectiveGroup!==target)continue;
@@ -832,16 +820,13 @@ redoBtn.addEventListener("click", ()=>{
   state.history.push(JSON.stringify({ data, order }));
   restoreFrom(state.future.pop());
 });
-let spacerBackupDownloaded=false;
 function commit(){
- if(!spacerBackupDownloaded&&Object.values(data).some(s=>(s.items||[]).some(isSpacer))){
-  const snapshot=JSON.stringify({data,order,updatedAt:lastUpdatedAt,schemaVersion:boardVersion,catalog:Object.fromEntries(catalog)},null,2);
-  const url=URL.createObjectURL(new Blob([snapshot],{type:'application/json'}));
-  const a=document.createElement('a');a.href=url;a.download='ovni-before-auto-layout-'+Date.now()+'.json';a.click();
-  setTimeout(()=>URL.revokeObjectURL(url),10000);spacerBackupDownloaded=true;
+ const ids=new Set();
+ for(const sec of Object.values(data))for(const item of sec.items||[]){
+  if(!item.uid||ids.has(item.uid))item.uid='ovni-'+crypto.randomUUID();
+  ids.add(item.uid);
  }
- const ids=new Set();for(const sec of Object.values(data))for(const it of sec.items||[]){if(!it.uid||ids.has(it.uid))it.uid='ovni-'+crypto.randomUUID();ids.add(it.uid);}
- render(); saveToCloud();
+ render();saveToCloud();
 }
 
 function setEditing(enabled){
