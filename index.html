@@ -204,6 +204,8 @@ body.saving-cloud::after{content:"Сохранение…";position:fixed;inset:
 #closeLastReport{padding:3px 9px;background:none;border:0;color:var(--muted);font-size:24px}
 #reportDialogDate,#lastReportNote{color:var(--muted);font-size:12px;font-style:italic}
 #lastReportText{white-space:pre-wrap;overflow-wrap:anywhere;margin:16px 0;font-size:14px;line-height:1.6}
+#connectionTools{margin:-4px 0 10px}
+#retryData{padding:0;border:0;background:none;color:var(--muted);font-size:12px;font-style:italic;text-decoration:underline;cursor:pointer}
 </style>
 </head>
 <body>
@@ -212,7 +214,8 @@ body.saving-cloud::after{content:"Сохранение…";position:fixed;inset:
 <h1>В поисках ИНЛО</h1>
 <button id="loginBtn" type="button">Вход</button>
 </div>
-<span id="syncStatus"></span>
+<span id="syncStatus">Подключаемся к данным…</span>
+<div id="connectionTools" hidden><button id="retryData" type="button">Повторить подключение</button></div>
 <div id="reportInfo" hidden>
 <button id="lastReportButton" type="button">См. последний отчёт</button>
 <span id="lastReportDate"></span>
@@ -292,7 +295,7 @@ body.saving-cloud::after{content:"Сохранение…";position:fixed;inset:
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-analytics.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, onSnapshot, collection, runTransaction, getDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+import { initializeFirestore, doc, onSnapshot, collection, runTransaction, getDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyAjIY9iH0gZT9WalyKTUh6zNinBNvt9aqQ",
@@ -312,7 +315,7 @@ const app = initializeApp(firebaseConfig);
 let analytics;
 try { analytics = getAnalytics(app); } catch(e) { console.warn("Analytics недоступна", e); }
 const auth = getAuth(app);
-const db = getFirestore(app);
+const db = initializeFirestore(app, {experimentalForceLongPolling:true,experimentalAutoDetectLongPolling:false});
 const boardRef = doc(db, DOC_PATH[0], DOC_PATH[1]);
 const catalogCol = collection(db, "itemCatalog");
 let catalog = new Map();
@@ -337,6 +340,7 @@ const state = {
   catalogReady:false
 };
 
+const networkState={boardReady:false,catalogReady:false,boardLive:false,catalogLive:false,boardIssue:'',catalogIssue:'',restActive:false};
 const categoryTabs = document.getElementById("categoryTabs");
 const main = document.getElementById("main");
 const modeBtn = document.getElementById("modeBtn");
@@ -449,11 +453,22 @@ function getNickname(item){ return item.nickname || ""; }
 function getCardSubtitle(item){ const nick=(getNickname(item)||"").trim(); return nick? nick : getCardId(item.href); }
 
 function updateSyncStatusDisplay(){
-  if(state.isAdmin){
-    syncStatus.textContent = "Синхронизировано";
-  }else{
-    syncStatus.textContent = formatUpdateDate(lastUpdatedAt);
-  }
+ const ready=networkState.boardReady&&networkState.catalogReady;
+ const live=networkState.boardLive&&networkState.catalogLive;
+ const issue=networkState.boardIssue||networkState.catalogIssue;
+ if(!ready){
+  syncStatus.textContent=issue==='not-found'?'Сервер не нашёл данные страницы. Повторите подключение.':
+   issue?`Не удалось загрузить данные (${issue}). Повторяем подключение…`:'Подключаемся к данным…';
+ }else if(!live){
+  syncStatus.textContent=issue?`Показаны полученные данные; соединение недоступно (${issue}).`:
+   networkState.restActive?'Данные загружены резервным способом; подключаем обновления…':'Показаны полученные данные; подключаем обновления…';
+ }else{
+  syncStatus.textContent=state.isAdmin?'Синхронизировано':formatUpdateDate(lastUpdatedAt);
+ }
+ document.getElementById('connectionTools').hidden=ready&&live;
+}
+function canEditOnline(){
+ return networkState.boardLive&&networkState.catalogLive&&networkState.boardReady&&networkState.catalogReady;
 }
 
 const writerSession = 'editor-' + crypto.randomUUID();
@@ -461,6 +476,7 @@ let saveTimer = null;
 let saveInFlight = false;
 async function saveToCloud(){
   if(!state.isAdmin) return;
+  if(!canEditOnline()){showToast('Нет подтверждённого соединения с базой. Сохранение недоступно.');return;}
   if(boardVersion!==2){showToast('Ожидалась доска schemaVersion: 2');return;}
   clearTimeout(saveTimer);
   const expectedVersion = lastUpdatedAt;
@@ -507,29 +523,157 @@ async function saveToCloud(){
   },400);
 }
 
-onSnapshot(boardRef, (snap)=>{
-  try{
-    if(!snap.exists()){
-      syncStatus.textContent = "Документ cards/board не найден. Автоматическое создание отключено.";
-      return;
-    }
-    const remote = snap.data();
-    const externalChange = lastUpdatedAt !== null &&
-      (remote.updatedAt||null)!==lastUpdatedAt &&
-      remote.lastWriter!==writerSession;
-    if(externalChange){
-      clearTimeout(saveTimer);saveTimer=null;
-      state.history=[];state.future=[];
-      if(state.activeModal==='card')closeModal();
-      if(state.editing)showToast('Доска обновлена извне. Несохранённые правки отменены; повторите их при необходимости.');
-    }
-    boardVersion=remote.schemaVersion||0;
-    data = remote.data || {};
-    order = remote.order || Object.keys(data);
-    lastUpdatedAt = remote.updatedAt || null;
-    render();
+
+let boardUnsubscribe=null,catalogUnsubscribe=null;
+let connectionGeneration=0,connectionRetryTimer=null,restTimer=null,restBusy=false,retryCount=0;
+const permanentErrors=new Set(['permission-denied','unauthenticated','invalid-argument','failed-precondition']);
+function connectionErrorCode(error){
+ const code=String(error?.code||'network-error').replace(/^firestore\//,'');
+ return /^[a-z-]{1,60}$/.test(code)?code:'network-error';
+}
+function applyBoard(remote){
+ if(!remote||remote.schemaVersion!==2||!remote.data||typeof remote.data!=='object'||!Array.isArray(remote.order)){
+  throw {code:'invalid-data'};
+ }
+ if(lastUpdatedAt!==null&&Number(remote.updatedAt||0)<Number(lastUpdatedAt))return;
+ const versionChanged=(remote.updatedAt||null)!==lastUpdatedAt;
+ if(networkState.boardReady&&!versionChanged)return;
+ const externalChange=lastUpdatedAt!==null&&versionChanged&&remote.lastWriter!==writerSession;
+ if(externalChange){
+  clearTimeout(saveTimer);saveTimer=null;state.history=[];state.future=[];
+  if(state.activeModal==='card')closeModal();
+  if(state.editing)showToast('Доска обновлена извне. Несохранённые правки отменены; повторите их при необходимости.');
+ }
+ boardVersion=remote.schemaVersion;
+ data=remote.data;order=remote.order;lastUpdatedAt=remote.updatedAt||null;
+ networkState.boardReady=true;render();
+}
+function applyCatalog(entries){
+ if(!entries.length)throw {code:'empty-catalog'};
+ catalog=new Map(entries);state.catalogReady=true;networkState.catalogReady=true;render();
+ if(state.activeModal==='card'&&state.pending){
+  const selected=editItem.value,p=state.pending;
+  populateItemSelect(p.index>=0?data[p.section]?.items[p.index]:null);
+  if(catalog.has(selected))editItem.value=selected;
+ }
+}
+function queueConnectionRetry(code){
+ if(permanentErrors.has(code)||connectionRetryTimer)return;
+ const delay=Math.min(60000,5000*2**Math.min(retryCount++,4));
+ connectionRetryTimer=setTimeout(()=>{connectionRetryTimer=null;startDataListeners();},delay);
+}
+function dataListenError(kind,error){
+ const code=connectionErrorCode(error);
+ networkState[kind+'Live']=false;networkState[kind+'Issue']=code;
+ console.error('Firestore '+kind,error);updateSyncStatusDisplay();queueConnectionRetry(code);
+}
+function startDataListeners(){
+ if(saveInFlight){queueConnectionRetry('network-error');return;}
+ const generation=++connectionGeneration;
+ if(boardUnsubscribe)boardUnsubscribe();
+ if(catalogUnsubscribe)catalogUnsubscribe();
+ clearTimeout(connectionRetryTimer);connectionRetryTimer=null;
+ clearTimeout(restTimer);restTimer=null;
+ networkState.boardLive=false;networkState.catalogLive=false;
+ networkState.boardIssue='';networkState.catalogIssue='';
+ updateSyncStatusDisplay();
+ try{
+  boardUnsubscribe=onSnapshot(boardRef,{includeMetadataChanges:true},snap=>{
+   if(generation!==connectionGeneration)return;
+   if(!snap.exists()){
+    networkState.boardLive=false;
+    if(!snap.metadata.fromCache)networkState.boardIssue='not-found';
+    updateSyncStatusDisplay();return;
+   }
+   try{
+    applyBoard(snap.data());networkState.boardLive=!snap.metadata.fromCache;
+    networkState.boardIssue='';if(networkState.boardLive)retryCount=0;
     updateSyncStatusDisplay();
-  }catch(err){ console.error(err); syncStatus.textContent = "Ошибка синхронизации"; }
+   }catch(error){dataListenError('board',error);}
+  },error=>{if(generation===connectionGeneration)dataListenError('board',error);});
+  catalogUnsubscribe=onSnapshot(catalogCol,{includeMetadataChanges:true},snap=>{
+   if(generation!==connectionGeneration)return;
+   if(!snap.docs.length&&snap.metadata.fromCache){networkState.catalogLive=false;updateSyncStatusDisplay();return;}
+   try{
+    applyCatalog(snap.docs.map(d=>[d.id,d.data()]));
+    networkState.catalogLive=!snap.metadata.fromCache;networkState.catalogIssue='';
+    updateSyncStatusDisplay();
+   }catch(error){dataListenError('catalog',error);}
+  },error=>{if(generation===connectionGeneration)dataListenError('catalog',error);});
+ }catch(error){dataListenError('board',error);}
+ restTimer=setTimeout(tryRestRead,10000);
+}
+function decodeFirestoreValue(value){
+ if('nullValue'in value)return null;
+ if('booleanValue'in value)return value.booleanValue;
+ if('integerValue'in value)return Number(value.integerValue);
+ if('doubleValue'in value)return Number(value.doubleValue);
+ if('stringValue'in value)return value.stringValue;
+ if('timestampValue'in value)return value.timestampValue;
+ if('arrayValue'in value)return (value.arrayValue.values||[]).map(decodeFirestoreValue);
+ if('mapValue'in value)return Object.fromEntries(Object.entries(value.mapValue.fields||{}).map(([k,v])=>[k,decodeFirestoreValue(v)]));
+ throw {code:'invalid-rest-data'};
+}
+function decodeFirestoreDocument(document){
+ return Object.fromEntries(Object.entries(document.fields||{}).map(([key,value])=>[key,decodeFirestoreValue(value)]));
+}
+async function restJSON(resource,parameters={}){
+ const base=`https://firestore.googleapis.com/v1/projects/${encodeURIComponent(firebaseConfig.projectId)}/databases/(default)/documents/`;
+ const url=new URL(resource,base);
+ url.searchParams.set('key',firebaseConfig.apiKey);
+ for(const [key,value]of Object.entries(parameters))if(value)url.searchParams.set(key,value);
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),20000);
+ try{
+  const response=await fetch(url,{signal:controller.signal,credentials:'omit',cache:'no-store'});
+  if(!response.ok)throw {code:response.status===404?'not-found':response.status===403?'permission-denied':response.status===401?'unauthenticated':'network-error'};
+  return await response.json();
+ }catch(error){if(error?.name==='AbortError')throw {code:'timeout'};throw error;}
+ finally{clearTimeout(timer);}
+}
+async function restCatalog(){
+ const entries=[],tokens=new Set();let token='';
+ for(let page=0;page<20;page++){
+  const result=await restJSON('itemCatalog',{pageSize:'300',pageToken:token});
+  for(const document of result.documents||[]){
+   if(!document.name)throw {code:'invalid-rest-data'};
+   const id=decodeURIComponent(document.name.split('/').pop());
+   entries.push([id,decodeFirestoreDocument(document)]);
+  }
+  token=result.nextPageToken||'';
+  if(!token)return entries;
+  if(tokens.has(token))throw {code:'invalid-rest-data'};
+  tokens.add(token);
+ }
+ throw {code:'catalog-too-large'};
+}
+async function tryRestRead(){
+ clearTimeout(restTimer);restTimer=null;
+ if(networkState.boardLive&&networkState.catalogLive)return;
+ if(restBusy){restTimer=setTimeout(tryRestRead,60000);return;}
+ if(document.hidden){restTimer=setTimeout(tryRestRead,60000);return;}
+ restBusy=true;
+ try{
+  const jobs=[];
+  if(!networkState.boardLive)jobs.push((async()=>{
+   try{const result=await restJSON('cards/board');applyBoard(decodeFirestoreDocument(result));networkState.boardIssue='';}
+   catch(error){networkState.boardIssue=connectionErrorCode(error);console.error('REST board',error);}
+  })());
+  if(!networkState.catalogLive)jobs.push((async()=>{
+   try{applyCatalog(await restCatalog());networkState.catalogIssue='';}
+   catch(error){networkState.catalogIssue=connectionErrorCode(error);console.error('REST catalog',error);}
+  })());
+  await Promise.all(jobs);networkState.restActive=true;
+ }finally{
+  restBusy=false;updateSyncStatusDisplay();
+  if(!networkState.boardLive||!networkState.catalogLive)restTimer=setTimeout(tryRestRead,60000);
+ }
+}
+document.getElementById('retryData').addEventListener('click',()=>{
+ retryCount=0;startDataListeners();tryRestRead();
+});
+window.addEventListener('online',()=>{startDataListeners();});
+document.addEventListener('visibilitychange',()=>{
+ if(!document.hidden&&(!networkState.boardLive||!networkState.catalogLive)){startDataListeners();tryRestRead();}
 });
 
 onAuthStateChanged(auth, (user)=>{
@@ -850,6 +994,7 @@ function commit(){
 }
 
 function setEditing(enabled){
+  if(enabled&&!canEditOnline()){showToast('Дождитесь подключения к базе перед редактированием.');return;}
   if(enabled&&boardVersion!==2){showToast("Ожидалась перенесённая доска schemaVersion: 2. Редактирование заблокировано.");return;}
   state.editing = enabled && state.isAdmin;
   document.body.classList.toggle("editing-mode", state.editing);
@@ -898,6 +1043,7 @@ document.getElementById("cancelEdit").addEventListener("click", closeModal);
 document.getElementById("saveEdit").addEventListener("click", saveEditHandler);
 function saveEditHandler(){
   if(!state.pending || saveInFlight)return;
+  if(!canEditOnline()){showToast('Нет подтверждённого соединения. Сохранение недоступно.');return;}
   const { section, index } = state.pending;
   const newSection = catalog.get(editItem.value)?.groupId;
   const itemId = editItem.value;
@@ -964,15 +1110,6 @@ function populateItemSelect(item){
  for(const [id,label]of ITEM_GROUP_LABELS)add(label,buckets.get(id));add('Без группы',other);
  const id=item&&(item.itemId||imageIdentifier(item.img));if(id&&catalog.has(id))editItem.value=id;else if(item){editItem.add(new Option('Не сопоставлен: '+(item.name||item.itemId||'без названия'),''));editItem.selectedIndex=editItem.options.length-1;}
 }
-onSnapshot(catalogCol,snap=>{
-  catalog=new Map(snap.docs.map(d=>[d.id,d.data()]));state.catalogReady=true;render();
-  if(state.activeModal==='card' && state.pending){
-    const selected=editItem.value,p=state.pending;
-    populateItemSelect(p.index>=0 ? data[p.section]?.items[p.index] : null);
-    if(catalog.has(selected)) editItem.value=selected;
-  }
-},err=>{console.error(err);showToast('Нет доступа к справочнику. Проверьте правила Firestore.');});
-
 function imageIdentifier(src){try{const name=decodeURIComponent(new URL(src).pathname.split('/').pop());return /\.png$/i.test(name)?name.replace(/_v\d+(?=\.png$)/i,'').replace(/\.png$/i,''):null;}catch{return null;}}
 const inactiveBtn=document.getElementById('inactiveViewBtn');
 onAuthStateChanged(auth,user=>{inactiveBtn.hidden=user?.uid!==ADMIN_UID;});
@@ -1030,6 +1167,7 @@ reportButton.addEventListener('click',()=>{
 });
 document.getElementById('closeLastReport').addEventListener('click',()=>reportDialog.close());
 
+startDataListeners();
 </script>
 </body>
 </html>
