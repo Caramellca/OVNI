@@ -1,129 +1,1324 @@
 <!DOCTYPE html>
 <html lang="ru">
-<head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>В поисках ИНЛО</title>
-<link href="images/60/cadeau.png" rel="icon" type="image/png"/>
-<style>
-:root{--bg:#0d1526;--panel:#172338;--line:#2d3e5a;--accent:#7db6ff;--txt:#eef5ff;--muted:#a7b4c8;--edit:#ffcc66;--danger:#d94848}
-*{box-sizing:border-box}
-svg{width:16px;height:16px;display:block;flex-shrink:0}
-body{margin:0;background:var(--bg);color:var(--txt);font:16px system-ui,-apple-system,"Segoe UI",Arial,sans-serif;overflow-x:hidden}
-header{position:sticky;top:0;z-index:1001;isolation:isolate;padding:16px max(18px,calc(50% - 610px)) 14px;background:#0d1526f7;backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
-.header-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:6px}
-h1{margin:0;font-size:22px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
-#syncStatus{display:block;font-size:12px;color:var(--muted);font-weight:400;font-style:italic;margin-bottom:10px}
-.category-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
-.category-tab{padding:7px 12px 8px;border-radius:9px;font-size:13px;white-space:nowrap;background:var(--line);color:var(--txt);border:none;cursor:pointer}
-.category-tab:hover{background:var(--accent);color:var(--bg)}
-@media(max-width:620px){.category-tabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;margin-left:-18px;margin-right:-18px;padding-left:18px;padding-right:18px;margin-top:4px}.category-tabs::-webkit-scrollbar{display:none}.category-tab{flex:0 0 auto}body.is-admin .category-tabs{border-top:1px solid var(--line);padding-top:10px;margin-top:10px}}
-.toolbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
-.toolbar-left{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
-.toolbar-right{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-left:auto}
-button{padding:8px 12px 10px;color:var(--txt);background:#1b3355;border:1px solid var(--line);border-radius:10px;cursor:pointer;font:inherit;display:inline-flex;align-items:center;justify-content:center;line-height:1}
-#loginBtn{background:transparent;border:1px solid var(--line);color:var(--muted);padding:6px 10px 7px;font-size:13px}
-#loginBtn:hover{color:var(--txt);border-color:var(--accent)}
-main{position:relative;z-index:1;max-width:1220px;margin:0 auto;padding:12px 18px 48px}
-section{margin-bottom:28px;scroll-margin-top:108px;transition:opacity .15s}
-section.section-drag-source{opacity:.4}
-section.section-drag-over{outline:2px dashed var(--edit);outline-offset:4px;border-radius:8px}
-h2{display:flex;align-items:center;gap:10px;margin:0 0 12px;font-size:20px}
-h2 em{color:var(--muted);font-size:13px;font-style:normal;font-weight:500}
-section.section-hidden-user{display:none}
-body.is-admin section.section-hidden-user{display:block;opacity:.55}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(188px,1fr));gap:10px}
-.card,.add-card{position:relative;display:grid;grid-template-columns:56px 1fr;grid-template-rows:1fr auto;gap:0 9px;align-items:center;min-height:65px;padding:9px;color:var(--txt);background:var(--panel);border:1px solid var(--line);border-radius:11px;text-decoration:none;transition:.15s;user-select:none}
-.card:hover,.add-card:hover{transform:translateY(-2px);background:#1c304e;border-color:var(--accent)}
-.card.editing{outline:none}.card.drag-source{opacity:.4}
-.card.drag-over-before{box-shadow:-3px 0 0 0 var(--edit),inset 3px 0 0 0 var(--edit)}
-.card.drag-over-after{box-shadow:3px 0 0 0 var(--edit),inset -3px 0 0 0 var(--edit)}
-.card img,.noicon{grid-row:1/3;width:56px;height:56px;object-fit:contain}
-.noicon{display:grid;place-items:center;color:var(--accent);font-size:24px}
-.name{font-weight:650;line-height:1.16}small{padding-top:3px;color:var(--muted);font-size:11px}
-.inactive-card{opacity:.45}
-.icon-btn{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;padding:0;background:transparent;border:0;border-radius:6px;color:var(--muted);cursor:pointer;transition:color .18s ease,background .18s ease}
-.icon-btn:hover{color:var(--accent);background:rgba(125,182,255,.1)}
-.icon-btn svg{width:16px;height:16px;stroke-width:1.6}
-.icon-btn.danger:hover{color:var(--danger);background:rgba(217,72,72,.1)}
-.icon-btn.active-eye{color:var(--accent)}
-.delete-x{position:absolute;top:-9px;right:-9px;z-index:5;display:none;background:var(--bg);border-radius:50%}
-.editing-mode .delete-x{display:flex}.editing-mode .card{cursor:grab}.editing-mode .card:active{cursor:grabbing}
-.card-toggle-dot{position:absolute;bottom:6px;right:6px;z-index:5;display:none;width:12px;height:12px;border-radius:50%;border:2px solid var(--bg);background:var(--muted);cursor:pointer;transition:background .18s ease,transform .12s ease;padding:0}
-.card-toggle-dot.on{background:var(--accent)}.card-toggle-dot:hover{transform:scale(1.15)}.editing-mode .card-toggle-dot{display:block}
-.add-card{align-items:center;justify-items:center;opacity:.55;cursor:pointer}
-.add-card .plus{color:#dfe8ff;font-size:22px;font-weight:400;line-height:1;display:flex;align-items:center;justify-content:center;width:100%;height:100%}
-.add-card.single{grid-template-columns:1fr;grid-template-rows:1fr;min-height:65px;display:flex;align-items:center;justify-content:center}
-.add-card.single .plus{grid-row:auto}.add-card-plus{border-style:dashed;border-width:1.5px;background:transparent}.add-card-plus:hover{background:rgba(125,182,255,.06)}
-.section-title-text{cursor:default}body.editing-mode .section-title-text{cursor:default}
-.section-controls{display:none;gap:4px;align-items:center;margin-left:6px}body.editing-mode .section-controls{display:flex}
-.modal-backdrop{position:fixed;inset:0;z-index:2000;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(6,10,18,.72)}
-.modal{width:min(560px,100%);padding:16px;background:#111b2d;border:1px solid var(--line);border-radius:16px;box-shadow:0 20px 80px rgba(0,0,0,.45);position:relative}
-.modal-header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 16px}.modal-header h3{margin:0;font-size:18px}
-.form-row{display:grid;gap:6px;margin-bottom:12px}label{color:var(--muted);font-size:13px}
-input,select{width:100%;padding:10px 12px;color:var(--txt);background:#0e1727;border:1px solid var(--line);border-radius:10px;font:inherit;cursor:pointer}input{cursor:text}
-input:focus,select:focus{outline:none;border-color:var(--accent)}input:disabled{color:var(--muted);background:#0b1321;border-color:#233149;opacity:.62;cursor:default}
-select{appearance:none;-webkit-appearance:none;-moz-appearance:none;padding-right:34px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23a7b4c8' stroke-width='1.6'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;background-size:16px 16px}
-input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus,input:-webkit-autofill:active{-webkit-text-fill-color:var(--txt)!important;-webkit-box-shadow:0 0 0 1000px #0e1727 inset!important;box-shadow:0 0 0 1000px #0e1727 inset!important;caret-color:var(--txt);transition:background-color 5000s ease-in-out 0s}
-@keyframes onAutoFillStart{from{opacity:.9999}to{opacity:1}}@keyframes onAutoFillCancel{from{opacity:1}to{opacity:1}}
-#loginEmail:-webkit-autofill,#loginPassword:-webkit-autofill{animation-name:onAutoFillStart}#loginEmail:not(:-webkit-autofill),#loginPassword:not(:-webkit-autofill){animation-name:onAutoFillCancel}
-.modal-switch{width:64px;height:26px;border-radius:13px;padding:0 6px;display:flex;align-items:center;justify-content:space-between;gap:4px;cursor:pointer;border:0;font-size:11px;font-weight:500;letter-spacing:.02em;flex-shrink:0;transition:background .18s ease}
-.modal-switch.on{background:var(--accent);color:#0d1526;flex-direction:row}.modal-switch.off{background:var(--line);color:var(--muted);flex-direction:row-reverse}
-.switch-label{display:inline-flex;align-items:center;justify-content:center;width:28px;line-height:1;padding:0 0 2px}.switch-dot{width:14px;height:14px;border-radius:50%;background:#fff;flex-shrink:0}.modal-switch.off .switch-dot{background:var(--muted)}
-.field-error{display:none;color:var(--danger);font-size:12px;margin-top:-2px}.form-row.has-error input{border-color:var(--danger)}.form-row.has-error .field-error{display:block}
-.split-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}.input-with-icon{display:flex;gap:6px;align-items:center}.input-with-icon input{flex:1}
-.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}.modal-actions button{padding:10px 16px;border-radius:10px;font-size:14px}
-#saveEdit,.primary-btn{background:var(--accent);color:#0d1526;border-color:var(--accent)}#saveEdit:hover,.primary-btn:hover{background:#8fc2ff}
-.undo-redo{display:flex;flex-wrap:wrap;gap:12px;align-items:center}#modeBtn.save-mode{color:#111;background:var(--edit);border-color:var(--edit)}#loginBtn.logged-in{color:#7ee0a0;border-color:#2c7a45}
-.toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.95);z-index:4000;padding:18px 28px;background:var(--accent);border:none;border-radius:14px;box-shadow:none;color:#0d1526;font-size:18px;font-weight:700;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .25s ease,transform .25s ease}
-.toast.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
-@media(max-width:620px){.toast{font-size:15px;padding:14px 20px;white-space:normal;text-align:center;max-width:calc(100% - 32px)}.toolbar{align-items:stretch}.toolbar-right{margin-left:0;width:100%;justify-content:flex-start}body:not(.is-admin) .grid{grid-template-columns:1fr}}
-@media(max-width:460px){.grid{grid-template-columns:1fr}.split-row{grid-template-columns:1fr}}
-[hidden]{display:none!important}.form-row.has-error select{border-color:var(--danger)}.toast{max-width:calc(100vw - 32px);white-space:normal;text-align:center}
-body.saving-cloud::after{content:"Сохранение…";position:fixed;inset:0;z-index:10000;display:grid;place-items:center;background:#060a1290;color:white;font-size:20px;cursor:wait}
-.auto-block + .auto-block{margin-top:28px}.add-card-row{margin-bottom:12px}.card img,.noicon{min-width:0}
-#reportInfo{display:flex;align-items:baseline;flex-wrap:wrap;gap:8px 14px;margin:-5px 0 10px;color:var(--muted);font-size:12px;font-style:italic}
-#lastReportButton{display:inline;padding:0;border:0;border-radius:0;background:none;color:var(--muted);font:inherit;text-decoration:underline;text-underline-offset:2px;cursor:pointer}#lastReportButton:hover{color:var(--txt)}
-#lastReportDialog{width:min(680px,calc(100% - 32px));max-height:80vh;overflow:auto;padding:20px;background:var(--panel);color:var(--txt);border:1px solid var(--line);border-radius:14px}#lastReportDialog::backdrop{background:#060a12b8}
-.report-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}.report-heading h3{margin:0;font-size:18px}#closeLastReport{padding:3px 9px;background:none;border:0;color:var(--muted);font-size:24px}
-#reportDialogDate,#lastReportNote{color:var(--muted);font-size:12px;font-style:italic}#lastReportText{white-space:pre-wrap;overflow-wrap:anywhere;margin:16px 0;font-size:14px;line-height:1.6}
-#connectionTools{margin:-4px 0 10px}#retryData{padding:0;border:0;background:none;color:var(--muted);font-size:12px;font-style:italic;text-decoration:underline;cursor:pointer}
-</style>
-</head>
-<body>
-<header>
-<div class="header-top"><h1>В поисках ИНЛО</h1><button id="loginBtn" type="button">Вход</button></div>
-<span id="syncStatus">Подключаемся к данным…</span>
-<div id="connectionTools" hidden><button id="retryData" type="button">Повторить подключение</button></div>
-<div id="reportInfo" hidden><button id="lastReportButton" type="button">См. последний отчёт</button><span id="lastReportDate"></span></div>
-<div class="toolbar"><div class="toolbar-left"><button id="modeBtn" style="display:none" type="button">Редактировать</button><div class="undo-redo"><button id="undoBtn" style="display:none" title="Отменить последнее действие" type="button">Вернуть</button><button id="redoBtn" style="display:none" title="Повторить отменённое действие" type="button">Повторить</button></div></div><div class="toolbar-right"><button hidden id="inactiveViewBtn" type="button">Неактивные: показаны</button></div></div>
-<nav aria-label="Категории" class="category-tabs" id="categoryTabs"></nav>
-</header>
-<main id="main"></main>
-<div class="modal-backdrop" id="loginModal"><div class="modal"><h3>Вход только для администратора</h3>
-<div class="form-row"><label for="loginEmail">Email</label><input autocomplete="username" id="loginEmail" type="email"/></div>
-<div class="form-row"><label for="loginPassword">Пароль</label><input autocomplete="current-password" id="loginPassword" type="password"/></div>
-<div class="modal-actions"><button id="loginCancel" type="button">Отмена</button><button class="primary-btn" id="loginSubmit" type="button">Войти</button></div></div></div>
-<div class="modal-backdrop" id="modalBackdrop"><div class="modal">
-<div class="modal-header"><h3 id="modalTitle">Карточка предмета</h3><button class="modal-switch on" id="editEnabledDot" type="button"><span class="switch-label">вкл</span><span class="switch-dot"></span></button></div>
-<div class="form-row"><label for="editItem">Предмет *</label><select id="editItem"></select><span class="field-error">Выберите предмет из справочника</span></div>
-<div class="split-row"><div class="form-row"><label for="editNickname">Никнейм (необязательно)</label><input id="editNickname" type="text"/></div>
-<div class="form-row"><label for="editHref">Ссылка *</label><div class="input-with-icon"><input id="editHref" type="text"/><button class="icon-btn" id="editHrefUnlock" title="Разблокировать ссылку" type="button"><svg fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" stroke-linecap="round" stroke-linejoin="round"></path></svg></button></div><span class="field-error" id="editHrefError">Заполните это поле</span></div></div>
-<div class="modal-actions"><button id="cancelEdit" type="button">Отмена</button><button id="saveEdit" type="button">Сохранить</button></div></div></div>
-<div class="toast" id="toast"></div>
-<dialog id="lastReportDialog"><div class="report-heading"><h3>Последний отчёт</h3><button id="closeLastReport" type="button" aria-label="Закрыть">×</button></div><div id="reportDialogDate"></div><div id="lastReportText"></div><div id="lastReportNote" hidden></div></dialog>
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1" name="viewport"/>
+  <title>
+   В поисках ИНЛО
+  </title>
+  <link href="images/60/cadeau.png" rel="icon" type="image/png"/>
+  <style>
+   :root {
+  --bg: #0d1526;
+  --panel: #172338;
+  --line: #2d3e5a;
+  --accent: #7db6ff;
+  --txt: #eef5ff;
+  --muted: #a7b4c8;
+  --edit: #ffcc66;
+  --danger: #d94848;
+}
+* {
+  box-sizing: border-box;
+}
+svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+  flex-shrink: 0;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--txt);
+  font: 16px system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+  overflow-x: hidden;
+}
+header {
+  position: sticky;
+  top: 0;
+  z-index: 1001;
+  isolation: isolate;
+  padding: 16px max(18px,calc(50% - 610px)) 14px;
+  background: #0d1526f7;
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
+}
+.header-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+h1 {
+  margin: 0;
+  font-size: 22px;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+#syncStatus {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 400;
+  font-style: italic;
+  margin-bottom: 10px;
+}
+.category-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+.category-tab {
+  padding: 7px 12px 8px;
+  border-radius: 9px;
+  font-size: 13px;
+  white-space: nowrap;
+  background: var(--line);
+  color: var(--txt);
+  border: none;
+  cursor: pointer;
+}
+.category-tab:hover {
+  background: var(--accent);
+  color: var(--bg);
+}
+@media (max-width:620px) {
+  .category-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    margin-left: -18px;
+    margin-right: -18px;
+    padding-left: 18px;
+    padding-right: 18px;
+    margin-top: 4px;
+  }
+  .category-tabs::-webkit-scrollbar {
+    display: none;
+  }
+  .category-tab {
+    flex: 0 0 auto;
+  }
+  body.is-admin .category-tabs {
+    border-top: 1px solid var(--line);
+    padding-top: 10px;
+    margin-top: 10px;
+  }
+}
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+.toolbar-left {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+.toolbar-right {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-left: auto;
+}
+button {
+  padding: 8px 12px 10px;
+  color: var(--txt);
+  background: #1b3355;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  cursor: pointer;
+  font: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+#loginBtn {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  padding: 6px 10px 7px;
+  font-size: 13px;
+}
+#loginBtn:hover {
+  color: var(--txt);
+  border-color: var(--accent);
+}
+main {
+  position: relative;
+  z-index: 1;
+  max-width: 1220px;
+  margin: 0 auto;
+  padding: 12px 18px 48px;
+}
+section {
+  margin-bottom: 28px;
+  scroll-margin-top: 108px;
+  transition: opacity .15s;
+}
+section.section-drag-source {
+  opacity: .4;
+}
+section.section-drag-over {
+  outline: 2px dashed var(--edit);
+  outline-offset: 4px;
+  border-radius: 8px;
+}
+h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 12px;
+  font-size: 20px;
+}
+h2 em {
+  color: var(--muted);
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 500;
+}
+section.section-hidden-user {
+  display: none;
+}
+body.is-admin section.section-hidden-user {
+  display: block;
+  opacity: .55;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill,minmax(188px,1fr));
+  gap: 10px;
+}
+.card,.add-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  grid-template-rows: 1fr auto;
+  gap: 0 9px;
+  align-items: center;
+  min-height: 65px;
+  padding: 9px;
+  color: var(--txt);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  text-decoration: none;
+  transition: .15s;
+  user-select: none;
+}
+.card:hover,.add-card:hover {
+  transform: translateY(-2px);
+  background: #1c304e;
+  border-color: var(--accent);
+}
+.card.editing {
+  outline: none;
+}
+.card.drag-source {
+  opacity: .4;
+}
+.card.drag-over-before {
+  box-shadow: -3px 0 0 0 var(--edit),inset 3px 0 0 0 var(--edit);
+}
+.card.drag-over-after {
+  box-shadow: 3px 0 0 0 var(--edit),inset -3px 0 0 0 var(--edit);
+}
+.card img,.noicon {
+  grid-row: 1/3;
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+}
+.noicon {
+  display: grid;
+  place-items: center;
+  color: var(--accent);
+  font-size: 24px;
+}
+.name {
+  font-weight: 650;
+  line-height: 1.16;
+}
+small {
+  padding-top: 3px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.inactive-card {
+  opacity: .45;
+}
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color .18s ease,background .18s ease;
+}
+.icon-btn:hover {
+  color: var(--accent);
+  background: rgba(125,182,255,.1);
+}
+.icon-btn svg {
+  width: 16px;
+  height: 16px;
+  stroke-width: 1.6;
+}
+.icon-btn.danger:hover {
+  color: var(--danger);
+  background: rgba(217,72,72,.1);
+}
+.icon-btn.active-eye {
+  color: var(--accent);
+}
+.delete-x {
+  position: absolute;
+  top: -9px;
+  right: -9px;
+  z-index: 5;
+  display: none;
+  background: var(--bg);
+  border-radius: 50%;
+}
+.editing-mode .delete-x {
+  display: flex;
+}
+.editing-mode .card {
+  cursor: grab;
+}
+.editing-mode .card:active {
+  cursor: grabbing;
+}
+.card-toggle-dot {
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+  z-index: 5;
+  display: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--bg);
+  background: var(--muted);
+  cursor: pointer;
+  transition: background .18s ease,transform .12s ease;
+  padding: 0;
+}
+.card-toggle-dot.on {
+  background: var(--accent);
+}
+.card-toggle-dot:hover {
+  transform: scale(1.15);
+}
+.editing-mode .card-toggle-dot {
+  display: block;
+}
+.add-card {
+  align-items: center;
+  justify-items: center;
+  opacity: .55;
+  cursor: pointer;
+}
+.add-card .plus {
+  color: #dfe8ff;
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+.add-card.single {
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+  min-height: 65px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.add-card.single .plus {
+  grid-row: auto;
+}
+.add-card-plus {
+  border-style: dashed;
+  border-width: 1.5px;
+  background: transparent;
+}
+.add-card-plus:hover {
+  background: rgba(125,182,255,.06);
+}
+.section-title-text {
+  cursor: default;
+}
+body.editing-mode .section-title-text {
+  cursor: default;
+}
+.section-controls {
+  display: none;
+  gap: 4px;
+  align-items: center;
+  margin-left: 6px;
+}
+body.editing-mode .section-controls {
+  display: flex;
+}
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: rgba(6,10,18,.72);
+}
+.modal {
+  width: min(560px,100%);
+  padding: 16px;
+  background: #111b2d;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: 0 20px 80px rgba(0,0,0,.45);
+  position: relative;
+}
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0 0 16px;
+}
+.modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+}
+.form-row {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+label {
+  color: var(--muted);
+  font-size: 13px;
+}
+input,select {
+  width: 100%;
+  padding: 10px 12px;
+  color: var(--txt);
+  background: #0e1727;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font: inherit;
+  cursor: pointer;
+}
+input {
+  cursor: text;
+}
+input:focus,select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+input:disabled {
+  color: var(--muted);
+  background: #0b1321;
+  border-color: #233149;
+  opacity: .62;
+  cursor: default;
+}
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding-right: 34px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23a7b4c8' stroke-width='1.6'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 16px 16px;
+}
+input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus,input:-webkit-autofill:active {
+  -webkit-text-fill-color: var(--txt) !important;
+  -webkit-box-shadow: 0 0 0 1000px #0e1727 inset !important;
+  box-shadow: 0 0 0 1000px #0e1727 inset !important;
+  caret-color: var(--txt);
+  transition: background-color 5000s ease-in-out 0s;
+}
+@keyframes onAutoFillStart {
+  from {
+    opacity: .9999;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes onAutoFillCancel {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+  }
+}
+#loginEmail:-webkit-autofill,#loginPassword:-webkit-autofill {
+  animation-name: onAutoFillStart;
+}
+#loginEmail:not(:-webkit-autofill),#loginPassword:not(:-webkit-autofill) {
+  animation-name: onAutoFillCancel;
+}
+.modal-switch {
+  width: 64px;
+  height: 26px;
+  border-radius: 13px;
+  padding: 0 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  cursor: pointer;
+  border: 0;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .02em;
+  flex-shrink: 0;
+  transition: background .18s ease;
+}
+.modal-switch.on {
+  background: var(--accent);
+  color: #0d1526;
+  flex-direction: row;
+}
+.modal-switch.off {
+  background: var(--line);
+  color: var(--muted);
+  flex-direction: row-reverse;
+}
+.switch-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  line-height: 1;
+  padding: 0 0 2px;
+}
+.switch-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  flex-shrink: 0;
+}
+.modal-switch.off .switch-dot {
+  background: var(--muted);
+}
+.field-error {
+  display: none;
+  color: var(--danger);
+  font-size: 12px;
+  margin-top: -2px;
+}
+.form-row.has-error input {
+  border-color: var(--danger);
+}
+.form-row.has-error .field-error {
+  display: block;
+}
+.split-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  align-items: start;
+}
+.input-with-icon {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.input-with-icon input {
+  flex: 1;
+}
+.modal-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 14px;
+}
+.modal-actions button {
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+}
+#saveEdit,.primary-btn {
+  background: var(--accent);
+  color: #0d1526;
+  border-color: var(--accent);
+}
+#saveEdit:hover,.primary-btn:hover {
+  background: #8fc2ff;
+}
+.undo-redo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+#modeBtn.save-mode {
+  color: #111;
+  background: var(--edit);
+  border-color: var(--edit);
+}
+#loginBtn.logged-in {
+  color: #7ee0a0;
+  border-color: #2c7a45;
+}
+.toast {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%) scale(.95);
+  z-index: 4000;
+  padding: 18px 28px;
+  background: var(--accent);
+  border: none;
+  border-radius: 14px;
+  box-shadow: none;
+  color: #0d1526;
+  font-size: 18px;
+  font-weight: 700;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s ease,transform .25s ease;
+}
+.toast.show {
+  opacity: 1;
+  transform: translate(-50%,-50%) scale(1);
+}
+@media (max-width:620px) {
+  .toast {
+    font-size: 15px;
+    padding: 14px 20px;
+    white-space: normal;
+    text-align: center;
+    max-width: calc(100% - 32px);
+  }
+  .toolbar {
+    align-items: stretch;
+  }
+  .toolbar-right {
+    margin-left: 0;
+    width: 100%;
+    justify-content: flex-start;
+  }
+  body:not(.is-admin) .grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width:460px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  .split-row {
+    grid-template-columns: 1fr;
+  }
+}
+[hidden] {
+  display: none !important;
+}
+.form-row.has-error select {
+  border-color: var(--danger);
+}
+.toast {
+  max-width: calc(100vw - 32px);
+  white-space: normal;
+  text-align: center;
+}
+body.saving-cloud::after {
+  content: "Сохранение…";
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: grid;
+  place-items: center;
+  background: #060a1290;
+  color: white;
+  font-size: 20px;
+  cursor: wait;
+}
+.auto-block + .auto-block {
+  margin-top: 28px;
+}
+.add-card-row {
+  margin-bottom: 12px;
+}
+.card img,.noicon {
+  min-width: 0;
+}
+#reportInfo {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin: -5px 0 10px;
+  color: var(--muted);
+  font-size: 12px;
+  font-style: italic;
+}
+#lastReportButton {
+  display: inline;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+#lastReportButton:hover {
+  color: var(--txt);
+}
+#lastReportDialog {
+  width: min(680px,calc(100% - 32px));
+  max-height: 80vh;
+  overflow: auto;
+  padding: 20px;
+  background: var(--panel);
+  color: var(--txt);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+#lastReportDialog::backdrop {
+  background: #060a12b8;
+}
+.report-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.report-heading h3 {
+  margin: 0;
+  font-size: 18px;
+}
+#closeLastReport {
+  padding: 3px 9px;
+  background: none;
+  border: 0;
+  color: var(--muted);
+  font-size: 24px;
+}
+#reportDialogDate,#lastReportNote {
+  color: var(--muted);
+  font-size: 12px;
+  font-style: italic;
+}
+#lastReportText {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  margin: 16px 0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+#connectionTools {
+  margin: -4px 0 10px;
+}
+#retryData {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font-size: 12px;
+  font-style: italic;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+#newsButton {
+  gap: 8px;
+  padding: 6px 10px 7px;
+  background: transparent;
+  font-size: 13px;
+}
+#newsButton:hover {
+  border-color: var(--accent);
+}
+#newsDialog {
+  width: min(666px,calc(100% - 32px));
+  max-height: 85vh;
+  max-height: 85dvh;
+  padding: 0;
+  background: #111c2e;
+  color: var(--txt);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: 0 24px 100px #0008;
+  overflow: hidden;
+}
+#newsDialog[open] {
+  display: flex;
+  flex-direction: column;
+}
+#newsDialog::backdrop {
+  background: #060a12bd;
+  backdrop-filter: blur(3px);
+}
+.news-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 22px;
+  background: #111c2e;
+  border-bottom: 1px solid var(--line);
+  flex: 0 0 auto;
+}
+.news-heading h3 {
+  flex: 1;
+  margin: 0;
+  font-size: 18px;
+}
+#closeNews {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  color: var(--muted);
+  font-size: 25px;
+}
+#closeNews:hover {
+  background: #7db6ff12;
+  color: var(--txt);
+}
+#newsScroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 20px 24px 26px;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #536f96 #111c2e;
+  scrollbar-gutter: stable;
+}
+#newsScroll::-webkit-scrollbar {
+  width: 8px;
+}
+#newsScroll::-webkit-scrollbar-track {
+  background: #111c2e;
+}
+#newsScroll::-webkit-scrollbar-thumb {
+  background: #536f96;
+  border: 2px solid #111c2e;
+  border-radius: 8px;
+}
+@media (max-width:560px) {
+  .header-actions {
+    gap: 8px;
+  }
+  .news-heading {
+    padding: 16px 18px;
+  }
+  #newsScroll {
+    padding: 18px;
+  }
+}
+.nui {
+  font: 14px/1.65 system-ui,Arial,sans-serif;
+  color: #eef5ff;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.nui [hidden] {
+  display: none !important;
+}
+.nui button,.nui input,.nui select,.nui textarea {
+  font: inherit;
+  box-sizing: border-box;
+}
+.nui button {
+  cursor: pointer;
+  color: #eef5ff;
+  background: #233b5c;
+  border: 1px solid #2d3e5a;
+  border-radius: 8px;
+  padding: 7px 11px;
+  line-height: 1.4;
+}
+.nui button:hover {
+  border-color: #7db6ff;
+}
+.nui button:disabled {
+  opacity: .5;
+  cursor: wait;
+}
+.nui .nu-link {
+  padding: 0;
+  background: none;
+  border: 0;
+  color: #a7b4c8;
+  border-radius: 0;
+}
+.nui .nu-link:hover {
+  color: #7db6ff;
+}
+.nui .nu-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 0 0 20px;
+}
+.nui .nu-actions.end {
+  margin: 20px 0 0;
+  justify-content: flex-end;
+}
+.nui .nu-status {
+  color: #a7b4c8;
+  font-size: 12px;
+  white-space: pre-wrap;
+  margin: 0 0 15px;
+}
+.nui .nu-error {
+  color: #ffad9b;
+}
+.nui .nu-meta {
+  color: #a7b4c8;
+  font-size: 12px;
+  margin: 0 0 24px;
+}
+.nui .nu-title {
+  margin: 0 0 10px;
+  font-size: clamp(21px,3vw,25px);
+  line-height: 1.3;
+  color: #eef5ff;
+}
+.nui .nu-list-row {
+  display: grid;
+  grid-template-columns: 7px minmax(0,1fr) 12px;
+  gap: 12px;
+  align-items: start;
+  text-align: left;
+  width: 100%;
+  padding: 19px 0;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid #2d3e5a;
+  border-radius: 0;
+}
+.nui .nu-list-row:last-child {
+  border-bottom: 0;
+}
+.nui .nu-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #ec777e;
+  margin-top: 7px;
+}
+.nui .nu-read .nu-dot {
+  background: transparent;
+}
+.nui .nu-row-title {
+  display: block;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #eef5ff;
+}
+.nui .nu-read .nu-row-title {
+  color: #93a3bb;
+}
+.nui .nu-list-row:hover .nu-row-title {
+  color: #7db6ff;
+}
+.nui .nu-row-meta {
+  display: block;
+  margin-top: 7px;
+  color: #a7b4c8;
+  font-size: 12px;
+}
+.nui .nu-draft {
+  color: #ffbf69;
+}
+.nui .nu-arrow {
+  color: #7a8ca6;
+  font-size: 20px;
+}
+.nui .nu-article {
+  max-width: 600px;
+  margin: 0 auto;
+}
+.nui .nu-body {
+  line-height: 1.8;
+}
+.nui .nu-body p {
+  margin: 20px 0;
+}
+.nui .nu-body h3 {
+  margin: 30px 0 14px;
+  font-size: 19px;
+  line-height: 1.4;
+}
+.nui .nu-body figure {
+  margin: 24px 0;
+  width: 100%;
+}
+.nui .nu-body img {
+  display: block;
+  width: 100%;
+  max-width: 600px;
+  height: auto;
+  margin: auto;
+  border-radius: 8px;
+}
+.nui .nu-body>:first-child {
+  margin-top: 0;
+}
+.nui .nu-body>:last-child {
+  margin-bottom: 0;
+}
+.nui .nu-body ol {
+  padding-left: 24px;
+  margin: 18px 0 24px;
+}
+.nui .nu-body li {
+  margin: 12px 0;
+  padding-left: 3px;
+}
+.nui .nu-body a {
+  display: inline;
+  color: #7db6ff;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  background: none;
+  border: 0;
+  padding: 0;
+}
+.nui .nu-body blockquote {
+  margin: 24px 0;
+  padding: 13px 16px;
+  border-left: 3px solid #edac52;
+  background: #ffbf690b;
+  border-radius: 0 8px 8px 0;
+  color: #ffbf69;
+  font-size: 13px;
+}
+.nui .nu-body .nu-fine {
+  margin-top: 28px;
+  color: #a7b4c8;
+  font-size: 12px;
+}
+.nui .nu-image-error {
+  padding: 20px;
+  border: 1px dashed #2d3e5a;
+  border-radius: 8px;
+  color: #a7b4c8;
+  text-align: center;
+  font-size: 13px;
+}
+.nui .nu-form {
+  display: grid;
+  gap: 14px;
+}
+.nui label {
+  display: grid;
+  gap: 5px;
+  color: #a7b4c8;
+  font-size: 12px;
+}
+.nui input,.nui select,.nui textarea {
+  width: 100%;
+  background: #0e1727;
+  color: #eef5ff;
+  border: 1px solid #2d3e5a;
+  border-radius: 8px;
+  padding: 9px 11px;
+  line-height: 1.5;
+}
+.nui textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+.nui input:focus,.nui select:focus,.nui textarea:focus {
+  outline: 1px solid #7db6ff;
+}
+.nui .nu-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.nui .nu-block {
+  border: 1px solid #2d3e5a;
+  border-radius: 10px;
+  padding: 12px;
+  margin: 14px 0;
+  background: #172338;
+}
+.nui .nu-block-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.nui .nu-block-top select {
+  flex: 1;
+  min-width: 0;
+}
+.nui .nu-block-top button {
+  padding: 5px 8px;
+}
+.nui .nu-help {
+  color: #a7b4c8;
+  font-size: 12px;
+  margin: 0 0 12px;
+}
+.nui .nu-publish {
+  background: #7db6ff;
+  color: #0d1526;
+  border-color: #7db6ff;
+}
+.nui .nu-danger {
+  color: #ffabab;
+}
+.nui .nu-published-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.nui .nu-published-check input {
+  width: auto;
+}
+.nu-badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  background: #ec777e20;
+  color: #ec777e;
+  border-radius: 5px;
+  font-size: 10px;
+  line-height: 1;
+}
+@media (max-width:460px) {
+  .nui .nu-fields {
+    grid-template-columns: 1fr;
+  }
+  .nui .nu-block {
+    padding: 9px;
+  }
+}
+  </style>
+ </head>
+ <body>
+  <header>
+   <div class="header-top">
+    <h1>
+     В поисках ИНЛО
+    </h1>
+    <div class="header-actions">
+     <button aria-controls="newsDialog" aria-haspopup="dialog" id="newsButton" type="button">
+      Новости
+      <span class="nu-badge" hidden="" id="newsBadge">
+      </span>
+     </button>
+     <button id="loginBtn" type="button">
+      Вход
+     </button>
+    </div>
+   </div>
+   <span id="syncStatus">
+    Подключаемся к данным…
+   </span>
+   <div hidden="" id="connectionTools">
+    <button id="retryData" type="button">
+     Повторить подключение
+    </button>
+   </div>
+   <div hidden="" id="reportInfo">
+    <button id="lastReportButton" type="button">
+     См. последний отчёт
+    </button>
+    <span id="lastReportDate">
+    </span>
+   </div>
+   <div class="toolbar">
+    <div class="toolbar-left">
+     <button id="modeBtn" style="display:none" type="button">
+      Редактировать
+     </button>
+     <div class="undo-redo">
+      <button id="undoBtn" style="display:none" title="Отменить последнее действие" type="button">
+       Вернуть
+      </button>
+      <button id="redoBtn" style="display:none" title="Повторить отменённое действие" type="button">
+       Повторить
+      </button>
+     </div>
+    </div>
+    <div class="toolbar-right">
+     <button hidden="" id="inactiveViewBtn" type="button">
+      Неактивные: показаны
+     </button>
+    </div>
+   </div>
+   <nav aria-label="Категории" class="category-tabs" id="categoryTabs">
+   </nav>
+  </header>
+  <main id="main">
+  </main>
+  <div class="modal-backdrop" id="loginModal">
+   <div class="modal">
+    <h3>
+     Вход только для администратора
+    </h3>
+    <div class="form-row">
+     <label for="loginEmail">
+      Email
+     </label>
+     <input autocomplete="username" id="loginEmail" type="email"/>
+    </div>
+    <div class="form-row">
+     <label for="loginPassword">
+      Пароль
+     </label>
+     <input autocomplete="current-password" id="loginPassword" type="password"/>
+    </div>
+    <div class="modal-actions">
+     <button id="loginCancel" type="button">
+      Отмена
+     </button>
+     <button class="primary-btn" id="loginSubmit" type="button">
+      Войти
+     </button>
+    </div>
+   </div>
+  </div>
+  <div class="modal-backdrop" id="modalBackdrop">
+   <div class="modal">
+    <div class="modal-header">
+     <h3 id="modalTitle">
+      Карточка предмета
+     </h3>
+     <button class="modal-switch on" id="editEnabledDot" type="button">
+      <span class="switch-label">
+       вкл
+      </span>
+      <span class="switch-dot">
+      </span>
+     </button>
+    </div>
+    <div class="form-row">
+     <label for="editItem">
+      Предмет *
+     </label>
+     <select id="editItem">
+     </select>
+     <span class="field-error">
+      Выберите предмет из справочника
+     </span>
+    </div>
+    <div class="split-row">
+     <div class="form-row">
+      <label for="editNickname">
+       Никнейм (необязательно)
+      </label>
+      <input id="editNickname" type="text"/>
+     </div>
+     <div class="form-row">
+      <label for="editHref">
+       Ссылка *
+      </label>
+      <div class="input-with-icon">
+       <input id="editHref" type="text"/>
+       <button class="icon-btn" id="editHrefUnlock" title="Разблокировать ссылку" type="button">
+        <svg fill="none" stroke="currentColor" stroke-width="1.6" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+         <path d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" stroke-linecap="round" stroke-linejoin="round">
+         </path>
+        </svg>
+       </button>
+      </div>
+      <span class="field-error" id="editHrefError">
+       Заполните это поле
+      </span>
+     </div>
+    </div>
+    <div class="modal-actions">
+     <button id="cancelEdit" type="button">
+      Отмена
+     </button>
+     <button id="saveEdit" type="button">
+      Сохранить
+     </button>
+    </div>
+   </div>
+  </div>
+  <div class="toast" id="toast">
+  </div>
+  <dialog id="lastReportDialog">
+   <div class="report-heading">
+    <h3>
+     Последний отчёт
+    </h3>
+    <button aria-label="Закрыть" id="closeLastReport" type="button">
+     ×
+    </button>
+   </div>
+   <div id="reportDialogDate">
+   </div>
+   <div id="lastReportText">
+   </div>
+   <div hidden="" id="lastReportNote">
+   </div>
+  </dialog>
+  <dialog aria-labelledby="newsDialogTitle" id="newsDialog">
+   <div class="news-heading">
+    <h3 id="newsDialogTitle">
+     Новости
+    </h3>
+    <button aria-label="Закрыть новости" id="closeNews" type="button">
+     ×
+    </button>
+   </div>
+   <div id="newsScroll">
+    <div id="newsMount">
+     <p>
+      Подключаемся к новостям…
+     </p>
+    </div>
+   </div>
+  </dialog>
+  <script type="module">
+   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-analytics.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-import { initializeFirestore, doc, onSnapshot, collection, runTransaction, getDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
-const firebaseConfig={
- apiKey:"AIzaSyAjIY9iH0gZT9WalyKTUh6zNinBNvt9aqQ",
- authDomain:"ovni-b5823.firebaseapp.com",
- databaseURL:"https://ovni-b5823-default-rtdb.europe-west1.firebasedatabase.app",
- projectId:"ovni-b5823",storageBucket:"ovni-b5823.firebasestorage.app",
- messagingSenderId:"916848124747",appId:"1:916848124747:web:7fa20edb5701619498fece",measurementId:"G-ZCKKVMYFVN"
-};
+import { initializeFirestore, doc, onSnapshot, collection, runTransaction, getDoc, getDocs, query, where, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+const firebaseConfig={apiKey:"AIzaSyAjIY9iH0gZT9WalyKTUh6zNinBNvt9aqQ",authDomain:"ovni-b5823.firebaseapp.com",databaseURL:"https://ovni-b5823-default-rtdb.europe-west1.firebasedatabase.app",projectId:"ovni-b5823",storageBucket:"ovni-b5823.firebasestorage.app",messagingSenderId:"916848124747",appId:"1:916848124747:web:7fa20edb5701619498fece",measurementId:"G-ZCKKVMYFVN"};
 const ADMIN_UID="xOqvdkpV57U8BSfnjePCRJRiaOi2";
 const DOC_PATH=["cards","board"];
 const app=initializeApp(firebaseConfig);
@@ -140,25 +1335,65 @@ function formatUpdateDate(ts){if(!ts)return "";const d=new Date(ts);return `Об
 let data={},order=[],lastUpdatedAt=null,boardVersion=0,showInactive=true;
 const state={editing:false,isAdmin:false,history:[],future:[],pending:null,activeModal:null,drag:null,sectionDrag:null,hrefUnlocked:false,editEnabled:true,catalogReady:false};
 const networkState={boardReady:false,catalogReady:false,boardLive:false,catalogLive:false,boardIssue:'',catalogIssue:'',restActive:false};
-const categoryTabs=document.getElementById("categoryTabs");
-const main=document.getElementById("main");
-const modeBtn=document.getElementById("modeBtn");
-const undoBtn=document.getElementById("undoBtn");
-const redoBtn=document.getElementById("redoBtn");
-const loginBtn=document.getElementById("loginBtn");
-const syncStatus=document.getElementById("syncStatus");
-const loginModal=document.getElementById("loginModal");
-const loginEmail=document.getElementById("loginEmail");
-const loginPassword=document.getElementById("loginPassword");
-const loginSubmit=document.getElementById("loginSubmit");
-const loginCancel=document.getElementById("loginCancel");
-const modalBackdrop=document.getElementById("modalBackdrop");
-const editHref=document.getElementById("editHref");
-const editHrefUnlock=document.getElementById("editHrefUnlock");
-const editNickname=document.getElementById("editNickname");
-const editEnabledDot=document.getElementById("editEnabledDot");
-const editEnabledLabel=editEnabledDot.querySelector(".switch-label");
-const toast=document.getElementById("toast");
+const categoryTabs=document.getElementById("categoryTabs"),main=document.getElementById("main"),modeBtn=document.getElementById("modeBtn"),undoBtn=document.getElementById("undoBtn"),redoBtn=document.getElementById("redoBtn"),loginBtn=document.getElementById("loginBtn"),syncStatus=document.getElementById("syncStatus"),loginModal=document.getElementById("loginModal"),loginEmail=document.getElementById("loginEmail"),loginPassword=document.getElementById("loginPassword"),loginSubmit=document.getElementById("loginSubmit"),loginCancel=document.getElementById("loginCancel"),modalBackdrop=document.getElementById("modalBackdrop"),editHref=document.getElementById("editHref"),editHrefUnlock=document.getElementById("editHrefUnlock"),editNickname=document.getElementById("editNickname"),editEnabledDot=document.getElementById("editEnabledDot"),editEnabledLabel=editEnabledDot.querySelector(".switch-label"),toast=document.getElementById("toast");
+
+function createNewsUI(container,driver,options={}) {
+  const READ_KEY=options.readKey||'ovni-news-read-v2';
+  let records=[],read=new Set(),admin=false,view='list',selected=null,draft=null,busy=false,loaded=false,dirty=false,loadSequence=0;
+  const node=(tag,cls,text)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e;};
+  container.classList.add('nui');
+  const status=node('div','nu-status');status.setAttribute('role','status');status.hidden=true;
+  const area=node('div');container.replaceChildren(status,area);
+  const types=[['paragraph','Абзац'],['heading','Подзаголовок'],['image','Картинка'],['warning','Предупреждение'],['list','Нумерованный список'],['fine','Серая подпись']];
+  function message(text='',error=false){status.textContent=text;status.hidden=!text;status.classList.toggle('nu-error',error);}
+  function readLocal(){try{const value=JSON.parse(localStorage.getItem(READ_KEY)||'[]');if(Array.isArray(value))read=new Set(value.filter(x=>typeof x==='string'));}catch{}}
+  function saveLocal(){try{localStorage.setItem(READ_KEY,JSON.stringify([...read]));}catch{}}
+  function badge(){options.onUnread?.(records.filter(n=>n.published&&!read.has(n.id)).length);}
+  function dateText(value){if(!/^\d{4}-\d{2}-\d{2}$/.test(value||''))return '';const [y,m,d]=value.split('-').map(Number);return new Intl.DateTimeFormat('ru-RU',{day:'numeric',month:'long',year:'numeric'}).format(new Date(y,m-1,d));}
+  function safeURL(raw,image=false){try{const u=new URL(String(raw||'').trim(),options.siteBase||document.baseURI);if(u.protocol!=='https:')return null;if(image&&u.origin!==new URL(options.siteBase||document.baseURI).origin)return null;return u.href;}catch{return null;}}
+  function rich(parent,text){const value=String(text||''),rx=/\[([^\]\n]+)\]\(([^\s)]+)\)/g;let pos=0,match;while((match=rx.exec(value))){parent.append(document.createTextNode(value.slice(pos,match.index)));const url=safeURL(match[2]);if(url){const a=node('a','',match[1]);const u=new URL(url);a.href=u.origin===location.origin?u.pathname+u.search+u.hash:url;a.target='_blank';a.rel='noopener noreferrer';parent.append(a);}else parent.append(document.createTextNode(match[0]));pos=rx.lastIndex;}parent.append(document.createTextNode(value.slice(pos)));}
+  function body(parent,blocks){for(const block of blocks||[]){if(!block||typeof block!=='object')continue;let e;if(block.type==='image'){const url=safeURL(block.src,true);if(!url)continue;e=node('figure');const img=node('img');img.src=url;img.alt=String(block.alt||'');img.loading='lazy';img.decoding='async';img.addEventListener('error',()=>{const f=node('div','nu-image-error','Изображение пока недоступно');img.replaceWith(f);},{once:true});e.append(img);}else if(block.type==='list'){e=node('ol');for(const text of block.items||[]){const li=node('li');rich(li,text);e.append(li);}}else{const tag=block.type==='heading'?'h3':block.type==='warning'?'blockquote':'p';e=node(tag,block.type==='fine'?'nu-fine':'');rich(e,block.text);}parent.append(e);}}
+  function button(text,fn,cls=''){const b=node('button',cls,text);b.type='button';b.addEventListener('click',fn);return b;}
+  function scrollTop(){options.scrollElement?.scrollTo({top:0,behavior:'instant'});}
+  function leaveEditor(){return !dirty||confirm('Выйти без сохранения изменений новости?');}
+  function list(){view='list';selected=null;draft=null;dirty=false;area.replaceChildren();const actions=node('div','nu-actions');actions.append(button('Обновить',()=>refresh(true),'nu-link'));if(admin){actions.append(button('+ Добавить новость',()=>edit(null)));if(options.seed)actions.append(button('Заготовка первой новости',()=>{edit(null,options.seed());}));}area.append(actions);
+    if(!records.length){area.append(node('p','nu-help',loaded?'Новостей пока нет.':'Загрузка новостей…'));return;}
+    for(const n of records){const row=button('',()=>article(n),'nu-list-row'+(read.has(n.id)?' nu-read':''));const dot=node('span','nu-dot');dot.setAttribute('aria-hidden','true');const text=node('span');text.append(node('span','nu-row-title',n.title||'Без заголовка'));text.append(node('span','nu-row-meta',`${dateText(n.date)} · ${n.author||'barsa'}`));if(!n.published)text.append(node('span','nu-draft','Черновик'));const arrow=node('span','nu-arrow','›');arrow.setAttribute('aria-hidden','true');row.append(dot,text,arrow);area.append(row);}badge();}
+  function article(n,preview=false){view=preview?'preview':'article';selected=n;area.replaceChildren();const actions=node('div','nu-actions');actions.append(button(preview?'← К редактированию':'← Все новости',()=>{if(preview)editor();else{list();scrollTop();}},'nu-link'));if(admin&&!preview)actions.append(button('Редактировать',()=>edit(n),'nu-link'));area.append(actions);const article=node('article','nu-article');const title=node('h2','nu-title',n.title||'Без заголовка');article.append(title,node('div','nu-meta',`${dateText(n.date)} · ${n.author||'barsa'}${n.published?'':' · Черновик'}`));const content=node('div','nu-body');body(content,n.blocks);article.append(content);area.append(article);if(n.published&&!preview){read.add(n.id);saveLocal();badge();}scrollTop();}
+  function field(label,value,type='text'){const l=node('label','',label),input=node('input');input.type=type;input.value=value||'';l.append(input);return{label:l,input};}
+  function edit(n,seed){view='edit';draft=JSON.parse(JSON.stringify(seed||n||{title:'',author:'barsa',date:new Date().toLocaleDateString('sv-SE'),published:false,blocks:[]}));if(!draft.blocks)draft.blocks=[];dirty=!!seed;editor();scrollTop();}
+  function editor(){view='edit';area.replaceChildren();const actions=node('div','nu-actions');actions.append(button('← Все новости',()=>{if(leaveEditor()){list();scrollTop();}},'nu-link'));area.append(actions,node('h2','nu-title',draft.id?'Редактирование новости':'Новая новость'));
+    const form=node('div','nu-form');const title=field('Заголовок',draft.title);title.input.maxLength=200;title.input.addEventListener('input',()=>{draft.title=title.input.value;dirty=true;});form.append(title.label);
+    const fields=node('div','nu-fields'),author=field('Автор',draft.author),date=field('Дата',draft.date,'date');author.input.maxLength=60;author.input.addEventListener('input',()=>{draft.author=author.input.value;dirty=true;});date.input.addEventListener('input',()=>{draft.date=date.input.value;dirty=true;});fields.append(author.label,date.label);form.append(fields);area.append(form);
+    area.append(node('p','nu-help','Ссылки в тексте: [название](https://адрес). Картинки — путь из репозитория, например images/news/news-neponel.png. Один пункт списка — одна строка.'));
+    const blocks=node('div');area.append(blocks);
+    draft.blocks.forEach((block,index)=>{const box=node('div','nu-block'),top=node('div','nu-block-top'),select=node('select');for(const [value,label]of types){const option=node('option','',label);option.value=value;select.append(option);}select.value=block.type;select.addEventListener('change',()=>{draft.blocks[index]={type:select.value,...(select.value==='image'?{src:'',alt:''}:select.value==='list'?{items:[]}:{text:''})};dirty=true;editor();});top.append(select);
+      const up=button('↑',()=>{[draft.blocks[index-1],draft.blocks[index]]=[draft.blocks[index],draft.blocks[index-1]];dirty=true;editor();});up.disabled=index===0;up.title='Выше';const down=button('↓',()=>{[draft.blocks[index+1],draft.blocks[index]]=[draft.blocks[index],draft.blocks[index+1]];dirty=true;editor();});down.disabled=index===draft.blocks.length-1;down.title='Ниже';top.append(up,down,button('×',()=>{draft.blocks.splice(index,1);dirty=true;editor();},'nu-danger'));box.append(top);
+      if(block.type==='image'){const src=field('Путь к картинке',block.src),alt=field('Описание картинки',block.alt);src.input.addEventListener('input',()=>{block.src=src.input.value;dirty=true;});alt.input.addEventListener('input',()=>{block.alt=alt.input.value;dirty=true;});box.append(src.label,alt.label);}else{const input=node('textarea');input.value=block.type==='list'?(block.items||[]).join('\n'):block.text||'';input.addEventListener('input',()=>{if(block.type==='list')block.items=input.value.split('\n');else block.text=input.value;dirty=true;});box.append(input);}blocks.append(box);});
+    const add=node('div','nu-actions');for(const [type,label]of types)add.append(button('+ '+label,()=>{draft.blocks.push({type,...(type==='image'?{src:'',alt:''}:type==='list'?{items:[]}:{text:''})});dirty=true;editor();}));area.append(add);
+    const actionsEnd=node('div','nu-actions end');actionsEnd.append(button('Предпросмотр',()=>article(draft,true)),button('Сохранить черновик',()=>save(false)),button('Опубликовать',()=>save(true),'nu-publish'));if(draft.id){actionsEnd.append(button('Удалить',remove,'nu-danger'));}area.append(actionsEnd);}
+  function validate(n){if(!String(n.title||'').trim())throw new Error('Введите заголовок.');if(!String(n.author||'').trim())throw new Error('Укажите автора.');if(!/^\d{4}-\d{2}-\d{2}$/.test(n.date||''))throw new Error('Укажите дату.');if(!n.blocks.length)throw new Error('Добавьте содержимое новости.');if(n.blocks.length>100)throw new Error('Не больше 100 блоков в новости.');for(const b of n.blocks){if(!types.some(([t])=>t===b.type))throw new Error('Неизвестный блок.');if(b.type==='image'&&!safeURL(b.src,true))throw new Error('Для картинки нужен HTTPS-адрес вашего сайта или путь images/…');}if(JSON.stringify(n).length>200000)throw new Error('Слишком большая новость.');}
+  async function save(published){if(busy||!admin)return;try{validate(draft);}catch(e){message(e.message,true);scrollTop();return;}busy=true;container.setAttribute('aria-busy','true');area.querySelectorAll('button').forEach(b=>b.disabled=true);message('Сохранение…');try{const now=Date.now(),id=draft.id||crypto.randomUUID(),payload={title:draft.title.trim(),author:draft.author.trim(),date:draft.date,published,blocks:JSON.parse(JSON.stringify(draft.blocks)),createdAt:Number(draft.createdAt)||now,updatedAt:now,schemaVersion:1};await driver.save(id,payload);dirty=false;draft=null;view='list';message('Новость сохранена.');await refresh(false);}catch(e){message('Не удалось сохранить: '+e.message,true);editor();}finally{busy=false;container.removeAttribute('aria-busy');}}
+  async function remove(){if(busy||!admin||!draft?.id)return;if(!confirm('Удалить эту новость без возможности восстановления?'))return;busy=true;try{await driver.remove(draft.id);dirty=false;draft=null;view='list';await refresh(false);}catch(e){message('Не удалось удалить: '+e.message,true);}finally{busy=false;}}
+  async function refresh(showLoading=true){const seq=++loadSequence,requestedAdmin=admin;if(showLoading)message('Загрузка новостей…');try{const values=await driver.list(requestedAdmin);if(seq!==loadSequence||requestedAdmin!==admin)return;records=values.filter(n=>requestedAdmin||n.published===true).sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))||Number(b.createdAt||0)-Number(a.createdAt||0));loaded=true;message();badge();if(view==='list')list();else if(view==='article'){const fresh=records.find(n=>n.id===selected?.id);if(fresh)article(fresh);else list();}}catch(e){if(seq!==loadSequence)return;message('Не удалось загрузить новости: '+e.message+(loaded?'\nПоказаны ранее загруженные записи.':''),true);}}
+  async function open(){readLocal();if(!dirty){list();scrollTop();}await refresh(true);}
+  function setAdmin(value){if(admin===value)return;admin=value;loadSequence++;records=[];loaded=false;view='list';draft=null;selected=null;dirty=false;list();refresh(false);}
+  window.addEventListener('storage',e=>{if(e.key===READ_KEY||e.key===null){read=new Set();readLocal();badge();if(view==='list')list();}});
+  readLocal();list();
+  return{open,refresh,setAdmin,canLeave:leaveEditor,initialize:()=>refresh(false)};
+}
+
+const newsCollection=collection(db,'news');
+const newsUI=createNewsUI(document.getElementById('newsMount'),{
+ async list(admin){const snap=await getDocs(admin?newsCollection:query(newsCollection,where('published','==',true)));return snap.docs.map(d=>({...d.data(),id:d.id}));},
+ async save(id,payload){if(auth.currentUser?.uid!==ADMIN_UID)throw new Error('Нужен вход администратора.');await setDoc(doc(db,'news',id),payload);},
+ async remove(id){if(auth.currentUser?.uid!==ADMIN_UID)throw new Error('Нужен вход администратора.');await deleteDoc(doc(db,'news',id));}
+},{siteBase:'https://caramellca.github.io/OVNI/',scrollElement:document.getElementById('newsScroll'),readKey:'ovni-news-read-v2',seed:()=>({"title": "Надоела проверка на бота? Решение есть", "author": "barsa", "date": "2026-11-11", "published": false, "blocks": [{"type": "image", "src": "images/news/news-neponel.png", "alt": "НЕПОНЕЛ"}, {"type": "paragraph", "text": "С 10 ноября 2026 года при попытке перейти на профиль игрока Lowadi, нас встречает уже знакомая верификация. Конечно, это раздражает, особенно когда интернет слабый, а времени ждать просто нет. Кроме того, такая «привилегия» существует исключительно на ру сервере (сюрприз-сюрприз) 🌚"}, {"type": "heading", "text": "Как решить"}, {"type": "paragraph", "text": "После нехитрых манипуляций вы сможете добавить кнопку с ИНЛО прямо на сайт:"}, {"type": "image", "src": "images/news/news-panel-screen.png", "alt": "Кнопка В поисках ИНЛО на странице Lowadi"}, {"type": "paragraph", "text": "По нажатию на кнопку появляется знакомая панель с карточками. Теперь, кликая по карточкам, вы можете посещать профили игроков без излишней верификации."}, {"type": "warning", "text": "Новый функционал недоступен для мобильных устройств. Увы и квак 🐸"}, {"type": "heading", "text": "Порядок установки"}, {"type": "list", "items": ["Установить [Tampermonkey](https://www.tampermonkey.net/) - если ещё нет.", "В меню Tampermonkey создайте новый скрипт, очистите шаблон и вставьте код кнопки (получить код можно у [barsa](https://www.lowadi.com/joueur/fiche/?id=16341858), это БЕСПЛАТНО!)", "Сохраните скрипт и обновите страницу Lowadi. Если браузер запросит разрешение для запуска, следуйте подсказкам Tampermonkey."]}, {"type": "paragraph", "text": "Вы великолепны, кайфуйте!"}, {"type": "fine", "text": "Скрипт просто читает публичный список карточек. Он не выполняет никаких игровых действий и не нарушает правил игры. Его использование не влечет никаких санкций!"}]}),onUnread(count){const b=document.getElementById('newsBadge');b.textContent=String(count);b.hidden=count===0;document.getElementById('newsButton').setAttribute('aria-label',count?`Новости: непрочитанных ${count}`:'Новости');}});
+const newsDialog=document.getElementById('newsDialog');
+document.getElementById('newsButton').addEventListener('click',()=>{if(!newsDialog.open)newsDialog.showModal();newsUI.open();});
+document.getElementById('closeNews').addEventListener('click',()=>{if(newsUI.canLeave())newsDialog.close();});
+newsDialog.addEventListener('cancel',e=>{if(!newsUI.canLeave())e.preventDefault();});
+newsUI.initialize();
 const ICON_EYE_OPEN=`<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>`;
 const ICON_EYE_CLOSED=`<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88"/></svg>`;
 const ICON_X=`<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>`;
@@ -167,113 +1402,38 @@ const BLACK_MARKET_ORDER=['defi-titans','pack-nyx','pack-harmonie','pack-hera','
 const itemKey=(item,catalog)=>String(catalog.get(item.itemId)?.identifier||item.itemId||'').toLowerCase();
 const heliosFamily=key=>key==='rayon-helios-ow'?'rayon-helios':key;
 const marketRank=key=>{const i=BLACK_MARKET_ORDER.indexOf(heliosFamily(key));return i<0?10000:i;};
-function equipmentFamily(key){if(key.startsWith('bonnet-'))return 'bonnet';if(key.startsWith('tapis-'))return 'tapis';if(key.startsWith('bande-'))return 'bande';if(key.startsWith('selle-'))return 'selle';if(key.startsWith('bride-'))return 'bride';return 'other';}
+function equipmentFamily(key){if(key.startsWith('bonnet-'))return'bonnet';if(key.startsWith('tapis-'))return'tapis';if(key.startsWith('bande-'))return'bande';if(key.startsWith('selle-'))return'selle';if(key.startsWith('bride-'))return'bride';return'other';}
+function layoutBlocks(groupId,entries,catalog){const keyOf=e=>itemKey(e.item,catalog),labelOf=e=>String(catalog.get(e.item.itemId)?.name||e.item.itemId||'');const bonusFirst=['pack-poseidon','pack-bonus','pactole-cresus'],bonusOrder=['main','crampons','eperons','longe','cloches','cravache'],equipOrder=['bonnet','tapis','bande','selle','bride','other'];function compareItems(a,b){const ka=keyOf(a),kb=keyOf(b);if(groupId==='black-market'){const d=marketRank(ka)-marketRank(kb);if(d)return d;if(heliosFamily(ka)==='rayon-helios'&&heliosFamily(kb)==='rayon-helios'){const d2=(ka==='rayon-helios'?0:1)-(kb==='rayon-helios'?0:1);if(d2)return d2;}}if(groupId==='bonuses'){const ia=bonusFirst.indexOf(ka),ib=bonusFirst.indexOf(kb);if(ia>=0||ib>=0){const d=(ia<0?999:ia)-(ib<0?999:ib);if(d)return d;}}return labelOf(a).localeCompare(labelOf(b),'ru')||ka.localeCompare(kb)||String(a.item.itemId).localeCompare(String(b.item.itemId))||a.position-b.position;}
+const buckets=new Map();for(const e of entries){const k=keyOf(e);let block;if(groupId==='black-market')block=heliosFamily(k);else if(groupId==='equipment')block=equipmentFamily(k);else if(groupId==='bonuses')block=bonusFirst.includes(k)?'main':k;else if(groupId==='agriculture'||groupId==='check-list')block=k;else block='all';if(!buckets.has(block))buckets.set(block,[]);buckets.get(block).push(e);}for(const list of buckets.values())list.sort(compareItems);if(groupId==='black-market'){const singles=[],repeat=[];for(const[key,list]of buckets){if(list.length===1)singles.push(...list);else repeat.push({key,entries:list});}singles.sort(compareItems);repeat.sort((a,b)=>marketRank(a.key)-marketRank(b.key)||compareItems(a.entries[0],b.entries[0]));return[...(singles.length?[{key:'unique',entries:singles}]:[]),...repeat];}const blocks=[...buckets].map(([key,entries])=>({key,entries}));function blockRank(key){if(groupId==='equipment')return equipOrder.indexOf(key);if(groupId==='bonuses'){const i=bonusOrder.indexOf(key);return i<0?999:i;}if(groupId==='agriculture')return key==='graines-pass'?0:1;if(groupId==='check-list')return key==='cadeau'?0:key==='none'?1:2;return 0;}blocks.sort((a,b)=>blockRank(a.key)-blockRank(b.key)||compareItems(a.entries[0],b.entries[0]));return blocks;}
 function hiddenEquipment1x(item,sourceSection,catalog){const entry=catalog.get(item.itemId);const group=entry?.groupId||sourceSection;if(group!=='equipment')return false;const identifiers=[entry?.identifier,item.itemId].filter(Boolean).map(v=>String(v).toLowerCase());return identifiers.some(id=>/(^|-)1x(?=-|$)/.test(id));}
 function publicCardVisible(item,sourceSection,catalog){if(!item.itemId||item.inactive===true)return false;const entry=catalog.get(item.itemId);if(!entry)return false;const group=entry.groupId||sourceSection;if(group==='check-list')return false;if(group==='agriculture'&&itemKey(item,catalog)!=='graines-pass')return false;if(hiddenEquipment1x(item,sourceSection,catalog))return false;return true;}
-function layoutBlocks(groupId,entries,catalog){
- const keyOf=e=>itemKey(e.item,catalog),labelOf=e=>String(catalog.get(e.item.itemId)?.name||e.item.itemId||'');
- const bonusFirst=['pack-poseidon','pack-bonus','pactole-cresus'],bonusOrder=['main','crampons','eperons','longe','cloches','cravache'],equipOrder=['bonnet','tapis','bande','selle','bride','other'];
- function compareItems(a,b){const ka=keyOf(a),kb=keyOf(b);if(groupId==='black-market'){const d=marketRank(ka)-marketRank(kb);if(d)return d;if(heliosFamily(ka)==='rayon-helios'&&heliosFamily(kb)==='rayon-helios'){const d2=(ka==='rayon-helios'?0:1)-(kb==='rayon-helios'?0:1);if(d2)return d2;}}if(groupId==='bonuses'){const ia=bonusFirst.indexOf(ka),ib=bonusFirst.indexOf(kb);if(ia>=0||ib>=0){const d=(ia<0?999:ia)-(ib<0?999:ib);if(d)return d;}}return labelOf(a).localeCompare(labelOf(b),'ru')||ka.localeCompare(kb)||String(a.item.itemId).localeCompare(String(b.item.itemId))||a.position-b.position;}
- const buckets=new Map();
- for(const e of entries){const k=keyOf(e);let block;if(groupId==='black-market')block=heliosFamily(k);else if(groupId==='equipment')block=equipmentFamily(k);else if(groupId==='bonuses')block=bonusFirst.includes(k)?'main':k;else if(groupId==='agriculture'||groupId==='check-list')block=k;else block='all';if(!buckets.has(block))buckets.set(block,[]);buckets.get(block).push(e);}
- for(const list of buckets.values())list.sort(compareItems);
- if(groupId==='black-market'){const singles=[],repeat=[];for(const [key,list]of buckets){if(list.length===1)singles.push(...list);else repeat.push({key,entries:list});}singles.sort(compareItems);repeat.sort((a,b)=>marketRank(a.key)-marketRank(b.key)||compareItems(a.entries[0],b.entries[0]));return [...(singles.length?[{key:'unique',entries:singles}]:[]),...repeat];}
- const blocks=[...buckets].map(([key,entries])=>({key,entries}));
- function blockRank(key){if(groupId==='equipment')return equipOrder.indexOf(key);if(groupId==='bonuses'){const i=bonusOrder.indexOf(key);return i<0?999:i;}if(groupId==='agriculture')return key==='graines-pass'?0:1;if(groupId==='check-list')return key==='cadeau'?0:key==='none'?1:2;return 0;}
- blocks.sort((a,b)=>blockRank(a.key)-blockRank(b.key)||compareItems(a.entries[0],b.entries[0]));return blocks;
-}
 function isInactive(item){return item.inactive===true;}
 function getCardId(href){try{return new URL(href).searchParams.get("id");}catch(e){return "";}}
 function getNickname(item){return item.nickname||"";}
 function getCardSubtitle(item){const nick=(getNickname(item)||"").trim();return nick?nick:getCardId(item.href);}
-function updateSyncStatusDisplay(){
- const ready=networkState.boardReady&&networkState.catalogReady,live=networkState.boardLive&&networkState.catalogLive,issue=networkState.boardIssue||networkState.catalogIssue;
- if(!ready){syncStatus.textContent=issue==='not-found'?'Сервер не нашёл данные страницы. Повторите подключение.':issue?`Не удалось загрузить данные (${issue}). Повторяем подключение…`:'Подключаемся к данным…';}
- else if(!live){syncStatus.textContent=issue?`Показаны полученные данные; соединение недоступно (${issue}).`:networkState.restActive?'Данные загружены резервным способом; подключаем обновления…':'Показаны полученные данные; подключаем обновления…';}
- else{syncStatus.textContent=state.isAdmin?'Синхронизировано':formatUpdateDate(lastUpdatedAt);}
- document.getElementById('connectionTools').hidden=ready&&live;
-}
+function updateSyncStatusDisplay(){const ready=networkState.boardReady&&networkState.catalogReady,live=networkState.boardLive&&networkState.catalogLive,issue=networkState.boardIssue||networkState.catalogIssue;if(!ready){syncStatus.textContent=issue==='not-found'?'Сервер не нашёл данные страницы. Повторите подключение.':issue?`Не удалось загрузить данные (${issue}). Повторяем подключение…`:'Подключаемся к данным…';}else if(!live){syncStatus.textContent=issue?`Показаны полученные данные; соединение недоступно (${issue}).`:networkState.restActive?'Данные загружены резервным способом; подключаем обновления…':'Показаны полученные данные; подключаем обновления…';}else{syncStatus.textContent=state.isAdmin?'Синхронизировано':formatUpdateDate(lastUpdatedAt);}document.getElementById('connectionTools').hidden=ready&&live;}
 function canEditOnline(){return networkState.boardLive&&networkState.catalogLive&&networkState.boardReady&&networkState.catalogReady;}
 const writerSession='editor-'+crypto.randomUUID();
 let saveTimer=null,saveInFlight=false;
-async function saveToCloud(){
- if(!state.isAdmin)return;
- if(!canEditOnline()){showToast('Нет подтверждённого соединения с базой. Сохранение недоступно.');return;}
- if(boardVersion!==2){showToast('Ожидалась доска schemaVersion: 2');return;}
- clearTimeout(saveTimer);
- const expectedVersion=lastUpdatedAt,payload=JSON.parse(JSON.stringify({data,order}));
- syncStatus.textContent='Сохранение…';
- saveTimer=setTimeout(async()=>{
-  saveTimer=null;saveInFlight=true;document.body.classList.add('saving-cloud');
-  try{await runTransaction(db,async transaction=>{const snap=await transaction.get(boardRef),remote=snap.data();if(!snap.exists()||remote.schemaVersion!==2||(remote.updatedAt||null)!==expectedVersion){throw new Error('Доска уже обновлена. Ваши изменения не записаны: повторите их на новой версии.');}transaction.update(boardRef,{...payload,updatedAt:Math.max(Date.now(),Number(remote.updatedAt||0)+1),lastWriter:writerSession,syncProtocolVersion:1});});syncStatus.textContent='Сохранено';}
-  catch(e){console.error(e);showToast(e.message);try{const fresh=await getDoc(boardRef);if(fresh.exists()){const r=fresh.data();data=r.data||{};order=r.order||Object.keys(data);lastUpdatedAt=r.updatedAt||null;boardVersion=r.schemaVersion||0;state.history=[];state.future=[];if(state.activeModal==='card')closeModal();render();}}catch(reloadError){console.error(reloadError);}syncStatus.textContent='Сохранение не выполнено';}
-  finally{saveInFlight=false;document.body.classList.remove('saving-cloud');}
- },400);
-}
+async function saveToCloud(){if(!state.isAdmin)return;if(!canEditOnline()){showToast('Нет подтверждённого соединения с базой. Сохранение недоступно.');return;}if(boardVersion!==2){showToast('Ожидалась доска schemaVersion: 2');return;}clearTimeout(saveTimer);const expectedVersion=lastUpdatedAt,payload=JSON.parse(JSON.stringify({data,order}));syncStatus.textContent='Сохранение…';saveTimer=setTimeout(async()=>{saveTimer=null;saveInFlight=true;document.body.classList.add('saving-cloud');try{await runTransaction(db,async transaction=>{const snap=await transaction.get(boardRef),remote=snap.data();if(!snap.exists()||remote.schemaVersion!==2||(remote.updatedAt||null)!==expectedVersion){throw new Error('Доска уже обновлена. Ваши изменения не записаны: повторите их на новой версии.');}transaction.update(boardRef,{...payload,updatedAt:Math.max(Date.now(),Number(remote.updatedAt||0)+1),lastWriter:writerSession,syncProtocolVersion:1});});syncStatus.textContent='Сохранено';}catch(e){console.error(e);showToast(e.message);try{const fresh=await getDoc(boardRef);if(fresh.exists()){const r=fresh.data();data=r.data||{};order=r.order||Object.keys(data);lastUpdatedAt=r.updatedAt||null;boardVersion=r.schemaVersion||0;state.history=[];state.future=[];if(state.activeModal==='card')closeModal();render();}}catch(reloadError){console.error(reloadError);}syncStatus.textContent='Сохранение не выполнено';}finally{saveInFlight=false;document.body.classList.remove('saving-cloud');}},400);}
 let boardUnsubscribe=null,catalogUnsubscribe=null;
 let connectionGeneration=0,connectionRetryTimer=null,restTimer=null,restBusy=false,retryCount=0;
 const permanentErrors=new Set(['permission-denied','unauthenticated','invalid-argument','failed-precondition']);
 function connectionErrorCode(error){const code=String(error?.code||'network-error').replace(/^firestore\//,'');return /^[a-z-]{1,60}$/.test(code)?code:'network-error';}
-function applyBoard(remote){
- if(!remote||remote.schemaVersion!==2||!remote.data||typeof remote.data!=='object'||!Array.isArray(remote.order))throw {code:'invalid-data'};
- if(lastUpdatedAt!==null&&Number(remote.updatedAt||0)<Number(lastUpdatedAt))return;
- const versionChanged=(remote.updatedAt||null)!==lastUpdatedAt;
- if(networkState.boardReady&&!versionChanged)return;
- const externalChange=lastUpdatedAt!==null&&versionChanged&&remote.lastWriter!==writerSession;
- if(externalChange){clearTimeout(saveTimer);saveTimer=null;state.history=[];state.future=[];if(state.activeModal==='card')closeModal();if(state.editing)showToast('Доска обновлена извне. Несохранённые правки отменены; повторите их при необходимости.');}
- boardVersion=remote.schemaVersion;data=remote.data;order=remote.order;lastUpdatedAt=remote.updatedAt||null;networkState.boardReady=true;render();
-}
+function applyBoard(remote){if(!remote||remote.schemaVersion!==2||!remote.data||typeof remote.data!=='object'||!Array.isArray(remote.order))throw {code:'invalid-data'};if(lastUpdatedAt!==null&&Number(remote.updatedAt||0)<Number(lastUpdatedAt))return;const versionChanged=(remote.updatedAt||null)!==lastUpdatedAt;if(networkState.boardReady&&!versionChanged)return;const externalChange=lastUpdatedAt!==null&&versionChanged&&remote.lastWriter!==writerSession;if(externalChange){clearTimeout(saveTimer);saveTimer=null;state.history=[];state.future=[];if(state.activeModal==='card')closeModal();if(state.editing)showToast('Доска обновлена извне. Несохранённые правки отменены; повторите их при необходимости.');}boardVersion=remote.schemaVersion;data=remote.data;order=remote.order;lastUpdatedAt=remote.updatedAt||null;networkState.boardReady=true;render();}
 function applyCatalog(entries){if(!entries.length)throw {code:'empty-catalog'};catalog=new Map(entries);state.catalogReady=true;networkState.catalogReady=true;render();if(state.activeModal==='card'&&state.pending){const selected=editItem.value,p=state.pending;populateItemSelect(p.index>=0?data[p.section]?.items[p.index]:null);if(catalog.has(selected))editItem.value=selected;}}
 function queueConnectionRetry(code){if(permanentErrors.has(code)||connectionRetryTimer)return;const delay=Math.min(60000,5000*2**Math.min(retryCount++,4));connectionRetryTimer=setTimeout(()=>{connectionRetryTimer=null;startDataListeners();},delay);}
 function dataListenError(kind,error){const code=connectionErrorCode(error);networkState[kind+'Live']=false;networkState[kind+'Issue']=code;console.error('Firestore '+kind,error);updateSyncStatusDisplay();queueConnectionRetry(code);}
-function startDataListeners(){
- if(saveInFlight){queueConnectionRetry('network-error');return;}
- const generation=++connectionGeneration;
- if(boardUnsubscribe)boardUnsubscribe();if(catalogUnsubscribe)catalogUnsubscribe();
- clearTimeout(connectionRetryTimer);connectionRetryTimer=null;clearTimeout(restTimer);restTimer=null;
- networkState.boardLive=false;networkState.catalogLive=false;networkState.boardIssue='';networkState.catalogIssue='';updateSyncStatusDisplay();
- try{
-  boardUnsubscribe=onSnapshot(boardRef,{includeMetadataChanges:true},snap=>{
-   if(generation!==connectionGeneration)return;
-   if(!snap.exists()){networkState.boardLive=false;if(!snap.metadata.fromCache)networkState.boardIssue='not-found';updateSyncStatusDisplay();return;}
-   try{applyBoard(snap.data());networkState.boardLive=!snap.metadata.fromCache;networkState.boardIssue='';if(networkState.boardLive)retryCount=0;updateSyncStatusDisplay();}catch(error){dataListenError('board',error);}
-  },error=>{if(generation===connectionGeneration)dataListenError('board',error);});
-  catalogUnsubscribe=onSnapshot(catalogCol,{includeMetadataChanges:true},snap=>{
-   if(generation!==connectionGeneration)return;
-   if(!snap.docs.length&&snap.metadata.fromCache){networkState.catalogLive=false;updateSyncStatusDisplay();return;}
-   try{applyCatalog(snap.docs.map(d=>[d.id,d.data()]));networkState.catalogLive=!snap.metadata.fromCache;networkState.catalogIssue='';updateSyncStatusDisplay();}catch(error){dataListenError('catalog',error);}
-  },error=>{if(generation===connectionGeneration)dataListenError('catalog',error);});
- }catch(error){dataListenError('board',error);}
- restTimer=setTimeout(tryRestRead,10000);
-}
+function startDataListeners(){if(saveInFlight){queueConnectionRetry('network-error');return;}const generation=++connectionGeneration;if(boardUnsubscribe)boardUnsubscribe();if(catalogUnsubscribe)catalogUnsubscribe();clearTimeout(connectionRetryTimer);connectionRetryTimer=null;clearTimeout(restTimer);restTimer=null;networkState.boardLive=false;networkState.catalogLive=false;networkState.boardIssue='';networkState.catalogIssue='';updateSyncStatusDisplay();try{boardUnsubscribe=onSnapshot(boardRef,{includeMetadataChanges:true},snap=>{if(generation!==connectionGeneration)return;if(!snap.exists()){networkState.boardLive=false;if(!snap.metadata.fromCache)networkState.boardIssue='not-found';updateSyncStatusDisplay();return;}try{applyBoard(snap.data());networkState.boardLive=!snap.metadata.fromCache;networkState.boardIssue='';if(networkState.boardLive)retryCount=0;updateSyncStatusDisplay();}catch(error){dataListenError('board',error);}},error=>{if(generation===connectionGeneration)dataListenError('board',error);});catalogUnsubscribe=onSnapshot(catalogCol,{includeMetadataChanges:true},snap=>{if(generation!==connectionGeneration)return;if(!snap.docs.length&&snap.metadata.fromCache){networkState.catalogLive=false;updateSyncStatusDisplay();return;}try{applyCatalog(snap.docs.map(d=>[d.id,d.data()]));networkState.catalogLive=!snap.metadata.fromCache;networkState.catalogIssue='';updateSyncStatusDisplay();}catch(error){dataListenError('catalog',error);}},error=>{if(generation===connectionGeneration)dataListenError('catalog',error);});}catch(error){dataListenError('board',error);}restTimer=setTimeout(tryRestRead,10000);}
 function decodeFirestoreValue(value){if('nullValue'in value)return null;if('booleanValue'in value)return value.booleanValue;if('integerValue'in value)return Number(value.integerValue);if('doubleValue'in value)return Number(value.doubleValue);if('stringValue'in value)return value.stringValue;if('timestampValue'in value)return value.timestampValue;if('arrayValue'in value)return (value.arrayValue.values||[]).map(decodeFirestoreValue);if('mapValue'in value)return Object.fromEntries(Object.entries(value.mapValue.fields||{}).map(([k,v])=>[k,decodeFirestoreValue(v)]));throw {code:'invalid-rest-data'};}
 function decodeFirestoreDocument(document){return Object.fromEntries(Object.entries(document.fields||{}).map(([key,value])=>[key,decodeFirestoreValue(value)]));}
-async function restJSON(resource,parameters={}){
- const base=`https://firestore.googleapis.com/v1/projects/${encodeURIComponent(firebaseConfig.projectId)}/databases/(default)/documents/`,url=new URL(resource,base);
- url.searchParams.set('key',firebaseConfig.apiKey);for(const [key,value]of Object.entries(parameters))if(value)url.searchParams.set(key,value);
- const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),20000);
- try{const response=await fetch(url,{signal:controller.signal,credentials:'omit',cache:'no-store'});if(!response.ok)throw {code:response.status===404?'not-found':response.status===403?'permission-denied':response.status===401?'unauthenticated':'network-error'};return await response.json();}
- catch(error){if(error?.name==='AbortError')throw {code:'timeout'};throw error;}finally{clearTimeout(timer);}
-}
+async function restJSON(resource,parameters={}){const base=`https://firestore.googleapis.com/v1/projects/${encodeURIComponent(firebaseConfig.projectId)}/databases/(default)/documents/`,url=new URL(resource,base);url.searchParams.set('key',firebaseConfig.apiKey);for(const [key,value]of Object.entries(parameters))if(value)url.searchParams.set(key,value);const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),20000);try{const response=await fetch(url,{signal:controller.signal,credentials:'omit',cache:'no-store'});if(!response.ok)throw {code:response.status===404?'not-found':response.status===403?'permission-denied':response.status===401?'unauthenticated':'network-error'};return await response.json();}catch(error){if(error?.name==='AbortError')throw {code:'timeout'};throw error;}finally{clearTimeout(timer);}}
 async function restCatalog(){const entries=[],tokens=new Set();let token='';for(let page=0;page<20;page++){const result=await restJSON('itemCatalog',{pageSize:'300',pageToken:token});for(const document of result.documents||[]){if(!document.name)throw {code:'invalid-rest-data'};const id=decodeURIComponent(document.name.split('/').pop());entries.push([id,decodeFirestoreDocument(document)]);}token=result.nextPageToken||'';if(!token)return entries;if(tokens.has(token))throw {code:'invalid-rest-data'};tokens.add(token);}throw {code:'catalog-too-large'};}
-async function tryRestRead(){
- clearTimeout(restTimer);restTimer=null;if(networkState.boardLive&&networkState.catalogLive)return;
- if(restBusy){restTimer=setTimeout(tryRestRead,60000);return;}if(document.hidden){restTimer=setTimeout(tryRestRead,60000);return;}
- restBusy=true;
- try{const jobs=[];
-  if(!networkState.boardLive)jobs.push((async()=>{try{const result=await restJSON('cards/board');applyBoard(decodeFirestoreDocument(result));networkState.boardIssue='';}catch(error){networkState.boardIssue=connectionErrorCode(error);console.error('REST board',error);}})());
-  if(!networkState.catalogLive)jobs.push((async()=>{try{applyCatalog(await restCatalog());networkState.catalogIssue='';}catch(error){networkState.catalogIssue=connectionErrorCode(error);console.error('REST catalog',error);}})());
-  await Promise.all(jobs);networkState.restActive=true;
- }finally{restBusy=false;updateSyncStatusDisplay();if(!networkState.boardLive||!networkState.catalogLive)restTimer=setTimeout(tryRestRead,60000);}
-}
+async function tryRestRead(){clearTimeout(restTimer);restTimer=null;if(networkState.boardLive&&networkState.catalogLive)return;if(restBusy){restTimer=setTimeout(tryRestRead,60000);return;}if(document.hidden){restTimer=setTimeout(tryRestRead,60000);return;}restBusy=true;try{const jobs=[];if(!networkState.boardLive)jobs.push((async()=>{try{const result=await restJSON('cards/board');applyBoard(decodeFirestoreDocument(result));networkState.boardIssue='';}catch(error){networkState.boardIssue=connectionErrorCode(error);console.error('REST board',error);}})());if(!networkState.catalogLive)jobs.push((async()=>{try{applyCatalog(await restCatalog());networkState.catalogIssue='';}catch(error){networkState.catalogIssue=connectionErrorCode(error);console.error('REST catalog',error);}})());await Promise.all(jobs);networkState.restActive=true;}finally{restBusy=false;updateSyncStatusDisplay();if(!networkState.boardLive||!networkState.catalogLive)restTimer=setTimeout(tryRestRead,60000);}}
 document.getElementById('retryData').addEventListener('click',()=>{retryCount=0;startDataListeners();tryRestRead();});
 window.addEventListener('online',()=>{startDataListeners();});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&(!networkState.boardLive||!networkState.catalogLive)){startDataListeners();tryRestRead();}});
-onAuthStateChanged(auth,user=>{
- state.isAdmin=!!user&&user.uid===ADMIN_UID;loginBtn.textContent=state.isAdmin?"Выход":"Вход";loginBtn.classList.toggle("logged-in",state.isAdmin);document.body.classList.toggle("is-admin",state.isAdmin);
- modeBtn.style.display=state.isAdmin?"inline-flex":"none";undoBtn.style.display=state.isAdmin?"inline-flex":"none";redoBtn.style.display=state.isAdmin?"inline-flex":"none";
- if(!state.isAdmin)setEditing(false);updateSyncStatusDisplay();render();
-});
+onAuthStateChanged(auth,user=>{state.isAdmin=!!user&&user.uid===ADMIN_UID;newsUI.setAdmin(state.isAdmin);loginBtn.textContent=state.isAdmin?"Выход":"Вход";loginBtn.classList.toggle("logged-in",state.isAdmin);document.body.classList.toggle("is-admin",state.isAdmin);modeBtn.style.display=state.isAdmin?"inline-flex":"none";undoBtn.style.display=state.isAdmin?"inline-flex":"none";redoBtn.style.display=state.isAdmin?"inline-flex":"none";if(!state.isAdmin)setEditing(false);updateSyncStatusDisplay();render();});
 let emailAutofilled=false,passwordAutofilled=false;
 function tryAutoLogin(){if(emailAutofilled&&passwordAutofilled&&loginModal.style.display==="flex"&&loginEmail.value&&loginPassword.value)loginSubmit.click();}
 loginEmail.addEventListener("animationstart",e=>{if(e.animationName==="onAutoFillStart")emailAutofilled=true;if(e.animationName==="onAutoFillCancel")emailAutofilled=false;tryAutoLogin();});
@@ -283,68 +1443,13 @@ loginCancel.addEventListener("click",()=>{loginModal.style.display="none";});
 loginSubmit.addEventListener("click",async()=>{try{await signInWithEmailAndPassword(auth,loginEmail.value.trim(),loginPassword.value);loginModal.style.display="none";loginEmail.value="";loginPassword.value="";}catch(e){alert(e.message);}});
 function renderCategoryTabs(){categoryTabs.innerHTML="";order.forEach(id=>{const sec=data[id];if(!sec||(sec.hidden&&!state.isAdmin))return;const tab=document.createElement("button");tab.type="button";tab.className="category-tab";tab.textContent=sec.title;tab.dataset.sectionId=id;tab.addEventListener("click",()=>scrollToSection(id));categoryTabs.appendChild(tab);});}
 function scrollToSection(id){const target=document.getElementById(id);if(!target)return;const rect=target.getBoundingClientRect(),offset=window.scrollY+rect.top-window.innerHeight*.22;window.scrollTo({top:Math.max(0,offset),behavior:"smooth"});}
-function displayEntries(target){
- const result=[];let position=0;const sourceOrder=[...new Set([...order,...Object.keys(data)])];
- for(const source of sourceOrder){const sec=data[source];if(!sec)continue;for(let index=0;index<(sec.items||[]).length;index++){const item=sec.items[index],currentPosition=position++;if(!item.itemId)continue;const group=catalog.get(item.itemId)?.groupId||source,effectiveGroup=data[group]?group:source;if(effectiveGroup!==target)continue;if(state.isAdmin){if(!showInactive&&isInactive(item))continue;}else{if(sec.hidden||data[target]?.hidden)continue;if(!publicCardVisible(item,source,catalog))continue;}result.push({section:source,index,item,position:currentPosition});}}
- return result;
-}
-function render(){
- main.innerHTML="";
- order.forEach(id=>{
-  if(!data[id])return;const sec=data[id];if(sec.hidden&&!state.isAdmin)return;
-  const section=document.createElement("section");section.id=id;if(sec.hidden)section.classList.add("section-hidden-user");
-  const h2=document.createElement("h2"),titleSpan=document.createElement("span");titleSpan.className="section-title-text";titleSpan.contentEditable="false";titleSpan.spellcheck=false;titleSpan.textContent=sec.title;
-  const visibleEntries=displayEntries(id),visibleCount=visibleEntries.length,countEm=document.createElement("em");countEm.textContent=visibleCount;
-  const sectionControls=document.createElement("div");sectionControls.className="section-controls";
-  if(state.editing){
-   const eyeBtn=document.createElement("button");eyeBtn.className="icon-btn"+(!sec.hidden?" active-eye":"");eyeBtn.type="button";eyeBtn.title=sec.hidden?"Показать пользователям":"Скрыть от пользователей";eyeBtn.innerHTML=sec.hidden?ICON_EYE_CLOSED:ICON_EYE_OPEN;
-   eyeBtn.addEventListener("click",()=>{pushHistory();data[id].hidden=!data[id].hidden;commit();});
-   const dragBtn=document.createElement("button");dragBtn.className="icon-btn";dragBtn.type="button";dragBtn.title="Перетащить категорию";dragBtn.innerHTML=ICON_DRAG;dragBtn.style.cursor="grab";dragBtn.draggable=true;
-   dragBtn.addEventListener("dragstart",e=>{state.sectionDrag=id;e.dataTransfer.effectAllowed="move";section.classList.add("section-drag-source");});
-   dragBtn.addEventListener("dragend",()=>{state.sectionDrag=null;section.classList.remove("section-drag-source");});sectionControls.append(eyeBtn,dragBtn);
-  }
-  h2.append(titleSpan,countEm,sectionControls);
-  section.addEventListener("dragover",e=>{if(!state.sectionDrag||state.sectionDrag===id)return;e.preventDefault();section.classList.add("section-drag-over");});
-  section.addEventListener("dragleave",()=>{section.classList.remove("section-drag-over");});
-  section.addEventListener("drop",e=>{if(!state.sectionDrag||state.sectionDrag===id)return;e.preventDefault();section.classList.remove("section-drag-over");pushHistory();const fromIdx=order.indexOf(state.sectionDrag),toIdx=order.indexOf(id);order.splice(fromIdx,1);order.splice(toIdx,0,state.sectionDrag);state.sectionDrag=null;commit();});
-  section.appendChild(h2);
-  const blocks=layoutBlocks(id,visibleEntries,catalog);
-  if(state.editing){const addRow=document.createElement('div');addRow.className='grid add-card-row';addRow.appendChild(createAddCard(id));section.appendChild(addRow);}
-  for(const block of blocks){const grid=document.createElement('div');grid.className='grid auto-block';grid.dataset.section=id;grid.dataset.block=block.key;for(const e of block.entries)grid.appendChild(createCard(e.section,e.index,e.item,isInactive(e.item)));section.appendChild(grid);}
-  main.appendChild(section);
- });renderCategoryTabs();
-}
+function displayEntries(target){const result=[];let position=0;const sourceOrder=[...new Set([...order,...Object.keys(data)])];for(const source of sourceOrder){const sec=data[source];if(!sec)continue;for(let index=0;index<(sec.items||[]).length;index++){const item=sec.items[index],currentPosition=position++;if(!item.itemId)continue;const group=catalog.get(item.itemId)?.groupId||source,effectiveGroup=data[group]?group:source;if(effectiveGroup!==target)continue;if(state.isAdmin){if(!showInactive&&isInactive(item))continue;}else{if(sec.hidden||data[target]?.hidden)continue;if(!publicCardVisible(item,source,catalog))continue;}result.push({section:source,index,item,position:currentPosition});}}return result;}
+function render(){main.innerHTML="";order.forEach(id=>{if(!data[id])return;const sec=data[id];if(sec.hidden&&!state.isAdmin)return;const section=document.createElement("section");section.id=id;if(sec.hidden)section.classList.add("section-hidden-user");const h2=document.createElement("h2"),titleSpan=document.createElement("span");titleSpan.className="section-title-text";titleSpan.contentEditable="false";titleSpan.spellcheck=false;titleSpan.textContent=sec.title;const visibleEntries=displayEntries(id),visibleCount=visibleEntries.length,countEm=document.createElement("em");countEm.textContent=visibleCount;const sectionControls=document.createElement("div");sectionControls.className="section-controls";if(state.editing){const eyeBtn=document.createElement("button");eyeBtn.className="icon-btn"+(!sec.hidden?" active-eye":"");eyeBtn.type="button";eyeBtn.title=sec.hidden?"Показать пользователям":"Скрыть от пользователей";eyeBtn.innerHTML=sec.hidden?ICON_EYE_CLOSED:ICON_EYE_OPEN;eyeBtn.addEventListener("click",()=>{pushHistory();data[id].hidden=!data[id].hidden;commit();});const dragBtn=document.createElement("button");dragBtn.className="icon-btn";dragBtn.type="button";dragBtn.title="Перетащить категорию";dragBtn.innerHTML=ICON_DRAG;dragBtn.style.cursor="grab";dragBtn.draggable=true;dragBtn.addEventListener("dragstart",e=>{state.sectionDrag=id;e.dataTransfer.effectAllowed="move";section.classList.add("section-drag-source");});dragBtn.addEventListener("dragend",()=>{state.sectionDrag=null;section.classList.remove("section-drag-source");});sectionControls.append(eyeBtn,dragBtn);}h2.append(titleSpan,countEm,sectionControls);section.addEventListener("dragover",e=>{if(!state.sectionDrag||state.sectionDrag===id)return;e.preventDefault();section.classList.add("section-drag-over");});section.addEventListener("dragleave",()=>{section.classList.remove("section-drag-over");});section.addEventListener("drop",e=>{if(!state.sectionDrag||state.sectionDrag===id)return;e.preventDefault();section.classList.remove("section-drag-over");pushHistory();const fromIdx=order.indexOf(state.sectionDrag),toIdx=order.indexOf(id);order.splice(fromIdx,1);order.splice(toIdx,0,state.sectionDrag);state.sectionDrag=null;commit();});section.appendChild(h2);const blocks=layoutBlocks(id,visibleEntries,catalog);if(state.editing){const addRow=document.createElement('div');addRow.className='grid add-card-row';addRow.appendChild(createAddCard(id));section.appendChild(addRow);}for(const block of blocks){const grid=document.createElement('div');grid.className='grid auto-block';grid.dataset.section=id;grid.dataset.block=block.key;for(const e of block.entries)grid.appendChild(createCard(e.section,e.index,e.item,isInactive(e.item)));section.appendChild(grid);}main.appendChild(section);});renderCategoryTabs();}
 // Картинки загружаются только из папки сайта, без запросов к Lowadi.
 const LOCAL_IMAGE_BASE='images/60/';
-function localImageUrls(entry,fallbackId){
- const ids=[];
- if(entry?.img){try{const name=decodeURIComponent(new URL(entry.img,document.baseURI).pathname.split('/').pop());if(/\.png$/i.test(name))ids.push(name.replace(/\.png$/i,''));}catch{}}
- ids.push(entry?.identifier,fallbackId);
- return [...new Set(ids.filter(Boolean).map(String).filter(id=>/^[A-Za-z0-9_-]+$/.test(id)))].map(id=>`${LOCAL_IMAGE_BASE}${id}.png`);
-}
-function attachItemImage(card,entry,itemId){
- const urls=localImageUrls(entry,itemId);if(!urls.length)return;
- const placeholder=card.querySelector('.noicon');if(!placeholder)return;
- const img=document.createElement('img');img.alt='';img.loading='lazy';
- let index=0;
- img.addEventListener('error',()=>{if(++index<urls.length)img.src=urls[index];else img.replaceWith(placeholder);});
- placeholder.replaceWith(img);img.src=urls[index];
-}
-function createCard(sectionId,index,item,inactive){
- const card=document.createElement("a");card.className="card"+(state.editing?" editing":"")+(inactive?" inactive-card":"");card.href=item.href;card.target="_blank";card.rel="noopener";card.dataset.section=sectionId;card.dataset.index=index;
- card.innerHTML=`<button class="delete-x icon-btn danger" type="button" title="Удалить" aria-label="Удалить">${ICON_X}</button><span class="noicon">?</span><span class="name"></span><small></small><button class="card-toggle-dot${!inactive?" on":""}" type="button" title="${inactive?"Включить":"Отключить"}"></button>`;
- const displayItem=catalog.get(item.itemId)||item;attachItemImage(card,displayItem,item.itemId);card.querySelector(".name").textContent=displayItem.name||"Предмет не выбран";card.querySelector("small").textContent=getCardSubtitle(item);
- if(state.editing){
-  card.addEventListener("click",event=>{event.preventDefault();openEditor(sectionId,index,item);});
-  card.querySelector(".delete-x").addEventListener("click",event=>{event.preventDefault();event.stopPropagation();deleteItem(sectionId,index);});
-  card.querySelector(".card-toggle-dot").addEventListener("click",event=>{event.preventDefault();event.stopPropagation();pushHistory();const it=data[sectionId].items[index];if(isInactive(it))delete it.inactive;else it.inactive=true;commit();});
-  card.addEventListener("dragstart",e=>{state.drag={section:sectionId,index};card.classList.add("drag-source");e.dataTransfer.effectAllowed="move";});
-  card.addEventListener("dragend",()=>{card.classList.remove("drag-source","drag-over-before","drag-over-after");});
-  card.addEventListener("dragover",e=>{if(!state.drag)return;e.preventDefault();e.stopPropagation();const rect=card.getBoundingClientRect(),half=rect.left+rect.width/2;card.classList.toggle("drag-over-before",e.clientX<half);card.classList.toggle("drag-over-after",e.clientX>=half);});
-  card.addEventListener("dragleave",()=>{card.classList.remove("drag-over-before","drag-over-after");});
-  card.addEventListener("drop",e=>{if(!state.drag)return;e.preventDefault();e.stopPropagation();const rect=card.getBoundingClientRect(),before=e.clientX<rect.left+rect.width/2;card.classList.remove("drag-over-before","drag-over-after");moveItemPrecise(state.drag.section,state.drag.index,sectionId,index,before);state.drag=null;});card.draggable=true;
- }return card;
-}
+function localImageUrls(entry,fallbackId){const ids=[];if(entry?.img){try{const name=decodeURIComponent(new URL(entry.img,document.baseURI).pathname.split('/').pop());if(/\.png$/i.test(name))ids.push(name.replace(/\.png$/i,''));}catch{}}ids.push(entry?.identifier,fallbackId);return [...new Set(ids.filter(Boolean).map(String).filter(id=>/^[A-Za-z0-9_-]+$/.test(id)))].map(id=>`${LOCAL_IMAGE_BASE}${id}.png`);}
+function attachItemImage(card,entry,itemId){const urls=localImageUrls(entry,itemId);if(!urls.length)return;const placeholder=card.querySelector('.noicon');if(!placeholder)return;const img=document.createElement('img');img.alt='';img.loading='lazy';let index=0;img.addEventListener('error',()=>{if(++index<urls.length)img.src=urls[index];else img.replaceWith(placeholder);});placeholder.replaceWith(img);img.src=urls[index];}
+function createCard(sectionId,index,item,inactive){const card=document.createElement("a");card.className="card"+(state.editing?" editing":"")+(inactive?" inactive-card":"");card.href=item.href;card.target="_blank";card.rel="noopener";card.dataset.section=sectionId;card.dataset.index=index;card.innerHTML=`<button class="delete-x icon-btn danger" type="button" title="Удалить" aria-label="Удалить">${ICON_X}</button><span class="noicon">?</span><span class="name"></span><small></small><button class="card-toggle-dot${!inactive?" on":""}" type="button" title="${inactive?"Включить":"Отключить"}"></button>`;const displayItem=catalog.get(item.itemId)||item;attachItemImage(card,displayItem,item.itemId);card.querySelector(".name").textContent=displayItem.name||"Предмет не выбран";card.querySelector("small").textContent=getCardSubtitle(item);if(state.editing){card.addEventListener("click",event=>{event.preventDefault();openEditor(sectionId,index,item);});card.querySelector(".delete-x").addEventListener("click",event=>{event.preventDefault();event.stopPropagation();deleteItem(sectionId,index);});card.querySelector(".card-toggle-dot").addEventListener("click",event=>{event.preventDefault();event.stopPropagation();pushHistory();const it=data[sectionId].items[index];if(isInactive(it))delete it.inactive;else it.inactive=true;commit();});card.addEventListener("dragstart",e=>{state.drag={section:sectionId,index};card.classList.add("drag-source");e.dataTransfer.effectAllowed="move";});card.addEventListener("dragend",()=>{card.classList.remove("drag-source","drag-over-before","drag-over-after");});card.addEventListener("dragover",e=>{if(!state.drag)return;e.preventDefault();e.stopPropagation();const rect=card.getBoundingClientRect(),half=rect.left+rect.width/2;card.classList.toggle("drag-over-before",e.clientX<half);card.classList.toggle("drag-over-after",e.clientX>=half);});card.addEventListener("dragleave",()=>{card.classList.remove("drag-over-before","drag-over-after");});card.addEventListener("drop",e=>{if(!state.drag)return;e.preventDefault();e.stopPropagation();const rect=card.getBoundingClientRect(),before=e.clientX<rect.left+rect.width/2;card.classList.remove("drag-over-before","drag-over-after");moveItemPrecise(state.drag.section,state.drag.index,sectionId,index,before);state.drag=null;});card.draggable=true;}return card;}
 function createAddCard(sectionId){const button=document.createElement("button");button.type="button";button.className="add-card single add-card-plus";button.innerHTML=`<span class="plus">+</span>`;button.addEventListener("click",()=>openEditor(sectionId,-1,null));return button;}
 function moveItemPrecise(fromSection,fromIndex,toSection,toIndex,before){const item=data[fromSection]?.items[fromIndex],target=data[toSection]?.items[toIndex];if(!item||!target||(fromSection===toSection&&fromIndex===toIndex))return;if(item.itemId!==target.itemId){showToast('Порядок блоков автоматический. Переставлять можно карточки одного предмета.');return;}pushHistory();data[fromSection].items.splice(fromIndex,1);let adjusted=toIndex;if(fromSection===toSection&&fromIndex<toIndex)adjusted--;data[toSection].items.splice(adjusted+(before?0:1),0,item);commit();}
 function deleteItem(sectionId,index){if(!confirm("Удалить карточку?"))return;pushHistory();data[sectionId].items.splice(index,1);commit();}
@@ -362,27 +1467,12 @@ editHrefUnlock.addEventListener("click",()=>{state.hrefUnlocked=true;editHref.di
 function closeModal(){state.activeModal=null;modalBackdrop.style.display="none";state.pending=null;}
 document.getElementById("cancelEdit").addEventListener("click",closeModal);
 document.getElementById("saveEdit").addEventListener("click",saveEditHandler);
-function saveEditHandler(){
- if(!state.pending||saveInFlight)return;if(!canEditOnline()){showToast('Нет подтверждённого соединения. Сохранение недоступно.');return;}
- const {section,index}=state.pending,newSection=catalog.get(editItem.value)?.groupId,itemId=editItem.value,href=editHref.value.trim(),nickname=editNickname.value.trim(),enabled=state.editEnabled;
- const nameRow=editItem.closest(".form-row"),hrefRow=editHref.closest(".form-row");nameRow.classList.toggle("has-error",!catalog.has(itemId));hrefRow.classList.toggle("has-error",!href);
- if(!catalog.has(itemId)||!href)return;if(!data[newSection]){showToast("У предмета отсутствует допустимая группа. Проверьте groupId в справочнике.");return;}
- pushHistory();let item={...(index>=0?data[section].items[index]:{}),itemId,href};delete item.name;delete item.img;delete item.nickname;delete item.inactive;if(nickname)item.nickname=nickname;if(!enabled)item.inactive=true;
- if(index>=0){if(newSection===section)data[section].items[index]=item;else{data[section].items.splice(index,1);data[newSection].items.push(item);}}else data[newSection].items.push(item);
- closeModal();commit();
-}
+function saveEditHandler(){if(!state.pending||saveInFlight)return;if(!canEditOnline()){showToast('Нет подтверждённого соединения. Сохранение недоступно.');return;}const {section,index}=state.pending,newSection=catalog.get(editItem.value)?.groupId,itemId=editItem.value,href=editHref.value.trim(),nickname=editNickname.value.trim(),enabled=state.editEnabled;const nameRow=editItem.closest(".form-row"),hrefRow=editHref.closest(".form-row");nameRow.classList.toggle("has-error",!catalog.has(itemId));hrefRow.classList.toggle("has-error",!href);if(!catalog.has(itemId)||!href)return;if(!data[newSection]){showToast("У предмета отсутствует допустимая группа. Проверьте groupId в справочнике.");return;}pushHistory();let item={...(index>=0?data[section].items[index]:{}),itemId,href};delete item.name;delete item.img;delete item.nickname;delete item.inactive;if(nickname)item.nickname=nickname;if(!enabled)item.inactive=true;if(index>=0){if(newSection===section)data[section].items[index]=item;else{data[section].items.splice(index,1);data[newSection].items.push(item);}}else data[newSection].items.push(item);closeModal();commit();}
 let toastTimer=null;
 function showToast(text){toast.textContent=text;toast.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove("show"),2200);}
-document.addEventListener("keydown",e=>{if(document.getElementById("lastReportDialog").open)return;if(state.activeModal==="card"){if(e.key==="Enter"){e.preventDefault();saveEditHandler();return;}if(e.key==="Escape"){e.preventDefault();closeModal();return;}}if(state.isAdmin&&(e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="z"){e.preventDefault();if(e.shiftKey)redoBtn.click();else undoBtn.click();}});
+document.addEventListener("keydown",e=>{if(document.getElementById("lastReportDialog").open||document.getElementById("newsDialog").open)return;if(state.activeModal==="card"){if(e.key==="Enter"){e.preventDefault();saveEditHandler();return;}if(e.key==="Escape"){e.preventDefault();closeModal();return;}}if(state.isAdmin&&(e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="z"){e.preventDefault();if(e.shiftKey)redoBtn.click();else undoBtn.click();}});
 const ITEM_GROUP_LABELS=[['black-market','Черный рынок'],['upgrades','Улучшения'],['bonuses','Бонусы'],['equipment','Снаряжение'],['agriculture','Сельское хозяйство'],['aging-points','Очки роста'],['check-list','Чек-лист']];
-function populateItemSelect(item){
- editItem.replaceChildren(new Option('Выберите предмет',''));
- const buckets=new Map(ITEM_GROUP_LABELS.map(([g])=>[g,[]])),other=[];
- for(const [id,v]of catalog)(buckets.get(v.groupId)||other).push([id,v]);
- function add(label,entries){if(!entries.length)return;const g=document.createElement('optgroup');g.label=label;entries.sort((a,b)=>String(a[1].name||a[0]).localeCompare(String(b[1].name||b[0]),'ru'));for(const [id,v]of entries)g.appendChild(new Option(v.name||id,id));editItem.appendChild(g);}
- for(const [id,label]of ITEM_GROUP_LABELS)add(label,buckets.get(id));add('Без группы',other);
- const id=item&&(item.itemId||imageIdentifier(item.img));if(id&&catalog.has(id))editItem.value=id;else if(item){editItem.add(new Option('Не сопоставлен: '+(item.name||item.itemId||'без названия'),''));editItem.selectedIndex=editItem.options.length-1;}
-}
+function populateItemSelect(item){editItem.replaceChildren(new Option('Выберите предмет',''));const buckets=new Map(ITEM_GROUP_LABELS.map(([g])=>[g,[]])),other=[];for(const [id,v]of catalog)(buckets.get(v.groupId)||other).push([id,v]);function add(label,entries){if(!entries.length)return;const g=document.createElement('optgroup');g.label=label;entries.sort((a,b)=>String(a[1].name||a[0]).localeCompare(String(b[1].name||b[0]),'ru'));for(const [id,v]of entries)g.appendChild(new Option(v.name||id,id));editItem.appendChild(g);}for(const [id,label]of ITEM_GROUP_LABELS)add(label,buckets.get(id));add('Без группы',other);const id=item&&(item.itemId||imageIdentifier(item.img));if(id&&catalog.has(id))editItem.value=id;else if(item){editItem.add(new Option('Не сопоставлен: '+(item.name||item.itemId||'без названия'),''));editItem.selectedIndex=editItem.options.length-1;}}
 function imageIdentifier(src){try{const name=decodeURIComponent(new URL(src).pathname.split('/').pop());return /\.png$/i.test(name)?name.replace(/_v\d+(?=\.png$)/i,'').replace(/\.png$/i,''):null;}catch{return null;}}
 const inactiveBtn=document.getElementById('inactiveViewBtn');
 onAuthStateChanged(auth,user=>{inactiveBtn.hidden=user?.uid!==ADMIN_UID;});
@@ -390,19 +1480,12 @@ inactiveBtn.onclick=()=>{showInactive=!showInactive;inactiveBtn.textContent=show
 const latestReportRef=doc(db,'syncReports','latest');
 const reportInfo=document.getElementById('reportInfo'),reportButton=document.getElementById('lastReportButton'),reportDate=document.getElementById('lastReportDate'),reportDialog=document.getElementById('lastReportDialog'),reportDialogDate=document.getElementById('reportDialogDate'),reportText=document.getElementById('lastReportText'),reportNote=document.getElementById('lastReportNote');
 let reportUnsubscribe=null,reportLoadError=false,lastReport=null;
-function formatReportDate(value){
- const timestamp=Number(value);if(!Number.isFinite(timestamp)||timestamp<=0)return '';const date=new Date(timestamp);
- const parts=new Intl.DateTimeFormat('ru-RU',{timeZone:'Europe/Madrid',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(date);
- const part=type=>parts.find(p=>p.type===type)?.value||'';
- const zone=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Madrid',timeZoneName:'shortOffset'}).formatToParts(date).find(p=>p.type==='timeZoneName')?.value;
- const abbreviation=zone==='GMT+2'?'CEST':zone==='GMT+1'?'CET':zone||'';
- return `${part('day')} ${part('month')} ${part('hour')}:${part('minute')} ${abbreviation}`;
-}
+function formatReportDate(value){const timestamp=Number(value);if(!Number.isFinite(timestamp)||timestamp<=0)return '';const date=new Date(timestamp);const parts=new Intl.DateTimeFormat('ru-RU',{timeZone:'Europe/Madrid',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(date);const part=type=>parts.find(p=>p.type===type)?.value||'';const zone=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Madrid',timeZoneName:'shortOffset'}).formatToParts(date).find(p=>p.type==='timeZoneName')?.value;const abbreviation=zone==='GMT+2'?'CEST':zone==='GMT+1'?'CET':zone||'';return `${part('day')} ${part('month')} ${part('hour')}:${part('minute')} ${abbreviation}`;}
 function refreshReport(){const date=lastReport?formatReportDate(lastReport.checkedAt):'';reportDate.textContent=date;reportDialogDate.textContent=date;reportText.textContent=reportLoadError?'Не удалось загрузить отчёт.':!lastReport?'Отчёт появится после следующей проверки с записью.':String(lastReport.text||'').trim()||'Изменений нет.';const unverified=Number(lastReport?.unverified||0);reportNote.textContent=unverified>0?`Не подтверждено карточек: ${unverified}.`:'';reportNote.hidden=unverified===0;}
 onAuthStateChanged(auth,user=>{if(reportUnsubscribe){reportUnsubscribe();reportUnsubscribe=null;}const admin=user?.uid===ADMIN_UID;reportInfo.hidden=!admin;lastReport=null;reportLoadError=false;refreshReport();if(!admin){if(reportDialog.open)reportDialog.close();return;}reportUnsubscribe=onSnapshot(latestReportRef,snapshot=>{lastReport=snapshot.exists()?snapshot.data():null;reportLoadError=false;refreshReport();},()=>{reportLoadError=true;refreshReport();});});
 reportButton.addEventListener('click',()=>{if(!state.isAdmin)return;refreshReport();if(!reportDialog.open)reportDialog.showModal();});
 document.getElementById('closeLastReport').addEventListener('click',()=>reportDialog.close());
 startDataListeners();
-</script>
-</body>
+  </script>
+ </body>
 </html>
