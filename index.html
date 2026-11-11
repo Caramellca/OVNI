@@ -3,12 +3,10 @@
  <head>
   <meta charset="utf-8"/>
   <meta content="width=device-width, initial-scale=1" name="viewport"/>
-  <title>
-   В поисках ИНЛО
-  </title>
+  <title>В поисках ИНЛО</title>
   <link href="images/60/cadeau.png" rel="icon" type="image/png"/>
   <style>
-   :root {
+:root {
   --bg: #0d1526;
   --panel: #172338;
   --line: #2d3e5a;
@@ -937,7 +935,7 @@ body.saving-cloud::after {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #ec777e;
+  background: #ffbf69;
   margin-top: 7px;
 }
 .nui .nu-read .nu-dot {
@@ -1119,8 +1117,8 @@ body.saving-cloud::after {
   min-width: 17px;
   height: 17px;
   padding: 0 4px;
-  background: #ec777e20;
-  color: #ec777e;
+  background: #ffbf6926;
+  color: #ffbf69;
   border-radius: 5px;
   font-size: 10px;
   line-height: 1;
@@ -1132,6 +1130,31 @@ body.saving-cloud::after {
   .nui .nu-block {
     padding: 9px;
   }
+}
+/* Новости: дата и автор курсивом; подсказка ссылок закреплена в редакторе. */
+.nui .nu-meta,
+.nui .nu-row-meta {
+  font-style: italic;
+}
+.nui .nu-editor-help {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  padding: 10px 12px;
+  margin: 16px 0;
+  border: 1px solid #2d3e5a;
+  border-radius: 8px;
+  background: #111c2e;
+  box-shadow: 0 5px 12px #0003;
+  line-height: 1.6;
+}
+.nui .nu-editor-help code {
+  display: block;
+  margin: 4px 0;
+  color: #eef5ff;
+  font: 12px/1.6 ui-monospace,Consolas,monospace;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
   </style>
  </head>
@@ -1317,7 +1340,7 @@ body.saving-cloud::after {
    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-analytics.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-import { initializeFirestore, doc, onSnapshot, collection, runTransaction, getDoc, getDocs, query, where, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+import { initializeFirestore, doc, onSnapshot, collection, runTransaction, getDoc, query, where, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 const firebaseConfig={apiKey:"AIzaSyAjIY9iH0gZT9WalyKTUh6zNinBNvt9aqQ",authDomain:"ovni-b5823.firebaseapp.com",databaseURL:"https://ovni-b5823-default-rtdb.europe-west1.firebasedatabase.app",projectId:"ovni-b5823",storageBucket:"ovni-b5823.firebasestorage.app",messagingSenderId:"916848124747",appId:"1:916848124747:web:7fa20edb5701619498fece",measurementId:"G-ZCKKVMYFVN"};
 const ADMIN_UID="xOqvdkpV57U8BSfnjePCRJRiaOi2";
 const DOC_PATH=["cards","board"];
@@ -1340,6 +1363,7 @@ const categoryTabs=document.getElementById("categoryTabs"),main=document.getElem
 function createNewsUI(container,driver,options={}) {
   const READ_KEY=options.readKey||'ovni-news-read-v2';
   let records=[],read=new Set(),admin=false,view='list',selected=null,draft=null,busy=false,loaded=false,dirty=false,loadSequence=0;
+  let unsubscribeNews=null;
   const node=(tag,cls,text)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e;};
   container.classList.add('nui');
   const status=node('div','nu-status');status.setAttribute('role','status');status.hidden=true;
@@ -1349,23 +1373,34 @@ function createNewsUI(container,driver,options={}) {
   function readLocal(){try{const value=JSON.parse(localStorage.getItem(READ_KEY)||'[]');if(Array.isArray(value))read=new Set(value.filter(x=>typeof x==='string'));}catch{}}
   function saveLocal(){try{localStorage.setItem(READ_KEY,JSON.stringify([...read]));}catch{}}
   function badge(){options.onUnread?.(records.filter(n=>n.published&&!read.has(n.id)).length);}
-  function dateText(value){if(!/^\d{4}-\d{2}-\d{2}$/.test(value||''))return '';const [y,m,d]=value.split('-').map(Number);return new Intl.DateTimeFormat('ru-RU',{day:'numeric',month:'long',year:'numeric'}).format(new Date(y,m-1,d));}
+  function dateText(value){
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(value||''))return '';
+    const [year,month,day]=value.split('-').map(Number);
+    const parts=new Intl.DateTimeFormat('ru-RU',{day:'numeric',month:'long',year:'numeric'}).formatToParts(new Date(year,month-1,day));
+    const part=type=>parts.find(p=>p.type===type)?.value||'';
+    return `${part('day')} ${part('month')} ${part('year')}`;
+  }
   function safeURL(raw,image=false){try{const u=new URL(String(raw||'').trim(),options.siteBase||document.baseURI);if(u.protocol!=='https:')return null;if(image&&u.origin!==new URL(options.siteBase||document.baseURI).origin)return null;return u.href;}catch{return null;}}
   function rich(parent,text){const value=String(text||''),rx=/\[([^\]\n]+)\]\(([^\s)]+)\)/g;let pos=0,match;while((match=rx.exec(value))){parent.append(document.createTextNode(value.slice(pos,match.index)));const url=safeURL(match[2]);if(url){const a=node('a','',match[1]);const u=new URL(url);a.href=u.origin===location.origin?u.pathname+u.search+u.hash:url;a.target='_blank';a.rel='noopener noreferrer';parent.append(a);}else parent.append(document.createTextNode(match[0]));pos=rx.lastIndex;}parent.append(document.createTextNode(value.slice(pos)));}
   function body(parent,blocks){for(const block of blocks||[]){if(!block||typeof block!=='object')continue;let e;if(block.type==='image'){const url=safeURL(block.src,true);if(!url)continue;e=node('figure');const img=node('img');img.src=url;img.alt=String(block.alt||'');img.loading='lazy';img.decoding='async';img.addEventListener('error',()=>{const f=node('div','nu-image-error','Изображение пока недоступно');img.replaceWith(f);},{once:true});e.append(img);}else if(block.type==='list'){e=node('ol');for(const text of block.items||[]){const li=node('li');rich(li,text);e.append(li);}}else{const tag=block.type==='heading'?'h3':block.type==='warning'?'blockquote':'p';e=node(tag,block.type==='fine'?'nu-fine':'');rich(e,block.text);}parent.append(e);}}
   function button(text,fn,cls=''){const b=node('button',cls,text);b.type='button';b.addEventListener('click',fn);return b;}
   function scrollTop(){options.scrollElement?.scrollTo({top:0,behavior:'instant'});}
   function leaveEditor(){return !dirty||confirm('Выйти без сохранения изменений новости?');}
-  function list(){view='list';selected=null;draft=null;dirty=false;area.replaceChildren();const actions=node('div','nu-actions');actions.append(button('Обновить',()=>refresh(true),'nu-link'));if(admin){actions.append(button('+ Добавить новость',()=>edit(null)));if(options.seed)actions.append(button('Заготовка первой новости',()=>{edit(null,options.seed());}));}area.append(actions);
+  function list(){view='list';selected=null;draft=null;dirty=false;area.replaceChildren();if(admin){const actions=node('div','nu-actions');actions.append(button('+ Добавить новость',()=>edit(null)));area.append(actions);}
     if(!records.length){area.append(node('p','nu-help',loaded?'Новостей пока нет.':'Загрузка новостей…'));return;}
-    for(const n of records){const row=button('',()=>article(n),'nu-list-row'+(read.has(n.id)?' nu-read':''));const dot=node('span','nu-dot');dot.setAttribute('aria-hidden','true');const text=node('span');text.append(node('span','nu-row-title',n.title||'Без заголовка'));text.append(node('span','nu-row-meta',`${dateText(n.date)} · ${n.author||'barsa'}`));if(!n.published)text.append(node('span','nu-draft','Черновик'));const arrow=node('span','nu-arrow','›');arrow.setAttribute('aria-hidden','true');row.append(dot,text,arrow);area.append(row);}badge();}
-  function article(n,preview=false){view=preview?'preview':'article';selected=n;area.replaceChildren();const actions=node('div','nu-actions');actions.append(button(preview?'← К редактированию':'← Все новости',()=>{if(preview)editor();else{list();scrollTop();}},'nu-link'));if(admin&&!preview)actions.append(button('Редактировать',()=>edit(n),'nu-link'));area.append(actions);const article=node('article','nu-article');const title=node('h2','nu-title',n.title||'Без заголовка');article.append(title,node('div','nu-meta',`${dateText(n.date)} · ${n.author||'barsa'}${n.published?'':' · Черновик'}`));const content=node('div','nu-body');body(content,n.blocks);article.append(content);area.append(article);if(n.published&&!preview){read.add(n.id);saveLocal();badge();}scrollTop();}
+    for(const n of records){const row=button('',()=>article(n),'nu-list-row'+(read.has(n.id)?' nu-read':''));const dot=node('span','nu-dot');dot.setAttribute('aria-hidden','true');const text=node('span');text.append(node('span','nu-row-title',n.title||'Без заголовка'));text.append(node('span','nu-row-meta',`${dateText(n.date)}, ${n.author||'barsa'}`));if(!n.published)text.append(node('span','nu-draft','Черновик'));const arrow=node('span','nu-arrow','›');arrow.setAttribute('aria-hidden','true');row.append(dot,text,arrow);area.append(row);}badge();}
+  function article(n,preview=false){view=preview?'preview':'article';selected=n;area.replaceChildren();const actions=node('div','nu-actions');actions.append(button(preview?'← К редактированию':'← Все новости',()=>{if(preview)editor();else{list();scrollTop();}},'nu-link'));if(admin&&!preview)actions.append(button('Редактировать',()=>edit(n),'nu-link'));area.append(actions);const article=node('article','nu-article');const title=node('h2','nu-title',n.title||'Без заголовка');article.append(title,node('div','nu-meta',`${dateText(n.date)}, ${n.author||'barsa'}${n.published?'':' — Черновик'}`));const content=node('div','nu-body');body(content,n.blocks);article.append(content);area.append(article);if(n.published&&!preview){read.add(n.id);saveLocal();badge();}scrollTop();}
   function field(label,value,type='text'){const l=node('label','',label),input=node('input');input.type=type;input.value=value||'';l.append(input);return{label:l,input};}
-  function edit(n,seed){view='edit';draft=JSON.parse(JSON.stringify(seed||n||{title:'',author:'barsa',date:new Date().toLocaleDateString('sv-SE'),published:false,blocks:[]}));if(!draft.blocks)draft.blocks=[];dirty=!!seed;editor();scrollTop();}
+  function edit(n){view='edit';draft=JSON.parse(JSON.stringify(n||{title:'',author:'barsa',date:new Date().toLocaleDateString('sv-SE'),published:false,blocks:[]}));if(!draft.blocks)draft.blocks=[];dirty=false;editor();scrollTop();}
   function editor(){view='edit';area.replaceChildren();const actions=node('div','nu-actions');actions.append(button('← Все новости',()=>{if(leaveEditor()){list();scrollTop();}},'nu-link'));area.append(actions,node('h2','nu-title',draft.id?'Редактирование новости':'Новая новость'));
     const form=node('div','nu-form');const title=field('Заголовок',draft.title);title.input.maxLength=200;title.input.addEventListener('input',()=>{draft.title=title.input.value;dirty=true;});form.append(title.label);
     const fields=node('div','nu-fields'),author=field('Автор',draft.author),date=field('Дата',draft.date,'date');author.input.maxLength=60;author.input.addEventListener('input',()=>{draft.author=author.input.value;dirty=true;});date.input.addEventListener('input',()=>{draft.date=date.input.value;dirty=true;});fields.append(author.label,date.label);form.append(fields);area.append(form);
-    area.append(node('p','nu-help','Ссылки в тексте: [название](https://адрес). Картинки — путь из репозитория, например images/news/news-neponel.png. Один пункт списка — одна строка.'));
+    const help=node('div','nu-help nu-editor-help');
+    help.append(node('div','','Ссылка в тексте:'));
+    help.append(node('code','','[текст ссылки](https://адрес)'));
+    help.append(node('div','','Например: [Tampermonkey](https://www.tampermonkey.net/)'));
+    help.append(node('div','','Картинки: images/news/имя.png. Один пункт списка — одна строка.'));
+    area.append(help);
     const blocks=node('div');area.append(blocks);
     draft.blocks.forEach((block,index)=>{const box=node('div','nu-block'),top=node('div','nu-block-top'),select=node('select');for(const [value,label]of types){const option=node('option','',label);option.value=value;select.append(option);}select.value=block.type;select.addEventListener('change',()=>{draft.blocks[index]={type:select.value,...(select.value==='image'?{src:'',alt:''}:select.value==='list'?{items:[]}:{text:''})};dirty=true;editor();});top.append(select);
       const up=button('↑',()=>{[draft.blocks[index-1],draft.blocks[index]]=[draft.blocks[index],draft.blocks[index-1]];dirty=true;editor();});up.disabled=index===0;up.title='Выше';const down=button('↓',()=>{[draft.blocks[index+1],draft.blocks[index]]=[draft.blocks[index],draft.blocks[index+1]];dirty=true;editor();});down.disabled=index===draft.blocks.length-1;down.title='Ниже';top.append(up,down,button('×',()=>{draft.blocks.splice(index,1);dirty=true;editor();},'nu-danger'));box.append(top);
@@ -1375,20 +1410,80 @@ function createNewsUI(container,driver,options={}) {
   function validate(n){if(!String(n.title||'').trim())throw new Error('Введите заголовок.');if(!String(n.author||'').trim())throw new Error('Укажите автора.');if(!/^\d{4}-\d{2}-\d{2}$/.test(n.date||''))throw new Error('Укажите дату.');if(!n.blocks.length)throw new Error('Добавьте содержимое новости.');if(n.blocks.length>100)throw new Error('Не больше 100 блоков в новости.');for(const b of n.blocks){if(!types.some(([t])=>t===b.type))throw new Error('Неизвестный блок.');if(b.type==='image'&&!safeURL(b.src,true))throw new Error('Для картинки нужен HTTPS-адрес вашего сайта или путь images/…');}if(JSON.stringify(n).length>200000)throw new Error('Слишком большая новость.');}
   async function save(published){if(busy||!admin)return;try{validate(draft);}catch(e){message(e.message,true);scrollTop();return;}busy=true;container.setAttribute('aria-busy','true');area.querySelectorAll('button').forEach(b=>b.disabled=true);message('Сохранение…');try{const now=Date.now(),id=draft.id||crypto.randomUUID(),payload={title:draft.title.trim(),author:draft.author.trim(),date:draft.date,published,blocks:JSON.parse(JSON.stringify(draft.blocks)),createdAt:Number(draft.createdAt)||now,updatedAt:now,schemaVersion:1};await driver.save(id,payload);dirty=false;draft=null;view='list';message('Новость сохранена.');await refresh(false);}catch(e){message('Не удалось сохранить: '+e.message,true);editor();}finally{busy=false;container.removeAttribute('aria-busy');}}
   async function remove(){if(busy||!admin||!draft?.id)return;if(!confirm('Удалить эту новость без возможности восстановления?'))return;busy=true;try{await driver.remove(draft.id);dirty=false;draft=null;view='list';await refresh(false);}catch(e){message('Не удалось удалить: '+e.message,true);}finally{busy=false;}}
-  async function refresh(showLoading=true){const seq=++loadSequence,requestedAdmin=admin;if(showLoading)message('Загрузка новостей…');try{const values=await driver.list(requestedAdmin);if(seq!==loadSequence||requestedAdmin!==admin)return;records=values.filter(n=>requestedAdmin||n.published===true).sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))||Number(b.createdAt||0)-Number(a.createdAt||0));loaded=true;message();badge();if(view==='list')list();else if(view==='article'){const fresh=records.find(n=>n.id===selected?.id);if(fresh)article(fresh);else list();}}catch(e){if(seq!==loadSequence)return;message('Не удалось загрузить новости: '+e.message+(loaded?'\nПоказаны ранее загруженные записи.':''),true);}}
-  async function open(){readLocal();if(!dirty){list();scrollTop();}await refresh(true);}
-  function setAdmin(value){if(admin===value)return;admin=value;loadSequence++;records=[];loaded=false;view='list';draft=null;selected=null;dirty=false;list();refresh(false);}
+  function acceptRecords(values){
+    records=values.filter(n=>admin||n.published===true).sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))||Number(b.createdAt||0)-Number(a.createdAt||0));
+    loaded=true;
+    if(!busy)message();
+    badge();
+    // События из базы обновляют список и счётчик, но не трогают редактор.
+    if(busy||view==='edit'||view==='preview')return;
+    const position=options.scrollElement?.scrollTop||0;
+    if(view==='list'){
+      list();
+      if(options.scrollElement)options.scrollElement.scrollTop=position;
+    }else if(view==='article'){
+      const fresh=records.find(n=>n.id===selected?.id);
+      if(!fresh){list();scrollTop();}
+      else if(JSON.stringify(fresh)!==JSON.stringify(selected)){
+        article(fresh);
+        if(options.scrollElement)options.scrollElement.scrollTop=position;
+      }
+    }
+  }
+  function stopWatching(){
+    loadSequence++;
+    if(unsubscribeNews){unsubscribeNews();unsubscribeNews=null;}
+  }
+  function startWatching(){
+    if(unsubscribeNews)return;
+    const sequence=++loadSequence,requestedAdmin=admin;
+    if(!loaded)message('Загрузка новостей…');
+    try{
+      unsubscribeNews=driver.watch(requestedAdmin,values=>{
+        if(sequence!==loadSequence||requestedAdmin!==admin)return;
+        acceptRecords(values);
+      },error=>{
+        if(sequence!==loadSequence)return;
+        unsubscribeNews=null;
+        message('Не удалось подключить новости: '+error.message+(loaded?'\nПоказаны ранее загруженные записи.':''),true);
+      });
+    }catch(error){
+      unsubscribeNews=null;
+      message('Не удалось подключить новости: '+error.message,true);
+    }
+  }
+  async function refresh(){
+    startWatching();
+    if(loaded)acceptRecords(records);
+  }
+  async function open(){
+    readLocal();
+    if(!dirty){list();scrollTop();}
+    badge();
+    startWatching();
+  }
+  function setAdmin(value){
+    if(admin===value)return;
+    stopWatching();
+    admin=value;records=[];loaded=false;view='list';draft=null;selected=null;dirty=false;
+    list();badge();startWatching();
+  }
+  window.addEventListener('online',()=>startWatching());
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)startWatching();});
   window.addEventListener('storage',e=>{if(e.key===READ_KEY||e.key===null){read=new Set();readLocal();badge();if(view==='list')list();}});
   readLocal();list();
-  return{open,refresh,setAdmin,canLeave:leaveEditor,initialize:()=>refresh(false)};
+  return{open,refresh,setAdmin,canLeave:leaveEditor,initialize:startWatching};
 }
 
 const newsCollection=collection(db,'news');
 const newsUI=createNewsUI(document.getElementById('newsMount'),{
- async list(admin){const snap=await getDocs(admin?newsCollection:query(newsCollection,where('published','==',true)));return snap.docs.map(d=>({...d.data(),id:d.id}));},
+ watch(admin,onData,onError){
+   const source=admin?newsCollection:query(newsCollection,where('published','==',true));
+   return onSnapshot(source,snapshot=>onData(snapshot.docs.map(d=>({...d.data(),id:d.id}))),onError);
+ },
  async save(id,payload){if(auth.currentUser?.uid!==ADMIN_UID)throw new Error('Нужен вход администратора.');await setDoc(doc(db,'news',id),payload);},
  async remove(id){if(auth.currentUser?.uid!==ADMIN_UID)throw new Error('Нужен вход администратора.');await deleteDoc(doc(db,'news',id));}
-},{siteBase:'https://caramellca.github.io/OVNI/',scrollElement:document.getElementById('newsScroll'),readKey:'ovni-news-read-v2',seed:()=>({"title": "Надоела проверка на бота? Решение есть", "author": "barsa", "date": "2026-11-11", "published": false, "blocks": [{"type": "image", "src": "images/news/news-neponel.png", "alt": "НЕПОНЕЛ"}, {"type": "paragraph", "text": "С 10 ноября 2026 года при попытке перейти на профиль игрока Lowadi, нас встречает уже знакомая верификация. Конечно, это раздражает, особенно когда интернет слабый, а времени ждать просто нет. Кроме того, такая «привилегия» существует исключительно на ру сервере (сюрприз-сюрприз) 🌚"}, {"type": "heading", "text": "Как решить"}, {"type": "paragraph", "text": "После нехитрых манипуляций вы сможете добавить кнопку с ИНЛО прямо на сайт:"}, {"type": "image", "src": "images/news/news-panel-screen.png", "alt": "Кнопка В поисках ИНЛО на странице Lowadi"}, {"type": "paragraph", "text": "По нажатию на кнопку появляется знакомая панель с карточками. Теперь, кликая по карточкам, вы можете посещать профили игроков без излишней верификации."}, {"type": "warning", "text": "Новый функционал недоступен для мобильных устройств. Увы и квак 🐸"}, {"type": "heading", "text": "Порядок установки"}, {"type": "list", "items": ["Установить [Tampermonkey](https://www.tampermonkey.net/) - если ещё нет.", "В меню Tampermonkey создайте новый скрипт, очистите шаблон и вставьте код кнопки (получить код можно у [barsa](https://www.lowadi.com/joueur/fiche/?id=16341858), это БЕСПЛАТНО!)", "Сохраните скрипт и обновите страницу Lowadi. Если браузер запросит разрешение для запуска, следуйте подсказкам Tampermonkey."]}, {"type": "paragraph", "text": "Вы великолепны, кайфуйте!"}, {"type": "fine", "text": "Скрипт просто читает публичный список карточек. Он не выполняет никаких игровых действий и не нарушает правил игры. Его использование не влечет никаких санкций!"}]}),onUnread(count){const b=document.getElementById('newsBadge');b.textContent=String(count);b.hidden=count===0;document.getElementById('newsButton').setAttribute('aria-label',count?`Новости: непрочитанных ${count}`:'Новости');}});
+},{siteBase:'https://caramellca.github.io/OVNI/',scrollElement:document.getElementById('newsScroll'),readKey:'ovni-news-read-v2',onUnread(count){const b=document.getElementById('newsBadge');b.textContent=String(count);b.hidden=count===0;document.getElementById('newsButton').setAttribute('aria-label',count?`Новости: непрочитанных ${count}`:'Новости');}});
 const newsDialog=document.getElementById('newsDialog');
 document.getElementById('newsButton').addEventListener('click',()=>{if(!newsDialog.open)newsDialog.showModal();newsUI.open();});
 document.getElementById('closeNews').addEventListener('click',()=>{if(newsUI.canLeave())newsDialog.close();});
