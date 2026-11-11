@@ -34,16 +34,17 @@ jobs:
         run: npm install --omit=dev --no-save playwright
 
       - name: Install browser
-        timeout-minutes: 10
+        timeout-minutes: 15
         run: |
-          for attempt in 1 2 3; do
+          for attempt in 1 2; do
             if timeout 240 npx playwright install --with-deps chromium; then
               exit 0
             fi
-            echo "Попытка $attempt не удалась, повтор через 20 секунд"
-            sleep 20
+            echo "Попытка $attempt с системными пакетами не удалась"
+            sleep 15
           done
-          exit 1
+          echo "Ставлю браузер без системных пакетов (apt недоступен)"
+          npx playwright install chromium
 
       - name: Syntax check
         run: node --check scripts/fetch-images.mjs
