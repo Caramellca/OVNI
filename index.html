@@ -240,8 +240,8 @@ body.saving-cloud::after{content:"Сохранение…";position:fixed;inset:
 <div class="modal-backdrop" id="loginModal">
 <div class="modal">
 <h3>Вход только для администратора</h3>
-<div class="form-row"><label>Email</label><input autocomplete="username" id="loginEmail" type="email"/></div>
-<div class="form-row"><label>Пароль</label><input autocomplete="current-password" id="loginPassword" type="password"/></div>
+<div class="form-row"><label for="loginEmail">Email</label><input autocomplete="username" id="loginEmail" type="email"/></div>
+<div class="form-row"><label for="loginPassword">Пароль</label><input autocomplete="current-password" id="loginPassword" type="password"/></div>
 <div class="modal-actions">
 <button id="loginCancel" type="button">Отмена</button>
 <button class="primary-btn" id="loginSubmit" type="button">Войти</button>
@@ -262,11 +262,11 @@ body.saving-cloud::after{content:"Сохранение…";position:fixed;inset:
 
 <div class="split-row">
 <div class="form-row">
-<label>Никнейм (необязательно)</label>
+<label for="editNickname">Никнейм (необязательно)</label>
 <input id="editNickname" type="text"/>
 </div>
 <div class="form-row">
-<label>Ссылка *</label>
+<label for="editHref">Ссылка *</label>
 <div class="input-with-icon">
 <input id="editHref" type="text"/>
 <button class="icon-btn" id="editHrefUnlock" title="Разблокировать ссылку" type="button">
@@ -866,6 +866,27 @@ function render(){
   renderCategoryTabs();
 }
 
+const LOCAL_IMAGE_BASE='images/60/';
+function localImageUrl(entry,fallbackId){
+ const id=String(entry?.identifier||fallbackId||'');
+ return /^[A-Za-z0-9_-]+$/.test(id)?`${LOCAL_IMAGE_BASE}${id}.png`:null;
+}
+function attachItemImage(card,entry,itemId){
+ let remoteUrl=null;
+ if(entry?.img){try{const u=new URL(entry.img);if(u.protocol==='https:')remoteUrl=u.href;}catch{}}
+ if(!remoteUrl)return;
+ const localUrl=catalog.has(itemId)?localImageUrl(entry,itemId):null;
+ const img=document.createElement('img');
+ img.alt='';img.loading='lazy';
+ let triedRemote=!localUrl;
+ img.addEventListener('error',()=>{
+  if(!triedRemote){triedRemote=true;img.src=remoteUrl;}
+  else img.style.visibility='hidden';
+ });
+ img.src=localUrl||remoteUrl;
+ card.querySelector('.noicon').replaceWith(img);
+}
+
 function createCard(sectionId, index, item, inactive){
   const card = document.createElement("a");
   card.className = "card" + (state.editing ? " editing" : "") + (inactive ? " inactive-card" : "");
@@ -882,14 +903,7 @@ function createCard(sectionId, index, item, inactive){
     <button class="card-toggle-dot${!inactive ? " on" : ""}" type="button" title="${inactive ? "Включить" : "Отключить"}"></button>
   `;
   const displayItem = catalog.get(item.itemId) || item;
-  if(displayItem.img){try{
-    const imageUrl=new URL(displayItem.img);
-    if(imageUrl.protocol==='https:'){
-      const img=document.createElement('img');img.src=imageUrl.href;img.alt='';img.loading='lazy';
-      img.addEventListener('error',()=>{img.style.visibility='hidden';});
-      card.querySelector('.noicon').replaceWith(img);
-    }
-  }catch{}}
+  attachItemImage(card, displayItem, item.itemId);
 
   card.querySelector(".name").textContent = displayItem.name || "Предмет не выбран";
   card.querySelector("small").textContent = getCardSubtitle(item);
