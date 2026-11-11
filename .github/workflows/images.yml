@@ -1,0 +1,59 @@
+name: Fetch item images
+
+on:
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Скачать заново, даже если файл уже есть'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fetch-images
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+      - name: Check missing images
+        id: plan
+        env:
+          MODE: plan
+          FORCE: ${{ inputs.force && 'true' || 'false' }}
+        run: node scripts/fetch-images.mjs
+      - name: Install Playwright
+        if: steps.plan.outputs.need == 'true'
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Download images
+        id: fetch
+        if: steps.plan.outputs.need == 'true'
+        continue-on-error: true
+        env:
+          FORCE: ${{ inputs.force && 'true' || 'false' }}
+        run: node scripts/fetch-images.mjs
+      - name: Commit images
+        if: steps.plan.outputs.need == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add images/60
+          if git diff --cached --quiet; then
+            echo "Новых картинок нет"
+          else
+            git commit -m "Update item images"
+            git push
+          fi
+      - name: Fail if some images were not downloaded
+        if: steps.fetch.outcome == 'failure'
+        run: exit 1
