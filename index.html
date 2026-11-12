@@ -5,17 +5,10 @@
   <meta content="width=device-width, initial-scale=1" name="viewport"/>
   <title>В поисках ИНЛО</title>
   <link href="images/60/cadeau.png" rel="icon" type="image/png"/>
+  <link rel="stylesheet" href="ovni-shared-v1.css"/>
+  <script src="ovni-shared-v1.js"></script>
   <style>
-:root {
-  --bg: #0d1526;
-  --panel: #172338;
-  --line: #2d3e5a;
-  --accent: #7db6ff;
-  --txt: #eef5ff;
-  --muted: #a7b4c8;
-  --edit: #ffcc66;
-  --danger: #d94848;
-}
+
 * {
   box-sizing: border-box;
 }
@@ -193,33 +186,9 @@ body.is-admin section.section-hidden-user {
   display: block;
   opacity: .55;
 }
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill,minmax(188px,1fr));
-  gap: 10px;
-}
-.card,.add-card {
-  position: relative;
-  display: grid;
-  grid-template-columns: 56px 1fr;
-  grid-template-rows: 1fr auto;
-  gap: 0 9px;
-  align-items: center;
-  min-height: 65px;
-  padding: 9px;
-  color: var(--txt);
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 11px;
-  text-decoration: none;
-  transition: .15s;
-  user-select: none;
-}
-.card:hover,.add-card:hover {
-  transform: translateY(-2px);
-  background: #1c304e;
-  border-color: var(--accent);
-}
+
+
+
 .card.editing {
   outline: none;
 }
@@ -232,27 +201,10 @@ body.is-admin section.section-hidden-user {
 .card.drag-over-after {
   box-shadow: 3px 0 0 0 var(--edit),inset -3px 0 0 0 var(--edit);
 }
-.card img,.noicon {
-  grid-row: 1/3;
-  width: 56px;
-  height: 56px;
-  object-fit: contain;
-}
-.noicon {
-  display: grid;
-  place-items: center;
-  color: var(--accent);
-  font-size: 24px;
-}
-.name {
-  font-weight: 650;
-  line-height: 1.16;
-}
-small {
-  padding-top: 3px;
-  color: var(--muted);
-  font-size: 11px;
-}
+
+
+
+
 .inactive-card {
   opacity: .45;
 }
@@ -845,318 +797,7 @@ body.saving-cloud::after {
     padding: 18px;
   }
 }
-.nui {
-  font: 14px/1.65 system-ui,Arial,sans-serif;
-  color: #eef5ff;
-  min-width: 0;
-  overflow-wrap: anywhere;
-}
-.nui [hidden] {
-  display: none !important;
-}
-.nui button,.nui input,.nui select,.nui textarea {
-  font: inherit;
-  box-sizing: border-box;
-}
-.nui button {
-  cursor: pointer;
-  color: #eef5ff;
-  background: #233b5c;
-  border: 1px solid #2d3e5a;
-  border-radius: 8px;
-  padding: 7px 11px;
-  line-height: 1.4;
-}
-.nui button:hover {
-  border-color: #7db6ff;
-}
-.nui button:disabled {
-  opacity: .5;
-  cursor: wait;
-}
-.nui .nu-link {
-  padding: 0;
-  background: none;
-  border: 0;
-  color: #a7b4c8;
-  border-radius: 0;
-}
-.nui .nu-link:hover {
-  color: #7db6ff;
-}
-.nui .nu-actions {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  flex-wrap: wrap;
-  margin: 0 0 20px;
-}
-.nui .nu-actions.end {
-  margin: 20px 0 0;
-  justify-content: flex-end;
-}
-.nui .nu-status {
-  color: #a7b4c8;
-  font-size: 12px;
-  white-space: pre-wrap;
-  margin: 0 0 15px;
-}
-.nui .nu-error {
-  color: #ffad9b;
-}
-.nui .nu-meta {
-  color: #a7b4c8;
-  font-size: 12px;
-  margin: 0 0 24px;
-}
-.nui .nu-title {
-  margin: 0 0 10px;
-  font-size: clamp(21px,3vw,25px);
-  line-height: 1.3;
-  color: #eef5ff;
-}
-.nui .nu-list-row {
-  display: grid;
-  grid-template-columns: 7px minmax(0,1fr) 12px;
-  gap: 12px;
-  align-items: start;
-  text-align: left;
-  width: 100%;
-  padding: 19px 0;
-  background: none;
-  border: 0;
-  border-bottom: 1px solid #2d3e5a;
-  border-radius: 0;
-}
-.nui .nu-list-row:last-child {
-  border-bottom: 0;
-}
-.nui .nu-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #ffbf69;
-  margin-top: 7px;
-}
-.nui .nu-read .nu-dot {
-  background: transparent;
-}
-.nui .nu-row-title {
-  display: block;
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 1.4;
-  color: #eef5ff;
-}
-.nui .nu-read .nu-row-title {
-  color: #93a3bb;
-}
-.nui .nu-list-row:hover .nu-row-title {
-  color: #7db6ff;
-}
-.nui .nu-row-meta {
-  display: block;
-  margin-top: 7px;
-  color: #a7b4c8;
-  font-size: 12px;
-}
-.nui .nu-draft {
-  color: #ffbf69;
-}
-.nui .nu-arrow {
-  color: #7a8ca6;
-  font-size: 20px;
-}
-.nui .nu-article {
-  max-width: 600px;
-  margin: 0 auto;
-}
-.nui .nu-body {
-  line-height: 1.8;
-}
-.nui .nu-body p {
-  margin: 20px 0;
-}
-.nui .nu-body h3 {
-  margin: 30px 0 14px;
-  font-size: 19px;
-  line-height: 1.4;
-}
-.nui .nu-body figure {
-  margin: 24px 0;
-  width: 100%;
-}
-.nui .nu-body img {
-  display: block;
-  width: 100%;
-  max-width: 600px;
-  height: auto;
-  margin: auto;
-  border-radius: 8px;
-}
-.nui .nu-body>:first-child {
-  margin-top: 0;
-}
-.nui .nu-body>:last-child {
-  margin-bottom: 0;
-}
-.nui .nu-body ol {
-  padding-left: 24px;
-  margin: 18px 0 24px;
-}
-.nui .nu-body li {
-  margin: 12px 0;
-  padding-left: 3px;
-}
-.nui .nu-body a {
-  display: inline;
-  color: #7db6ff;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  background: none;
-  border: 0;
-  padding: 0;
-}
-.nui .nu-body blockquote {
-  margin: 24px 0;
-  padding: 13px 16px;
-  border-left: 3px solid #edac52;
-  background: #ffbf690b;
-  border-radius: 0 8px 8px 0;
-  color: #ffbf69;
-  font-size: 13px;
-}
-.nui .nu-body .nu-fine {
-  margin-top: 28px;
-  color: #a7b4c8;
-  font-size: 12px;
-}
-.nui .nu-image-error {
-  padding: 20px;
-  border: 1px dashed #2d3e5a;
-  border-radius: 8px;
-  color: #a7b4c8;
-  text-align: center;
-  font-size: 13px;
-}
-.nui .nu-form {
-  display: grid;
-  gap: 14px;
-}
-.nui label {
-  display: grid;
-  gap: 5px;
-  color: #a7b4c8;
-  font-size: 12px;
-}
-.nui input,.nui select,.nui textarea {
-  width: 100%;
-  background: #0e1727;
-  color: #eef5ff;
-  border: 1px solid #2d3e5a;
-  border-radius: 8px;
-  padding: 9px 11px;
-  line-height: 1.5;
-}
-.nui textarea {
-  min-height: 110px;
-  resize: vertical;
-}
-.nui input:focus,.nui select:focus,.nui textarea:focus {
-  outline: 1px solid #7db6ff;
-}
-.nui .nu-fields {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-.nui .nu-block {
-  border: 1px solid #2d3e5a;
-  border-radius: 10px;
-  padding: 12px;
-  margin: 14px 0;
-  background: #172338;
-}
-.nui .nu-block-top {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 10px;
-}
-.nui .nu-block-top select {
-  flex: 1;
-  min-width: 0;
-}
-.nui .nu-block-top button {
-  padding: 5px 8px;
-}
-.nui .nu-help {
-  color: #a7b4c8;
-  font-size: 12px;
-  margin: 0 0 12px;
-}
-.nui .nu-publish {
-  background: #7db6ff;
-  color: #0d1526;
-  border-color: #7db6ff;
-}
-.nui .nu-danger {
-  color: #ffabab;
-}
-.nui .nu-published-check {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.nui .nu-published-check input {
-  width: auto;
-}
-.nu-badge {
-  display: inline-grid;
-  place-items: center;
-  min-width: 17px;
-  height: 17px;
-  padding: 0 4px;
-  background: #ffbf6926;
-  color: #ffbf69;
-  border-radius: 5px;
-  font-size: 10px;
-  line-height: 1;
-}
-@media (max-width:460px) {
-  .nui .nu-fields {
-    grid-template-columns: 1fr;
-  }
-  .nui .nu-block {
-    padding: 9px;
-  }
-}
-/* Новости: дата и автор курсивом; подсказка ссылок закреплена в редакторе. */
-.nui .nu-meta,
-.nui .nu-row-meta {
-  font-style: italic;
-}
-.nui .nu-editor-help {
-  position: sticky;
-  top: 0;
-  z-index: 3;
-  padding: 10px 12px;
-  margin: 16px 0;
-  border: 1px solid #2d3e5a;
-  border-radius: 8px;
-  background: #111c2e;
-  box-shadow: 0 5px 12px #0003;
-  line-height: 1.6;
-}
-.nui .nu-editor-help code {
-  display: block;
-  margin: 4px 0;
-  color: #eef5ff;
-  font: 12px/1.6 ui-monospace,Consolas,monospace;
-  white-space: normal;
-  overflow-wrap: anywhere;
-}
-  </style>
+</style>
  </head>
  <body>
   <header>
@@ -1360,120 +1001,7 @@ const state={editing:false,isAdmin:false,history:[],future:[],pending:null,activ
 const networkState={boardReady:false,catalogReady:false,boardLive:false,catalogLive:false,boardIssue:'',catalogIssue:'',restActive:false};
 const categoryTabs=document.getElementById("categoryTabs"),main=document.getElementById("main"),modeBtn=document.getElementById("modeBtn"),undoBtn=document.getElementById("undoBtn"),redoBtn=document.getElementById("redoBtn"),loginBtn=document.getElementById("loginBtn"),syncStatus=document.getElementById("syncStatus"),loginModal=document.getElementById("loginModal"),loginEmail=document.getElementById("loginEmail"),loginPassword=document.getElementById("loginPassword"),loginSubmit=document.getElementById("loginSubmit"),loginCancel=document.getElementById("loginCancel"),modalBackdrop=document.getElementById("modalBackdrop"),editHref=document.getElementById("editHref"),editHrefUnlock=document.getElementById("editHrefUnlock"),editNickname=document.getElementById("editNickname"),editEnabledDot=document.getElementById("editEnabledDot"),editEnabledLabel=editEnabledDot.querySelector(".switch-label"),toast=document.getElementById("toast");
 
-function createNewsUI(container,driver,options={}) {
-  const READ_KEY=options.readKey||'ovni-news-read-v2';
-  let records=[],read=new Set(),admin=false,view='list',selected=null,draft=null,busy=false,loaded=false,dirty=false,loadSequence=0;
-  let unsubscribeNews=null;
-  const node=(tag,cls,text)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e;};
-  container.classList.add('nui');
-  const status=node('div','nu-status');status.setAttribute('role','status');status.hidden=true;
-  const area=node('div');container.replaceChildren(status,area);
-  const types=[['paragraph','Абзац'],['heading','Подзаголовок'],['image','Картинка'],['warning','Предупреждение'],['list','Нумерованный список'],['fine','Серая подпись']];
-  function message(text='',error=false){status.textContent=text;status.hidden=!text;status.classList.toggle('nu-error',error);}
-  function readLocal(){try{const value=JSON.parse(localStorage.getItem(READ_KEY)||'[]');if(Array.isArray(value))read=new Set(value.filter(x=>typeof x==='string'));}catch{}}
-  function saveLocal(){try{localStorage.setItem(READ_KEY,JSON.stringify([...read]));}catch{}}
-  function badge(){options.onUnread?.(records.filter(n=>n.published&&!read.has(n.id)).length);}
-  function dateText(value){
-    if(!/^\d{4}-\d{2}-\d{2}$/.test(value||''))return '';
-    const [year,month,day]=value.split('-').map(Number);
-    const parts=new Intl.DateTimeFormat('ru-RU',{day:'numeric',month:'long',year:'numeric'}).formatToParts(new Date(year,month-1,day));
-    const part=type=>parts.find(p=>p.type===type)?.value||'';
-    return `${part('day')} ${part('month')} ${part('year')}`;
-  }
-  function safeURL(raw,image=false){try{const u=new URL(String(raw||'').trim(),options.siteBase||document.baseURI);if(u.protocol!=='https:')return null;if(image&&u.origin!==new URL(options.siteBase||document.baseURI).origin)return null;return u.href;}catch{return null;}}
-  function rich(parent,text){const value=String(text||''),rx=/\[([^\]\n]+)\]\(([^\s)]+)\)/g;let pos=0,match;while((match=rx.exec(value))){parent.append(document.createTextNode(value.slice(pos,match.index)));const url=safeURL(match[2]);if(url){const a=node('a','',match[1]);const u=new URL(url);a.href=u.origin===location.origin?u.pathname+u.search+u.hash:url;a.target='_blank';a.rel='noopener noreferrer';parent.append(a);}else parent.append(document.createTextNode(match[0]));pos=rx.lastIndex;}parent.append(document.createTextNode(value.slice(pos)));}
-  function body(parent,blocks){for(const block of blocks||[]){if(!block||typeof block!=='object')continue;let e;if(block.type==='image'){const url=safeURL(block.src,true);if(!url)continue;e=node('figure');const img=node('img');img.src=url;img.alt=String(block.alt||'');img.loading='lazy';img.decoding='async';img.addEventListener('error',()=>{const f=node('div','nu-image-error','Изображение пока недоступно');img.replaceWith(f);},{once:true});e.append(img);}else if(block.type==='list'){e=node('ol');for(const text of block.items||[]){const li=node('li');rich(li,text);e.append(li);}}else{const tag=block.type==='heading'?'h3':block.type==='warning'?'blockquote':'p';e=node(tag,block.type==='fine'?'nu-fine':'');rich(e,block.text);}parent.append(e);}}
-  function button(text,fn,cls=''){const b=node('button',cls,text);b.type='button';b.addEventListener('click',fn);return b;}
-  function scrollTop(){options.scrollElement?.scrollTo({top:0,behavior:'instant'});}
-  function leaveEditor(){return !dirty||confirm('Выйти без сохранения изменений новости?');}
-  function list(){view='list';selected=null;draft=null;dirty=false;area.replaceChildren();if(admin){const actions=node('div','nu-actions');actions.append(button('+ Добавить новость',()=>edit(null)));area.append(actions);}
-    if(!records.length){area.append(node('p','nu-help',loaded?'Новостей пока нет.':'Загрузка новостей…'));return;}
-    for(const n of records){const row=button('',()=>article(n),'nu-list-row'+(read.has(n.id)?' nu-read':''));const dot=node('span','nu-dot');dot.setAttribute('aria-hidden','true');const text=node('span');text.append(node('span','nu-row-title',n.title||'Без заголовка'));text.append(node('span','nu-row-meta',`${dateText(n.date)}, ${n.author||'barsa'}`));if(!n.published)text.append(node('span','nu-draft','Черновик'));const arrow=node('span','nu-arrow','›');arrow.setAttribute('aria-hidden','true');row.append(dot,text,arrow);area.append(row);}badge();}
-  function article(n,preview=false){view=preview?'preview':'article';selected=n;area.replaceChildren();const actions=node('div','nu-actions');actions.append(button(preview?'← К редактированию':'← Все новости',()=>{if(preview)editor();else{list();scrollTop();}},'nu-link'));if(admin&&!preview)actions.append(button('Редактировать',()=>edit(n),'nu-link'));area.append(actions);const article=node('article','nu-article');const title=node('h2','nu-title',n.title||'Без заголовка');article.append(title,node('div','nu-meta',`${dateText(n.date)}, ${n.author||'barsa'}${n.published?'':' — Черновик'}`));const content=node('div','nu-body');body(content,n.blocks);article.append(content);area.append(article);if(n.published&&!preview){read.add(n.id);saveLocal();badge();}scrollTop();}
-  function field(label,value,type='text'){const l=node('label','',label),input=node('input');input.type=type;input.value=value||'';l.append(input);return{label:l,input};}
-  function edit(n){view='edit';draft=JSON.parse(JSON.stringify(n||{title:'',author:'barsa',date:new Date().toLocaleDateString('sv-SE'),published:false,blocks:[]}));if(!draft.blocks)draft.blocks=[];dirty=false;editor();scrollTop();}
-  function editor(){view='edit';area.replaceChildren();const actions=node('div','nu-actions');actions.append(button('← Все новости',()=>{if(leaveEditor()){list();scrollTop();}},'nu-link'));area.append(actions,node('h2','nu-title',draft.id?'Редактирование новости':'Новая новость'));
-    const form=node('div','nu-form');const title=field('Заголовок',draft.title);title.input.maxLength=200;title.input.addEventListener('input',()=>{draft.title=title.input.value;dirty=true;});form.append(title.label);
-    const fields=node('div','nu-fields'),author=field('Автор',draft.author),date=field('Дата',draft.date,'date');author.input.maxLength=60;author.input.addEventListener('input',()=>{draft.author=author.input.value;dirty=true;});date.input.addEventListener('input',()=>{draft.date=date.input.value;dirty=true;});fields.append(author.label,date.label);form.append(fields);area.append(form);
-    const help=node('div','nu-help nu-editor-help');
-    help.append(node('div','','Ссылка в тексте:'));
-    help.append(node('code','','[текст ссылки](https://адрес)'));
-    help.append(node('div','','Например: [Tampermonkey](https://www.tampermonkey.net/)'));
-    help.append(node('div','','Картинки: images/news/имя.png. Один пункт списка — одна строка.'));
-    area.append(help);
-    const blocks=node('div');area.append(blocks);
-    draft.blocks.forEach((block,index)=>{const box=node('div','nu-block'),top=node('div','nu-block-top'),select=node('select');for(const [value,label]of types){const option=node('option','',label);option.value=value;select.append(option);}select.value=block.type;select.addEventListener('change',()=>{draft.blocks[index]={type:select.value,...(select.value==='image'?{src:'',alt:''}:select.value==='list'?{items:[]}:{text:''})};dirty=true;editor();});top.append(select);
-      const up=button('↑',()=>{[draft.blocks[index-1],draft.blocks[index]]=[draft.blocks[index],draft.blocks[index-1]];dirty=true;editor();});up.disabled=index===0;up.title='Выше';const down=button('↓',()=>{[draft.blocks[index+1],draft.blocks[index]]=[draft.blocks[index],draft.blocks[index+1]];dirty=true;editor();});down.disabled=index===draft.blocks.length-1;down.title='Ниже';top.append(up,down,button('×',()=>{draft.blocks.splice(index,1);dirty=true;editor();},'nu-danger'));box.append(top);
-      if(block.type==='image'){const src=field('Путь к картинке',block.src),alt=field('Описание картинки',block.alt);src.input.addEventListener('input',()=>{block.src=src.input.value;dirty=true;});alt.input.addEventListener('input',()=>{block.alt=alt.input.value;dirty=true;});box.append(src.label,alt.label);}else{const input=node('textarea');input.value=block.type==='list'?(block.items||[]).join('\n'):block.text||'';input.addEventListener('input',()=>{if(block.type==='list')block.items=input.value.split('\n');else block.text=input.value;dirty=true;});box.append(input);}blocks.append(box);});
-    const add=node('div','nu-actions');for(const [type,label]of types)add.append(button('+ '+label,()=>{draft.blocks.push({type,...(type==='image'?{src:'',alt:''}:type==='list'?{items:[]}:{text:''})});dirty=true;editor();}));area.append(add);
-    const actionsEnd=node('div','nu-actions end');actionsEnd.append(button('Предпросмотр',()=>article(draft,true)),button('Сохранить черновик',()=>save(false)),button('Опубликовать',()=>save(true),'nu-publish'));if(draft.id){actionsEnd.append(button('Удалить',remove,'nu-danger'));}area.append(actionsEnd);}
-  function validate(n){if(!String(n.title||'').trim())throw new Error('Введите заголовок.');if(!String(n.author||'').trim())throw new Error('Укажите автора.');if(!/^\d{4}-\d{2}-\d{2}$/.test(n.date||''))throw new Error('Укажите дату.');if(!n.blocks.length)throw new Error('Добавьте содержимое новости.');if(n.blocks.length>100)throw new Error('Не больше 100 блоков в новости.');for(const b of n.blocks){if(!types.some(([t])=>t===b.type))throw new Error('Неизвестный блок.');if(b.type==='image'&&!safeURL(b.src,true))throw new Error('Для картинки нужен HTTPS-адрес вашего сайта или путь images/…');}if(JSON.stringify(n).length>200000)throw new Error('Слишком большая новость.');}
-  async function save(published){if(busy||!admin)return;try{validate(draft);}catch(e){message(e.message,true);scrollTop();return;}busy=true;container.setAttribute('aria-busy','true');area.querySelectorAll('button').forEach(b=>b.disabled=true);message('Сохранение…');try{const now=Date.now(),id=draft.id||crypto.randomUUID(),payload={title:draft.title.trim(),author:draft.author.trim(),date:draft.date,published,blocks:JSON.parse(JSON.stringify(draft.blocks)),createdAt:Number(draft.createdAt)||now,updatedAt:now,schemaVersion:1};await driver.save(id,payload);dirty=false;draft=null;view='list';message('Новость сохранена.');await refresh(false);}catch(e){message('Не удалось сохранить: '+e.message,true);editor();}finally{busy=false;container.removeAttribute('aria-busy');}}
-  async function remove(){if(busy||!admin||!draft?.id)return;if(!confirm('Удалить эту новость без возможности восстановления?'))return;busy=true;try{await driver.remove(draft.id);dirty=false;draft=null;view='list';await refresh(false);}catch(e){message('Не удалось удалить: '+e.message,true);}finally{busy=false;}}
-  function acceptRecords(values){
-    records=values.filter(n=>admin||n.published===true).sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))||Number(b.createdAt||0)-Number(a.createdAt||0));
-    loaded=true;
-    if(!busy)message();
-    badge();
-    // События из базы обновляют список и счётчик, но не трогают редактор.
-    if(busy||view==='edit'||view==='preview')return;
-    const position=options.scrollElement?.scrollTop||0;
-    if(view==='list'){
-      list();
-      if(options.scrollElement)options.scrollElement.scrollTop=position;
-    }else if(view==='article'){
-      const fresh=records.find(n=>n.id===selected?.id);
-      if(!fresh){list();scrollTop();}
-      else if(JSON.stringify(fresh)!==JSON.stringify(selected)){
-        article(fresh);
-        if(options.scrollElement)options.scrollElement.scrollTop=position;
-      }
-    }
-  }
-  function stopWatching(){
-    loadSequence++;
-    if(unsubscribeNews){unsubscribeNews();unsubscribeNews=null;}
-  }
-  function startWatching(){
-    if(unsubscribeNews)return;
-    const sequence=++loadSequence,requestedAdmin=admin;
-    if(!loaded)message('Загрузка новостей…');
-    try{
-      unsubscribeNews=driver.watch(requestedAdmin,values=>{
-        if(sequence!==loadSequence||requestedAdmin!==admin)return;
-        acceptRecords(values);
-      },error=>{
-        if(sequence!==loadSequence)return;
-        unsubscribeNews=null;
-        message('Не удалось подключить новости: '+error.message+(loaded?'\nПоказаны ранее загруженные записи.':''),true);
-      });
-    }catch(error){
-      unsubscribeNews=null;
-      message('Не удалось подключить новости: '+error.message,true);
-    }
-  }
-  async function refresh(){
-    startWatching();
-    if(loaded)acceptRecords(records);
-  }
-  async function open(){
-    readLocal();
-    if(!dirty){list();scrollTop();}
-    badge();
-    startWatching();
-  }
-  function setAdmin(value){
-    if(admin===value)return;
-    stopWatching();
-    admin=value;records=[];loaded=false;view='list';draft=null;selected=null;dirty=false;
-    list();badge();startWatching();
-  }
-  window.addEventListener('online',()=>startWatching());
-  document.addEventListener('visibilitychange',()=>{if(!document.hidden)startWatching();});
-  window.addEventListener('storage',e=>{if(e.key===READ_KEY||e.key===null){read=new Set();readLocal();badge();if(view==='list')list();}});
-  readLocal();list();
-  return{open,refresh,setAdmin,canLeave:leaveEditor,initialize:startWatching};
-}
+const {createNewsUI,layoutBlocks,publicCardVisible,localImageUrls,decodeFirestoreDocument}=globalThis.OVNIShared;
 
 const newsCollection=collection(db,'news');
 const newsUI=createNewsUI(document.getElementById('newsMount'),{
@@ -1493,15 +1021,6 @@ const ICON_EYE_OPEN=`<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox
 const ICON_EYE_CLOSED=`<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88"/></svg>`;
 const ICON_X=`<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>`;
 const ICON_DRAG=`<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor"><path stroke-linecap="round" d="M4 9h16M4 15h16"/></svg>`;
-const BLACK_MARKET_ORDER=['defi-titans','pack-nyx','pack-harmonie','pack-hera','boite-pandore','pomme-or','toison-or','tyche-crown','5th-element','pierre-philosophale','bras-morphee','sablier-chronos','fragment-nuage','baton-fertilite','eclair-zeus','corne-abondance','sang-meduse','rayon-helios','larmes-aphrodite','eau-jouvence','pomme-vintage','orchidee-noire','talon-achille','caresse-philotes','lyre-apollon','fleche-artemis','parchemin-ploutos','couverture-hypnos'];
-const itemKey=(item,catalog)=>String(catalog.get(item.itemId)?.identifier||item.itemId||'').toLowerCase();
-const heliosFamily=key=>key==='rayon-helios-ow'?'rayon-helios':key;
-const marketRank=key=>{const i=BLACK_MARKET_ORDER.indexOf(heliosFamily(key));return i<0?10000:i;};
-function equipmentFamily(key){if(key.startsWith('bonnet-'))return'bonnet';if(key.startsWith('tapis-'))return'tapis';if(key.startsWith('bande-'))return'bande';if(key.startsWith('selle-'))return'selle';if(key.startsWith('bride-'))return'bride';return'other';}
-function layoutBlocks(groupId,entries,catalog){const keyOf=e=>itemKey(e.item,catalog),labelOf=e=>String(catalog.get(e.item.itemId)?.name||e.item.itemId||'');const bonusFirst=['pack-poseidon','pack-bonus','pactole-cresus'],bonusOrder=['main','crampons','eperons','longe','cloches','cravache'],equipOrder=['bonnet','tapis','bande','selle','bride','other'];function compareItems(a,b){const ka=keyOf(a),kb=keyOf(b);if(groupId==='black-market'){const d=marketRank(ka)-marketRank(kb);if(d)return d;if(heliosFamily(ka)==='rayon-helios'&&heliosFamily(kb)==='rayon-helios'){const d2=(ka==='rayon-helios'?0:1)-(kb==='rayon-helios'?0:1);if(d2)return d2;}}if(groupId==='bonuses'){const ia=bonusFirst.indexOf(ka),ib=bonusFirst.indexOf(kb);if(ia>=0||ib>=0){const d=(ia<0?999:ia)-(ib<0?999:ib);if(d)return d;}}return labelOf(a).localeCompare(labelOf(b),'ru')||ka.localeCompare(kb)||String(a.item.itemId).localeCompare(String(b.item.itemId))||a.position-b.position;}
-const buckets=new Map();for(const e of entries){const k=keyOf(e);let block;if(groupId==='black-market')block=heliosFamily(k);else if(groupId==='equipment')block=equipmentFamily(k);else if(groupId==='bonuses')block=bonusFirst.includes(k)?'main':k;else if(groupId==='agriculture'||groupId==='check-list')block=k;else block='all';if(!buckets.has(block))buckets.set(block,[]);buckets.get(block).push(e);}for(const list of buckets.values())list.sort(compareItems);if(groupId==='black-market'){const singles=[],repeat=[];for(const[key,list]of buckets){if(list.length===1)singles.push(...list);else repeat.push({key,entries:list});}singles.sort(compareItems);repeat.sort((a,b)=>marketRank(a.key)-marketRank(b.key)||compareItems(a.entries[0],b.entries[0]));return[...(singles.length?[{key:'unique',entries:singles}]:[]),...repeat];}const blocks=[...buckets].map(([key,entries])=>({key,entries}));function blockRank(key){if(groupId==='equipment')return equipOrder.indexOf(key);if(groupId==='bonuses'){const i=bonusOrder.indexOf(key);return i<0?999:i;}if(groupId==='agriculture')return key==='graines-pass'?0:1;if(groupId==='check-list')return key==='cadeau'?0:key==='none'?1:2;return 0;}blocks.sort((a,b)=>blockRank(a.key)-blockRank(b.key)||compareItems(a.entries[0],b.entries[0]));return blocks;}
-function hiddenEquipment1x(item,sourceSection,catalog){const entry=catalog.get(item.itemId);const group=entry?.groupId||sourceSection;if(group!=='equipment')return false;const identifiers=[entry?.identifier,item.itemId].filter(Boolean).map(v=>String(v).toLowerCase());return identifiers.some(id=>/(^|-)1x(?=-|$)/.test(id));}
-function publicCardVisible(item,sourceSection,catalog){if(!item.itemId||item.inactive===true)return false;const entry=catalog.get(item.itemId);if(!entry)return false;const group=entry.groupId||sourceSection;if(group==='check-list')return false;if(group==='agriculture'&&itemKey(item,catalog)!=='graines-pass')return false;if(hiddenEquipment1x(item,sourceSection,catalog))return false;return true;}
 function isInactive(item){return item.inactive===true;}
 function getCardId(href){try{return new URL(href).searchParams.get("id");}catch(e){return "";}}
 function getNickname(item){return item.nickname||"";}
@@ -1520,8 +1039,6 @@ function applyCatalog(entries){if(!entries.length)throw {code:'empty-catalog'};c
 function queueConnectionRetry(code){if(permanentErrors.has(code)||connectionRetryTimer)return;const delay=Math.min(60000,5000*2**Math.min(retryCount++,4));connectionRetryTimer=setTimeout(()=>{connectionRetryTimer=null;startDataListeners();},delay);}
 function dataListenError(kind,error){const code=connectionErrorCode(error);networkState[kind+'Live']=false;networkState[kind+'Issue']=code;console.error('Firestore '+kind,error);updateSyncStatusDisplay();queueConnectionRetry(code);}
 function startDataListeners(){if(saveInFlight){queueConnectionRetry('network-error');return;}const generation=++connectionGeneration;if(boardUnsubscribe)boardUnsubscribe();if(catalogUnsubscribe)catalogUnsubscribe();clearTimeout(connectionRetryTimer);connectionRetryTimer=null;clearTimeout(restTimer);restTimer=null;networkState.boardLive=false;networkState.catalogLive=false;networkState.boardIssue='';networkState.catalogIssue='';updateSyncStatusDisplay();try{boardUnsubscribe=onSnapshot(boardRef,{includeMetadataChanges:true},snap=>{if(generation!==connectionGeneration)return;if(!snap.exists()){networkState.boardLive=false;if(!snap.metadata.fromCache)networkState.boardIssue='not-found';updateSyncStatusDisplay();return;}try{applyBoard(snap.data());networkState.boardLive=!snap.metadata.fromCache;networkState.boardIssue='';if(networkState.boardLive)retryCount=0;updateSyncStatusDisplay();}catch(error){dataListenError('board',error);}},error=>{if(generation===connectionGeneration)dataListenError('board',error);});catalogUnsubscribe=onSnapshot(catalogCol,{includeMetadataChanges:true},snap=>{if(generation!==connectionGeneration)return;if(!snap.docs.length&&snap.metadata.fromCache){networkState.catalogLive=false;updateSyncStatusDisplay();return;}try{applyCatalog(snap.docs.map(d=>[d.id,d.data()]));networkState.catalogLive=!snap.metadata.fromCache;networkState.catalogIssue='';updateSyncStatusDisplay();}catch(error){dataListenError('catalog',error);}},error=>{if(generation===connectionGeneration)dataListenError('catalog',error);});}catch(error){dataListenError('board',error);}restTimer=setTimeout(tryRestRead,10000);}
-function decodeFirestoreValue(value){if('nullValue'in value)return null;if('booleanValue'in value)return value.booleanValue;if('integerValue'in value)return Number(value.integerValue);if('doubleValue'in value)return Number(value.doubleValue);if('stringValue'in value)return value.stringValue;if('timestampValue'in value)return value.timestampValue;if('arrayValue'in value)return (value.arrayValue.values||[]).map(decodeFirestoreValue);if('mapValue'in value)return Object.fromEntries(Object.entries(value.mapValue.fields||{}).map(([k,v])=>[k,decodeFirestoreValue(v)]));throw {code:'invalid-rest-data'};}
-function decodeFirestoreDocument(document){return Object.fromEntries(Object.entries(document.fields||{}).map(([key,value])=>[key,decodeFirestoreValue(value)]));}
 async function restJSON(resource,parameters={}){const base=`https://firestore.googleapis.com/v1/projects/${encodeURIComponent(firebaseConfig.projectId)}/databases/(default)/documents/`,url=new URL(resource,base);url.searchParams.set('key',firebaseConfig.apiKey);for(const [key,value]of Object.entries(parameters))if(value)url.searchParams.set(key,value);const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),20000);try{const response=await fetch(url,{signal:controller.signal,credentials:'omit',cache:'no-store'});if(!response.ok)throw {code:response.status===404?'not-found':response.status===403?'permission-denied':response.status===401?'unauthenticated':'network-error'};return await response.json();}catch(error){if(error?.name==='AbortError')throw {code:'timeout'};throw error;}finally{clearTimeout(timer);}}
 async function restCatalog(){const entries=[],tokens=new Set();let token='';for(let page=0;page<20;page++){const result=await restJSON('itemCatalog',{pageSize:'300',pageToken:token});for(const document of result.documents||[]){if(!document.name)throw {code:'invalid-rest-data'};const id=decodeURIComponent(document.name.split('/').pop());entries.push([id,decodeFirestoreDocument(document)]);}token=result.nextPageToken||'';if(!token)return entries;if(tokens.has(token))throw {code:'invalid-rest-data'};tokens.add(token);}throw {code:'catalog-too-large'};}
 async function tryRestRead(){clearTimeout(restTimer);restTimer=null;if(networkState.boardLive&&networkState.catalogLive)return;if(restBusy){restTimer=setTimeout(tryRestRead,60000);return;}if(document.hidden){restTimer=setTimeout(tryRestRead,60000);return;}restBusy=true;try{const jobs=[];if(!networkState.boardLive)jobs.push((async()=>{try{const result=await restJSON('cards/board');applyBoard(decodeFirestoreDocument(result));networkState.boardIssue='';}catch(error){networkState.boardIssue=connectionErrorCode(error);console.error('REST board',error);}})());if(!networkState.catalogLive)jobs.push((async()=>{try{applyCatalog(await restCatalog());networkState.catalogIssue='';}catch(error){networkState.catalogIssue=connectionErrorCode(error);console.error('REST catalog',error);}})());await Promise.all(jobs);networkState.restActive=true;}finally{restBusy=false;updateSyncStatusDisplay();if(!networkState.boardLive||!networkState.catalogLive)restTimer=setTimeout(tryRestRead,60000);}}
@@ -1542,8 +1059,7 @@ function displayEntries(target){const result=[];let position=0;const sourceOrder
 function render(){main.innerHTML="";order.forEach(id=>{if(!data[id])return;const sec=data[id];if(sec.hidden&&!state.isAdmin)return;const section=document.createElement("section");section.id=id;if(sec.hidden)section.classList.add("section-hidden-user");const h2=document.createElement("h2"),titleSpan=document.createElement("span");titleSpan.className="section-title-text";titleSpan.contentEditable="false";titleSpan.spellcheck=false;titleSpan.textContent=sec.title;const visibleEntries=displayEntries(id),visibleCount=visibleEntries.length,countEm=document.createElement("em");countEm.textContent=visibleCount;const sectionControls=document.createElement("div");sectionControls.className="section-controls";if(state.editing){const eyeBtn=document.createElement("button");eyeBtn.className="icon-btn"+(!sec.hidden?" active-eye":"");eyeBtn.type="button";eyeBtn.title=sec.hidden?"Показать пользователям":"Скрыть от пользователей";eyeBtn.innerHTML=sec.hidden?ICON_EYE_CLOSED:ICON_EYE_OPEN;eyeBtn.addEventListener("click",()=>{pushHistory();data[id].hidden=!data[id].hidden;commit();});const dragBtn=document.createElement("button");dragBtn.className="icon-btn";dragBtn.type="button";dragBtn.title="Перетащить категорию";dragBtn.innerHTML=ICON_DRAG;dragBtn.style.cursor="grab";dragBtn.draggable=true;dragBtn.addEventListener("dragstart",e=>{state.sectionDrag=id;e.dataTransfer.effectAllowed="move";section.classList.add("section-drag-source");});dragBtn.addEventListener("dragend",()=>{state.sectionDrag=null;section.classList.remove("section-drag-source");});sectionControls.append(eyeBtn,dragBtn);}h2.append(titleSpan,countEm,sectionControls);section.addEventListener("dragover",e=>{if(!state.sectionDrag||state.sectionDrag===id)return;e.preventDefault();section.classList.add("section-drag-over");});section.addEventListener("dragleave",()=>{section.classList.remove("section-drag-over");});section.addEventListener("drop",e=>{if(!state.sectionDrag||state.sectionDrag===id)return;e.preventDefault();section.classList.remove("section-drag-over");pushHistory();const fromIdx=order.indexOf(state.sectionDrag),toIdx=order.indexOf(id);order.splice(fromIdx,1);order.splice(toIdx,0,state.sectionDrag);state.sectionDrag=null;commit();});section.appendChild(h2);const blocks=layoutBlocks(id,visibleEntries,catalog);if(state.editing){const addRow=document.createElement('div');addRow.className='grid add-card-row';addRow.appendChild(createAddCard(id));section.appendChild(addRow);}for(const block of blocks){const grid=document.createElement('div');grid.className='grid auto-block';grid.dataset.section=id;grid.dataset.block=block.key;for(const e of block.entries)grid.appendChild(createCard(e.section,e.index,e.item,isInactive(e.item)));section.appendChild(grid);}main.appendChild(section);});renderCategoryTabs();}
 // Картинки загружаются только из папки сайта, без запросов к Lowadi.
 const LOCAL_IMAGE_BASE='images/60/';
-function localImageUrls(entry,fallbackId){const ids=[];if(entry?.img){try{const name=decodeURIComponent(new URL(entry.img,document.baseURI).pathname.split('/').pop());if(/\.png$/i.test(name))ids.push(name.replace(/\.png$/i,''));}catch{}}ids.push(entry?.identifier,fallbackId);return [...new Set(ids.filter(Boolean).map(String).filter(id=>/^[A-Za-z0-9_-]+$/.test(id)))].map(id=>`${LOCAL_IMAGE_BASE}${id}.png`);}
-function attachItemImage(card,entry,itemId){const urls=localImageUrls(entry,itemId);if(!urls.length)return;const placeholder=card.querySelector('.noicon');if(!placeholder)return;const img=document.createElement('img');img.alt='';img.loading='lazy';let index=0;img.addEventListener('error',()=>{if(++index<urls.length)img.src=urls[index];else img.replaceWith(placeholder);});placeholder.replaceWith(img);img.src=urls[index];}
+function attachItemImage(card,entry,itemId){const urls=localImageUrls(entry,itemId,LOCAL_IMAGE_BASE);if(!urls.length)return;const placeholder=card.querySelector('.noicon');if(!placeholder)return;const img=document.createElement('img');img.alt='';img.loading='lazy';let index=0;img.addEventListener('error',()=>{if(++index<urls.length)img.src=urls[index];else img.replaceWith(placeholder);});placeholder.replaceWith(img);img.src=urls[index];}
 function createCard(sectionId,index,item,inactive){const card=document.createElement("a");card.className="card"+(state.editing?" editing":"")+(inactive?" inactive-card":"");card.href=item.href;card.target="_blank";card.rel="noopener";card.dataset.section=sectionId;card.dataset.index=index;card.innerHTML=`<button class="delete-x icon-btn danger" type="button" title="Удалить" aria-label="Удалить">${ICON_X}</button><span class="noicon">?</span><span class="name"></span><small></small><button class="card-toggle-dot${!inactive?" on":""}" type="button" title="${inactive?"Включить":"Отключить"}"></button>`;const displayItem=catalog.get(item.itemId)||item;attachItemImage(card,displayItem,item.itemId);card.querySelector(".name").textContent=displayItem.name||"Предмет не выбран";card.querySelector("small").textContent=getCardSubtitle(item);if(state.editing){card.addEventListener("click",event=>{event.preventDefault();openEditor(sectionId,index,item);});card.querySelector(".delete-x").addEventListener("click",event=>{event.preventDefault();event.stopPropagation();deleteItem(sectionId,index);});card.querySelector(".card-toggle-dot").addEventListener("click",event=>{event.preventDefault();event.stopPropagation();pushHistory();const it=data[sectionId].items[index];if(isInactive(it))delete it.inactive;else it.inactive=true;commit();});card.addEventListener("dragstart",e=>{state.drag={section:sectionId,index};card.classList.add("drag-source");e.dataTransfer.effectAllowed="move";});card.addEventListener("dragend",()=>{card.classList.remove("drag-source","drag-over-before","drag-over-after");});card.addEventListener("dragover",e=>{if(!state.drag)return;e.preventDefault();e.stopPropagation();const rect=card.getBoundingClientRect(),half=rect.left+rect.width/2;card.classList.toggle("drag-over-before",e.clientX<half);card.classList.toggle("drag-over-after",e.clientX>=half);});card.addEventListener("dragleave",()=>{card.classList.remove("drag-over-before","drag-over-after");});card.addEventListener("drop",e=>{if(!state.drag)return;e.preventDefault();e.stopPropagation();const rect=card.getBoundingClientRect(),before=e.clientX<rect.left+rect.width/2;card.classList.remove("drag-over-before","drag-over-after");moveItemPrecise(state.drag.section,state.drag.index,sectionId,index,before);state.drag=null;});card.draggable=true;}return card;}
 function createAddCard(sectionId){const button=document.createElement("button");button.type="button";button.className="add-card single add-card-plus";button.innerHTML=`<span class="plus">+</span>`;button.addEventListener("click",()=>openEditor(sectionId,-1,null));return button;}
 function moveItemPrecise(fromSection,fromIndex,toSection,toIndex,before){const item=data[fromSection]?.items[fromIndex],target=data[toSection]?.items[toIndex];if(!item||!target||(fromSection===toSection&&fromIndex===toIndex))return;if(item.itemId!==target.itemId){showToast('Порядок блоков автоматический. Переставлять можно карточки одного предмета.');return;}pushHistory();data[fromSection].items.splice(fromIndex,1);let adjusted=toIndex;if(fromSection===toSection&&fromIndex<toIndex)adjusted--;data[toSection].items.splice(adjusted+(before?0:1),0,item);commit();}
